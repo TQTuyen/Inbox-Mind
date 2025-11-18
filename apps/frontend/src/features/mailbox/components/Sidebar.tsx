@@ -47,7 +47,11 @@ const mailboxItems = [
   { id: 'work', name: 'Work Project', icon: Folder },
 ];
 
-export function Sidebar({ isCollapsed, onToggleCollapse, isMobile = false }: SidebarProps) {
+export function Sidebar({
+  isCollapsed,
+  onToggleCollapse,
+  isMobile = false,
+}: SidebarProps) {
   const { selectedMailboxId, setSelectedMailbox, mailboxes } = useEmailStore();
 
   const getUnreadCount = (mailboxId: string) => {
@@ -79,7 +83,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse, isMobile = false }: Sid
                 ) : (
                   <ChevronLeft className="h-10 w-10 text-slate-400" />
                 )}
-                </Button>
+              </Button>
             </div>
           )}
 

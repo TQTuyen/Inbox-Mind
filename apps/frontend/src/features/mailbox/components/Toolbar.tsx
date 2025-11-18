@@ -9,7 +9,11 @@ interface ToolbarProps {
   onRefresh: () => void;
 }
 
-export function Toolbar({ searchQuery, onSearchChange, onRefresh }: ToolbarProps) {
+export function Toolbar({
+  searchQuery,
+  onSearchChange,
+  onRefresh,
+}: ToolbarProps) {
   return (
     <div className="flex items-center justify-between gap-4 border-b border-border bg-card px-4 py-3">
       {/* Search Bar */}

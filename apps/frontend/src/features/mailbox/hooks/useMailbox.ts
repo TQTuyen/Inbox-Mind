@@ -59,55 +59,75 @@ export const useMailbox = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedMailboxId, currentPage, searchKeyword, selectedCategory, setEmails, setLoading, setError]);
+  }, [
+    selectedMailboxId,
+    currentPage,
+    searchKeyword,
+    selectedCategory,
+    setEmails,
+    setLoading,
+    setError,
+  ]);
 
   useEffect(() => {
     fetchEmails();
   }, [fetchEmails]);
 
   // Handle email selection
-  const handleEmailSelect = useCallback(async (email: any) => {
-    setSelectedEmail(email);
-    
-    if (!email.isRead) {
-      try {
-        await emailService.markAsRead(email.id);
-        updateEmail(email.id, { isRead: true });
-      } catch (error) {
-        console.error('Failed to mark email as read:', error);
+  const handleEmailSelect = useCallback(
+    async (email: any) => {
+      setSelectedEmail(email);
+
+      if (!email.isRead) {
+        try {
+          await emailService.markAsRead(email.id);
+          updateEmail(email.id, { isRead: true });
+        } catch (error) {
+          console.error('Failed to mark email as read:', error);
+        }
       }
-    }
-  }, [setSelectedEmail, updateEmail]);
+    },
+    [setSelectedEmail, updateEmail]
+  );
 
   // Handle email actions
-  const handleToggleStar = useCallback(async (emailId: string, isStarred: boolean) => {
-    try {
-      await emailService.toggleStar(emailId, !isStarred);
-      updateEmail(emailId, { isStarred: !isStarred });
-    } catch (error) {
-      console.error('Failed to toggle star:', error);
-    }
-  }, [updateEmail]);
+  const handleToggleStar = useCallback(
+    async (emailId: string, isStarred: boolean) => {
+      try {
+        await emailService.toggleStar(emailId, !isStarred);
+        updateEmail(emailId, { isStarred: !isStarred });
+      } catch (error) {
+        console.error('Failed to toggle star:', error);
+      }
+    },
+    [updateEmail]
+  );
 
-  const handleDeleteEmail = useCallback(async (emailId: string) => {
-    try {
-      await emailService.deleteEmail(emailId);
-      setSelectedEmail(null);
-      fetchEmails();
-    } catch (error) {
-      console.error('Failed to delete email:', error);
-    }
-  }, [setSelectedEmail, fetchEmails]);
+  const handleDeleteEmail = useCallback(
+    async (emailId: string) => {
+      try {
+        await emailService.deleteEmail(emailId);
+        setSelectedEmail(null);
+        fetchEmails();
+      } catch (error) {
+        console.error('Failed to delete email:', error);
+      }
+    },
+    [setSelectedEmail, fetchEmails]
+  );
 
-  const handleArchiveEmail = useCallback(async (emailId: string) => {
-    try {
-      await emailService.moveToMailbox(emailId, 'archive');
-      setSelectedEmail(null);
-      fetchEmails();
-    } catch (error) {
-      console.error('Failed to archive email:', error);
-    }
-  }, [setSelectedEmail, fetchEmails]);
+  const handleArchiveEmail = useCallback(
+    async (emailId: string) => {
+      try {
+        await emailService.moveToMailbox(emailId, 'archive');
+        setSelectedEmail(null);
+        fetchEmails();
+      } catch (error) {
+        console.error('Failed to archive email:', error);
+      }
+    },
+    [setSelectedEmail, fetchEmails]
+  );
 
   return {
     selectedEmail,

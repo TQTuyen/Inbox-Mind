@@ -3,7 +3,11 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@fe/shared/components/ui/resizable';
-import { Sheet, SheetContent, SheetTrigger } from '@fe/shared/components/ui/sheet';
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from '@fe/shared/components/ui/sheet';
 import { Button } from '@fe/shared/components/ui/button';
 import { motion } from 'framer-motion';
 import { Menu } from 'lucide-react';
@@ -118,7 +122,10 @@ export function MailboxPage() {
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-64 p-0 bg-slate-900 border-slate-800">
+                <SheetContent
+                  side="left"
+                  className="w-64 p-0 bg-slate-900 border-slate-800"
+                >
                   <Sidebar
                     isCollapsed={false}
                     onToggleCollapse={() => {

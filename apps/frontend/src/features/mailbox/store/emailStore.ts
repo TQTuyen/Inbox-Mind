@@ -72,8 +72,10 @@ export const useEmailStore = create<EmailState>((set) => ({
   setLoading: (loading) => set({ loading }),
   setError: (error) => set({ error }),
   setCurrentPage: (page) => set({ currentPage: page }),
-  setSearchKeyword: (keyword) => set({ searchKeyword: keyword, currentPage: 1 }),
-  setSelectedCategory: (category) => set({ selectedCategory: category, currentPage: 1 }),
+  setSearchKeyword: (keyword) =>
+    set({ searchKeyword: keyword, currentPage: 1 }),
+  setSelectedCategory: (category) =>
+    set({ selectedCategory: category, currentPage: 1 }),
   updateEmail: (id, updates) =>
     set((state) => ({
       emails: state.emails.map((email) =>
@@ -87,6 +89,7 @@ export const useEmailStore = create<EmailState>((set) => ({
   deleteEmail: (id) =>
     set((state) => ({
       emails: state.emails.filter((email) => email.id !== id),
-      selectedEmail: state.selectedEmail?.id === id ? null : state.selectedEmail,
+      selectedEmail:
+        state.selectedEmail?.id === id ? null : state.selectedEmail,
     })),
 }));

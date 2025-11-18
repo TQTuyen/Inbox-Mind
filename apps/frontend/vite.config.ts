@@ -1,41 +1,43 @@
 /// <reference types='vitest' />
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { nxCopyAssetsPlugin } from '@nx/vite/plugins/nx-copy-assets.plugin';
+import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
 import path from 'path';
+import { defineConfig } from 'vite';
 
-export default defineConfig(async () => {
-  const tailwindcss = await import('@tailwindcss/vite').then(m => m.default);
-  
-  return {
-    root: __dirname,
-    cacheDir: '../../node_modules/.vite/apps/frontend',
-    server: {
-      port: 4200,
-      host: 'localhost',
+export default defineConfig({
+  root: __dirname,
+  cacheDir: '../../node_modules/.vite/apps/frontend',
+  server: {
+    port: 4200,
+    host: 'localhost',
+  },
+  preview: {
+    port: 4200,
+    host: 'localhost',
+  },
+  plugins: [
+    react(),
+    tailwindcss(),
+    nxViteTsPaths(),
+    nxCopyAssetsPlugin(['*.md']),
+  ],
+  resolve: {
+    alias: {
+      '@fe': path.resolve(__dirname, './src'),
     },
-    preview: {
-      port: 4200,
-      host: 'localhost',
+  },
+  // Uncomment this if you are using workers.
+  // worker: {
+  //  plugins: [ nxViteTsPaths() ],
+  // },
+  build: {
+    outDir: '../../dist/apps/frontend',
+    emptyOutDir: true,
+    reportCompressedSize: true,
+    commonjsOptions: {
+      transformMixedEsModules: true,
     },
-    plugins: [react(), tailwindcss(), nxViteTsPaths(), nxCopyAssetsPlugin(['*.md'])],
-    resolve: {
-      alias: {
-        '@fe': path.resolve(__dirname, './src'),
-      },
-    },
-    // Uncomment this if you are using workers.
-    // worker: {
-    //  plugins: [ nxViteTsPaths() ],
-    // },
-    build: {
-      outDir: '../../dist/apps/frontend',
-      emptyOutDir: true,
-      reportCompressedSize: true,
-      commonjsOptions: {
-        transformMixedEsModules: true,
-      },
-    },
-  };
+  },
 });

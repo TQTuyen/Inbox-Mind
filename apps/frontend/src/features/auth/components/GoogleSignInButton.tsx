@@ -5,7 +5,10 @@ interface GoogleSignInButtonProps {
   onError: () => void;
 }
 
-export const GoogleSignInButton = ({ onSuccess, onError }: GoogleSignInButtonProps) => {
+export const GoogleSignInButton = ({
+  onSuccess,
+  onError,
+}: GoogleSignInButtonProps) => {
   return (
     <div className="flex justify-center">
       <GoogleLogin

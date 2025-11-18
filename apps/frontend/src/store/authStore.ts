@@ -16,7 +16,11 @@ interface AuthState {
   clearAuth: () => void;
   updateAccessToken: (accessToken: string) => void;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, fullName: string) => Promise<void>;
+  register: (
+    email: string,
+    password: string,
+    fullName: string
+  ) => Promise<void>;
   googleLogin: (credential: string) => Promise<void>;
   logout: () => Promise<void>;
 }
