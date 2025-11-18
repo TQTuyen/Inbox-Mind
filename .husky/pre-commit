@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running affected checks..."
+
+# Lint affected projects
+npx nx affected --target=lint --uncommitted --parallel=5
+
+# Type check affected projects
+npx nx affected --target=type-check --uncommitted --parallel=5
+
+# Test affected projects
+npx nx affected --target=test --uncommitted --parallel=5
+
+# Format code
+npx nx format:write --uncommitted
+
+echo "✅ All checks passed!"

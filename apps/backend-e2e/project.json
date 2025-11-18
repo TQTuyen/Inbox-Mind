@@ -1,17 +1,17 @@
 {
-  "name": "inbox-mind-e2e",
+  "name": "backend-e2e",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
-  "implicitDependencies": ["inbox-mind"],
+  "implicitDependencies": ["backend"],
   "targets": {
     "e2e": {
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{e2eProjectRoot}"],
       "options": {
-        "jestConfig": "apps/inbox-mind-e2e/jest.config.cts",
+        "jestConfig": "apps/backend-e2e/jest.config.cts",
         "passWithNoTests": true
       },
-      "dependsOn": ["inbox-mind:build", "inbox-mind:serve"]
+      "dependsOn": ["backend:build", "backend:serve"]
     }
   }
 }
