@@ -3,7 +3,19 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "prepare": "husky"
+    "prepare": "husky",
+    "be:run": "nx serve backend",
+    "be:build": "nx build backend",
+    "be:lint": "nx lint backend",
+    "be:test": "nx test backend",
+    "fe:run": "nx serve frontend",
+    "fe:build": "nx build frontend",
+    "fe:lint": "nx lint frontend",
+    "fe:test": "nx test frontend",
+    "start": "nx run-many --target=serve --all --parallel",
+    "build": "nx run-many --target=build --all --parallel",
+    "lint": "nx run-many --target=lint --all --parallel",
+    "test": "nx run-many --target=test --all --parallel"
   },
   "private": true,
   "dependencies": {
