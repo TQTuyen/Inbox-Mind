@@ -2,8 +2,12 @@
 
 # compiled output
 dist
+build
 tmp
+out
 out-tsc
+.next
+.turbo
 
 # dependencies
 node_modules
@@ -43,5 +47,10 @@ Thumbs.db
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
 
+# Vite/Vitest
 vite.config.*.timestamp*
 vitest.config.*.timestamp*
+
+# Environment files
+.env
+.env.local
