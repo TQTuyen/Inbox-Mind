@@ -1,7 +1,3 @@
-# InboxMind
-
-InboxMind is a modern, intelligent email client PoC designed to streamline your workflow. It features a responsive interface, a mock backend, and a robust authentication system. This project was built using the Gemini CLI.
-
 ## Features
 
 - Responsive 3-column layout for desktop
@@ -119,6 +115,38 @@ This architecture ensures that the highly sensitive refresh token is never expos
 
 ## Third-Party Services
 
-- **Google OAuth:** Authentication is supported via Google Sign-In. A Google Cloud project is required to generate your own OAuth 2.0 Client ID.
+- **Google OAuth:** Authentication is supported via Google Sign-In. To enable Google OAuth, you need to obtain a Google Client ID from the Google Cloud Console. Follow these steps:
+
+    1.  **Go to the Google Cloud Console:** Navigate to [https://console.cloud.google.com/](https://console.cloud.google.com/).
+    2.  **Create a New Project:**
+        *   Click on the project selector in the header (usually next to "Google Cloud").
+        *   Click "New Project."
+        *   Give your project a name (e.g., "InboxMind OAuth") and click "Create."
+    3.  **Enable the Google People API:**
+        *   In the search bar at the top, search for "Google People API" and select it.
+        *   Click "Enable."
+    4.  **Configure the OAuth Consent Screen:**
+        *   In the left navigation menu, go to "APIs & Services" > "OAuth consent screen."
+        *   Choose "External" as the User type and click "CREATE."
+        *   Fill in the required fields on the "OAuth consent screen" (App name, User support email, Developer contact information). For testing, you can use placeholder values.
+        *   Add your test user accounts (email addresses) to the "Test users" section.
+        *   Click "SAVE AND CONTINUE."
+        *   On the "Scopes" page, you don't necessarily need to add any scopes for basic login if you are only getting basic profile info. Click "SAVE AND CONTINUE."
+        *   Review the summary and click "BACK TO DASHBOARD."
+    5.  **Create OAuth 2.0 Client ID Credentials:**
+        *   In the left navigation menu, go to "APIs & Services" > "Credentials."
+        *   Click "+ CREATE CREDENTIALS" and select "OAuth client ID."
+        *   For "Application type," select "Web application."
+        *   Give your OAuth client a name (e.g., "InboxMind Web Client").
+        *   **Authorized JavaScript origins:** Add `http://localhost:4200` (your frontend development URL). If deploying, also add your production frontend URL (e.g., `https://inbox-mind-rosy.vercel.app`).
+        *   **Authorized redirect URIs:** This field is often not strictly needed for client-side Google Sign-In using `@react-oauth/google` as it handles the redirects internally. However, if your backend also handles Google authentication, you might need to add `http://localhost:3000/api/v1/auth/google/callback` (or your backend's production URL).
+        *   Click "CREATE."
+    6.  **Copy your Client ID:** Your Client ID will be displayed. Copy this string.
+    7.  **Set Environment Variable:** In your frontend project, create a `.env` file (if it doesn't exist) and add your Google Client ID:
+        ```dotenv
+        VITE_GOOGLE_CLIENT_ID="YOUR_GOOGLE_CLIENT_ID"
+        ```
+        Replace `"YOUR_GOOGLE_CLIENT_ID"` with the actual Client ID you copied. Restart your frontend development server for the changes to take effect.
+
 - **Dicebear:** User avatars are generated dynamically using the [Dicebear Avatar API](https://www.dicebear.com/).
-- **Hosting Provider:** _(Placeholder: e.g., Vercel, Netlify, AWS Amplify)_
+- **Hosting Provider:** Vercel
