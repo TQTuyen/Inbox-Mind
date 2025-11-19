@@ -64,7 +64,7 @@ You can also run them separately:
 
 ### Public URL
 
-The application is hosted at: **[https://example.com](https://example.com)** (_Note: This is a placeholder URL._)
+The application is hosted at: **[Inbox Mind](https://inbox-mind-rosy.vercel.app/)**
 
 ### Reproducing Deployment Locally
 
