@@ -1,13 +1,10 @@
-import api from '@fe/lib/api/api';
-import MockAdapter from 'axios-mock-adapter';
+import { delay, http, HttpResponse } from 'msw';
+import { setupWorker } from 'msw/browser';
 import { emails } from './emails';
 import { mailboxes } from './mailboxes';
 
-// Create mock adapter instance
-const mock = new MockAdapter(api, { delayResponse: 500 });
-
 console.log('='.repeat(50));
-console.log('🔧 MOCK SERVER INITIALIZED');
+console.log('🔧 MOCK SERVER INITIALIZED (MSW)');
 console.log('📦 Mailboxes available:', mailboxes.length);
 console.log('📧 Total emails:', emails.length);
 console.log('👤 Demo user: demo@example.com / password123');
@@ -18,7 +15,7 @@ const users = [
   {
     id: 'user-1',
     email: 'demo@example.com',
-    password: 'password123', // In production, this would be hashed
+    password: 'password123',
     fullName: 'Demo User',
   },
 ];
@@ -30,194 +27,298 @@ const generateToken = (expiresIn: number) => {
     JSON.stringify({
       sub: 'user-1',
       email: 'demo@example.com',
-      exp: Date.now() + expiresIn,
+      exp: Math.floor(Date.now() / 1000) + Math.floor(expiresIn / 1000),
     })
   );
   const signature = btoa('mock-signature');
   return `${header}.${payload}.${signature}`;
 };
 
-// Auth endpoints
-mock.onPost('/auth/register').reply((config) => {
-  const { email, password, fullName } = JSON.parse(config.data);
+// MSW Handlers
+const handlers = [
+  // Auth - Register
+  http.post('/api/v1/auth/register', async ({ request }) => {
+    await delay(300);
+    const body = (await request.json()) as {
+      email: string;
+      password: string;
+      fullName: string;
+    };
+    const { email, password, fullName } = body;
 
-  if (users.find((u) => u.email === email)) {
-    return [400, { message: 'User already exists' }];
-  }
-
-  users.push({ id: `user-${users.length + 1}`, email, password, fullName });
-  return [200, { message: 'Registration successful' }];
-});
-
-mock.onPost('/auth/login').reply((config) => {
-  console.log('🔐 Login attempt:', config.data);
-  const { email, password } = JSON.parse(config.data);
-
-  const user = users.find((u) => u.email === email && u.password === password);
-
-  if (!user) {
-    console.log('❌ Login failed: Invalid credentials');
-    return [401, { message: 'Invalid credentials' }];
-  }
-
-  const accessToken = generateToken(15 * 60 * 1000); // 15 minutes
-  const refreshToken = generateToken(7 * 24 * 60 * 60 * 1000); // 7 days
-
-  console.log('✅ Login successful for:', user.email);
-  return [
-    200,
-    {
-      accessToken,
-      refreshToken,
-      user: {
-        id: user.id,
-        email: user.email,
-        fullName: user.fullName,
-      },
-    },
-  ];
-});
-
-mock.onPost('/auth/google').reply((config) => {
-  const { credential } = JSON.parse(config.data);
-
-  if (!credential) {
-    return [400, { message: 'Invalid Google credential' }];
-  }
-
-  // Mock Google authentication
-  const accessToken = generateToken(15 * 60 * 1000);
-  const refreshToken = generateToken(7 * 24 * 60 * 60 * 1000);
-
-  return [
-    200,
-    {
-      accessToken,
-      refreshToken,
-      user: {
-        id: 'google-user-1',
-        email: 'google.user@gmail.com',
-        fullName: 'Google User',
-      },
-    },
-  ];
-});
-
-mock.onPost('/auth/refresh').reply((config) => {
-  const { refreshToken } = JSON.parse(config.data);
-
-  if (!refreshToken) {
-    return [401, { message: 'Refresh token required' }];
-  }
-
-  const newAccessToken = generateToken(15 * 60 * 1000);
-  return [200, { accessToken: newAccessToken }];
-});
-
-mock.onPost('/auth/logout').reply(200, { message: 'Logged out successfully' });
-
-// Mailbox endpoints
-mock.onGet('/mailboxes').reply(() => {
-  console.log('📬 GET /mailboxes called, returning:', mailboxes);
-  return [200, mailboxes];
-});
-
-mock.onGet(/\/api\/v1\/mailboxes\/[^/]+\/emails/).reply((config) => {
-  const url = new URL(config.url!, 'http://localhost');
-  const mailboxId = config.url!.match(/\/mailboxes\/([^/]+)\/emails/)![1];
-  const page = parseInt(url.searchParams.get('page') || '1');
-  const limit = parseInt(url.searchParams.get('limit') || '20');
-  const search = url.searchParams.get('search');
-  const category = url.searchParams.get('category');
-
-  let filteredEmails = emails.filter((email) => {
-    // Filter by mailbox
-    if (mailboxId === 'starred') {
-      return email.isStarred;
-    }
-    return email.mailboxId === mailboxId;
-  });
-
-  // Filter by search
-  if (search) {
-    filteredEmails = filteredEmails.filter(
-      (email) =>
-        email.subject.toLowerCase().includes(search.toLowerCase()) ||
-        email.from.name.toLowerCase().includes(search.toLowerCase()) ||
-        email.from.email.toLowerCase().includes(search.toLowerCase())
-    );
-  }
-
-  // Filter by category
-  if (category && category !== 'all') {
-    if (category === 'unread') {
-      filteredEmails = filteredEmails.filter((email) => !email.isRead);
-    } else if (category === 'read') {
-      filteredEmails = filteredEmails.filter((email) => email.isRead);
-    } else if (category === 'attachments') {
-      filteredEmails = filteredEmails.filter(
-        (email) => email.attachments && email.attachments.length > 0
+    if (users.find((u) => u.email === email)) {
+      return HttpResponse.json(
+        { message: 'User already exists' },
+        { status: 400 }
       );
     }
-  }
 
-  const totalCount = filteredEmails.length;
-  const totalPages = Math.ceil(totalCount / limit);
-  const startIndex = (page - 1) * limit;
-  const endIndex = startIndex + limit;
+    users.push({ id: `user-${users.length + 1}`, email, password, fullName });
+    return HttpResponse.json({ message: 'Registration successful' });
+  }),
 
-  const paginatedEmails = filteredEmails.slice(startIndex, endIndex);
+  // Auth - Login
+  http.post('/api/v1/auth/login', async ({ request }) => {
+    await delay(300);
+    const body = (await request.json()) as { email: string; password: string };
+    const { email, password } = body;
 
-  return [
-    200,
-    {
-      emails: paginatedEmails,
-      page,
-      limit,
-      totalPages,
-      totalCount,
-    },
-  ];
-});
+    console.log('🔐 Login attempt:', email);
 
-// Email detail endpoint
-mock.onGet(/\/emails\/[^/]+$/).reply((config) => {
-  const emailId = config.url!.match(/\/emails\/([^/]+)$/)![1];
-  const email = emails.find((e) => e.id === emailId);
+    const user = users.find(
+      (u) => u.email === email && u.password === password
+    );
 
-  if (!email) {
-    return [404, { message: 'Email not found' }];
-  }
+    if (!user) {
+      console.log('❌ Login failed: Invalid credentials');
+      return HttpResponse.json(
+        { message: 'Invalid credentials' },
+        { status: 401 }
+      );
+    }
 
-  return [200, email];
-});
+    const accessToken = generateToken(15 * 60 * 1000); // 15 minutes
+    const refreshToken = generateToken(7 * 24 * 60 * 60 * 1000); // 7 days
 
-// Update email endpoint
-mock.onPatch(/\/emails\/[^/]+$/).reply((config) => {
-  const emailId = config.url!.match(/\/emails\/([^/]+)$/)![1];
-  const email = emails.find((e) => e.id === emailId);
+    console.log('✅ Login successful for:', user.email);
 
-  if (!email) {
-    return [404, { message: 'Email not found' }];
-  }
+    // Set httpOnly cookie for refresh token
+    return HttpResponse.json(
+      {
+        accessToken,
+        expiresIn: 15 * 60, // 15 minutes in seconds
+        user: {
+          id: user.id,
+          email: user.email,
+          fullName: user.fullName,
+        },
+      },
+      {
+        headers: {
+          'Set-Cookie': `refreshToken=${refreshToken}; Path=/; Max-Age=${
+            7 * 24 * 60 * 60 * 1000
+          }; SameSite=Lax`,
+        },
+      }
+    );
+  }),
 
-  const updates = JSON.parse(config.data);
-  Object.assign(email, updates);
+  // Auth - Google Login
+  http.post('/api/v1/auth/google', async ({ request }) => {
+    await delay(300);
+    const body = (await request.json()) as { credential: string };
+    const { credential } = body;
 
-  return [200, email];
-});
+    if (!credential) {
+      return HttpResponse.json(
+        { message: 'Invalid Google credential' },
+        { status: 400 }
+      );
+    }
 
-// Delete email endpoint
-mock.onDelete(/\/v1\/emails\/[^/]+$/).reply((config) => {
-  const emailId = config.url!.match(/\/emails\/([^/]+)$/)![1];
-  const emailIndex = emails.findIndex((e) => e.id === emailId);
+    const accessToken = generateToken(15 * 60 * 1000);
+    const refreshToken = generateToken(7 * 24 * 60 * 60 * 1000);
 
-  if (emailIndex === -1) {
-    return [404, { message: 'Email not found' }];
-  }
+    return HttpResponse.json(
+      {
+        accessToken,
+        expiresIn: 15 * 60,
+        user: {
+          id: 'google-user-1',
+          email: 'google.user@gmail.com',
+          fullName: 'Google User',
+        },
+      },
+      {
+        headers: {
+          'Set-Cookie': `refreshToken=${refreshToken}; Path=/; Max-Age=${
+            7 * 24 * 60 * 60 * 1000
+          }; SameSite=Lax`,
+        },
+      }
+    );
+  }),
 
-  emails.splice(emailIndex, 1);
-  return [200, { message: 'Email deleted successfully' }];
-});
+  // Auth - Refresh Token
+  http.post('/api/v1/auth/refresh', async ({ cookies }) => {
+    await delay(200);
+    const refreshToken = cookies.refreshToken;
 
-export default mock;
+    console.log('🔄 Refresh token request');
+
+    if (!refreshToken) {
+      console.log('❌ No refresh token found');
+      return HttpResponse.json(
+        { message: 'Refresh token required' },
+        { status: 401 }
+      );
+    }
+
+    // Decode refresh token to get user info (in real app, validate token)
+    try {
+      const payload = JSON.parse(atob(refreshToken.split('.')[1]));
+      const user = users.find((u) => u.id === payload.sub);
+
+      if (!user) {
+        console.log('❌ User not found from token');
+        return HttpResponse.json(
+          { message: 'Invalid refresh token' },
+          { status: 401 }
+        );
+      }
+
+      const newAccessToken = generateToken(15 * 60 * 1000);
+      const newRefreshToken = generateToken(7 * 24 * 60 * 60 * 1000);
+
+      console.log('✅ Token refreshed for:', user.email);
+
+      return HttpResponse.json(
+        {
+          accessToken: newAccessToken,
+          expiresIn: 15 * 60,
+          user: {
+            id: user.id,
+            email: user.email,
+            fullName: user.fullName,
+          },
+        },
+        {
+          headers: {
+            'Set-Cookie': `refreshToken=${newRefreshToken}; Path=/; Max-Age=${
+              7 * 24 * 60 * 60 * 1000
+            }; SameSite=Lax`,
+          },
+        }
+      );
+    } catch (error) {
+      console.log('❌ Invalid token format:', error);
+      return HttpResponse.json(
+        { message: 'Invalid refresh token' },
+        { status: 401 }
+      );
+    }
+  }),
+
+  // Auth - Logout
+  http.post('/api/v1/auth/logout', async () => {
+    await delay(200);
+    return HttpResponse.json(
+      { message: 'Logged out successfully' },
+      {
+        headers: {
+          'Set-Cookie': 'refreshToken=; Path=/; Max-Age=0',
+        },
+      }
+    );
+  }),
+
+  // Mailboxes - List
+  http.get('/api/v1/mailboxes', async () => {
+    await delay(300);
+    console.log('📬 GET /mailboxes called');
+    return HttpResponse.json(mailboxes);
+  }),
+
+  // Emails - List by Mailbox
+  http.get(
+    '/api/v1/mailboxes/:mailboxId/emails',
+    async ({ params, request }) => {
+      await delay(400);
+      const { mailboxId } = params;
+      const url = new URL(request.url);
+      const page = parseInt(url.searchParams.get('page') || '1');
+      const limit = parseInt(url.searchParams.get('limit') || '20');
+      const search = url.searchParams.get('search');
+      const category = url.searchParams.get('category');
+
+      let filteredEmails = emails.filter((email) => {
+        if (mailboxId === 'starred') {
+          return email.isStarred;
+        }
+        return email.mailboxId === mailboxId;
+      });
+
+      if (search) {
+        filteredEmails = filteredEmails.filter(
+          (email) =>
+            email.subject.toLowerCase().includes(search.toLowerCase()) ||
+            email.from.name.toLowerCase().includes(search.toLowerCase()) ||
+            email.from.email.toLowerCase().includes(search.toLowerCase())
+        );
+      }
+
+      if (category && category !== 'all') {
+        if (category === 'unread') {
+          filteredEmails = filteredEmails.filter((email) => !email.isRead);
+        } else if (category === 'read') {
+          filteredEmails = filteredEmails.filter((email) => email.isRead);
+        } else if (category === 'attachments') {
+          filteredEmails = filteredEmails.filter(
+            (email) => email.attachments && email.attachments.length > 0
+          );
+        }
+      }
+
+      const totalCount = filteredEmails.length;
+      const totalPages = Math.ceil(totalCount / limit);
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+
+      const paginatedEmails = filteredEmails.slice(startIndex, endIndex);
+
+      return HttpResponse.json({
+        emails: paginatedEmails,
+        page,
+        limit,
+        totalPages,
+        totalCount,
+      });
+    }
+  ),
+
+  // Email - Get by ID
+  http.get('/api/v1/emails/:emailId', async ({ params }) => {
+    await delay(200);
+    const { emailId } = params;
+    const email = emails.find((e) => e.id === emailId);
+
+    if (!email) {
+      return HttpResponse.json({ message: 'Email not found' }, { status: 404 });
+    }
+
+    return HttpResponse.json(email);
+  }),
+
+  // Email - Update
+  http.patch('/api/v1/emails/:emailId', async ({ params, request }) => {
+    await delay(200);
+    const { emailId } = params;
+    const email = emails.find((e) => e.id === emailId);
+
+    if (!email) {
+      return HttpResponse.json({ message: 'Email not found' }, { status: 404 });
+    }
+
+    const updates = await request.json();
+    Object.assign(email, updates);
+
+    return HttpResponse.json(email);
+  }),
+
+  // Email - Delete
+  http.delete('/api/v1/emails/:emailId', async ({ params }) => {
+    await delay(200);
+    const { emailId } = params;
+    const emailIndex = emails.findIndex((e) => e.id === emailId);
+
+    if (emailIndex === -1) {
+      return HttpResponse.json({ message: 'Email not found' }, { status: 404 });
+    }
+
+    emails.splice(emailIndex, 1);
+    return HttpResponse.json({ message: 'Email deleted successfully' });
+  }),
+];
+
+// Setup MSW worker
+export const worker = setupWorker(...handlers);

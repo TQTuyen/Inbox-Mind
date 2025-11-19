@@ -5,8 +5,16 @@ import {
   AvatarImage,
 } from '@fe/shared/components/ui/avatar';
 import { Button } from '@fe/shared/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@fe/shared/components/ui/dropdown-menu';
 import { ScrollArea } from '@fe/shared/components/ui/scroll-area';
-import { Separator } from '@fe/shared/components/ui/separator';
+import { useAuthStore } from '@fe/store/authStore';
 import { motion } from 'framer-motion';
 import {
   AlertOctagon,
@@ -17,6 +25,7 @@ import {
   FileText,
   Folder,
   Inbox,
+  LogOut,
   Newspaper,
   PenSquare,
   Send,
@@ -24,6 +33,7 @@ import {
   Star,
   Tag,
   Trash2,
+  User,
 } from 'lucide-react';
 import { useEmailStore } from '../store/emailStore';
 
@@ -53,10 +63,14 @@ export function Sidebar({
   isMobile = false,
 }: SidebarProps) {
   const { selectedMailboxId, setSelectedMailbox, mailboxes } = useEmailStore();
-
+  const { logout } = useAuthStore();
   const getUnreadCount = (mailboxId: string) => {
     const mailbox = mailboxes.find((m) => m.id === mailboxId);
     return mailbox?.unreadCount || 0;
+  };
+
+  const handleLogout = () => {
+    logout();
   };
 
   return (
@@ -76,7 +90,8 @@ export function Sidebar({
                 size="icon"
                 onClick={onToggleCollapse}
                 className="h-10 w-10 rounded-full border border-slate-700 bg-slate-900 shadow-md
-              hover:bg-slate-800/70 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+                hover:bg-slate-800/70 focus:outline-none focus:ring-2 focus:ring-slate-400
+                  focus:ring-offset-2 cursor-pointer"
               >
                 {isCollapsed ? (
                   <ChevronRight className="h-10 w-10 text-slate-400" />
@@ -89,10 +104,47 @@ export function Sidebar({
 
           {/* User Avatar - Always Visible */}
           <div className="flex justify-center">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=MinhNguyen" />
-              <AvatarFallback>MN</AvatarFallback>
-            </Avatar>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Avatar className="h-10 w-10 cursor-pointer">
+                  <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=MinhNguyen" />
+                  <AvatarFallback>MN</AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                className="w-56 bg-slate-900 border-slate-700 text-slate-300"
+                align="center"
+                forceMount
+              >
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none text-white">
+                      Tran Quang Tuyen
+                    </p>
+                    <p className="text-xs leading-none text-slate-400">
+                      tranquangtuyen@email.com
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-slate-700" />
+                <DropdownMenuItem className="hover:bg-slate-800 cursor-pointer">
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="hover:bg-slate-800 cursor-pointer">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-slate-700" />
+                <DropdownMenuItem
+                  className="hover:bg-slate-800 cursor-pointer"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* User Info - Only when expanded */}
@@ -116,7 +168,8 @@ export function Sidebar({
           <div className="flex justify-center">
             {isCollapsed ? (
               <Button
-                className="h-10 w-10 p-0 bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/30"
+                className="h-10 w-10 p-0 bg-blue-500 hover:bg-blue-600 text-white
+                shadow-lg shadow-blue-500/30 cursor-pointer"
                 size="icon"
                 title="New Email"
               >
@@ -124,7 +177,8 @@ export function Sidebar({
               </Button>
             ) : (
               <Button
-                className="h-8 w-full bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/30"
+                className="h-8 w-full bg-blue-500 hover:bg-blue-600 text-white
+                shadow-lg shadow-blue-500/30 cursor-pointer"
                 size="default"
               >
                 <PenSquare className="mr-2 h-4 w-4" />
@@ -148,7 +202,7 @@ export function Sidebar({
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setSelectedMailbox(item.id)}
                     className={cn(
-                      'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                      'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors cursor-pointer',
                       isActive
                         ? 'bg-blue-900 text-blue-300'
                         : 'text-slate-300 hover:bg-blue-900/50 hover:text-white',
@@ -177,23 +231,6 @@ export function Sidebar({
               })}
             </nav>
           </ScrollArea>
-        </div>
-
-        {/* Settings */}
-        <div className="flex flex-col gap-1">
-          <Separator className="mb-2 bg-slate-800" />
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className={cn(
-              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-blue-900/50 hover:text-white',
-              isCollapsed && 'justify-center px-2'
-            )}
-            title={isCollapsed ? 'Settings' : undefined}
-          >
-            <Settings className="h-5 w-5 shrink-0" />
-            {!isCollapsed && <span>Settings</span>}
-          </motion.button>
         </div>
       </div>
     </motion.aside>

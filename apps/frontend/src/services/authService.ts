@@ -13,7 +13,6 @@ interface RegisterCredentials {
 
 interface AuthResponse {
   accessToken: string;
-  refreshToken: string;
   user: {
     id: string;
     email: string;
@@ -28,7 +27,6 @@ interface GoogleAuthCredentials {
 export const authService = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     const response = await api.post('/auth/login', credentials);
-    console.log('Login response:', response.data);
     return response.data;
   },
 
@@ -41,11 +39,6 @@ export const authService = {
 
   async googleAuth(credentials: GoogleAuthCredentials): Promise<AuthResponse> {
     const response = await api.post('/auth/google', credentials);
-    return response.data;
-  },
-
-  async refresh(refreshToken: string): Promise<{ accessToken: string }> {
-    const response = await api.post('/auth/refresh', { refreshToken });
     return response.data;
   },
 

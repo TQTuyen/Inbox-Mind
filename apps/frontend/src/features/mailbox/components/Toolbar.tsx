@@ -1,7 +1,7 @@
-import { Input } from '@fe/shared/components/ui/input';
 import { Button } from '@fe/shared/components/ui/button';
-import { Search, RefreshCw } from 'lucide-react';
+import { Input } from '@fe/shared/components/ui/input';
 import { motion } from 'framer-motion';
+import { RefreshCw, Search } from 'lucide-react';
 
 interface ToolbarProps {
   searchQuery: string;
@@ -39,6 +39,7 @@ export function Toolbar({
             size="icon"
             onClick={onRefresh}
             aria-label="Refresh"
+            className="cursor-pointer"
           >
             <RefreshCw className="h-5 w-5" />
           </Button>

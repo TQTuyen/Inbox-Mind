@@ -8,6 +8,13 @@ import {
 } from '@fe/shared/components/ui/avatar';
 import { Badge } from '@fe/shared/components/ui/badge';
 import { Button } from '@fe/shared/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@fe/shared/components/ui/dropdown-menu';
 import { ScrollArea } from '@fe/shared/components/ui/scroll-area';
 import { motion } from 'framer-motion';
 import {
@@ -24,6 +31,7 @@ import {
   ReplyAll,
   Star,
   Trash,
+  MailOpen, // Added MailOpen
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -179,16 +187,17 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
         <div className="flex items-center gap-1">
           {isMobile && onBack && (
             <Button variant="ghost" size="icon" onClick={onBack}>
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-5 w-5 cursor-pointer" />
             </Button>
           )}
+          {/* Reply, Reply All, Forward buttons can remain if space allows or also go into dropdown */}
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Button
               variant="ghost"
               size="sm"
-              className="text-slate-300 hover:text-white hover:bg-slate-800"
+              className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer"
             >
-              <Reply className="h-4 w-4 mr-2" />
+              <Reply className="h-4 w-4" />
               Reply
             </Button>
           </motion.div>
@@ -196,9 +205,9 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
             <Button
               variant="ghost"
               size="sm"
-              className="text-slate-300 hover:text-white hover:bg-slate-800"
+              className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer"
             >
-              <ReplyAll className="h-4 w-4 mr-2" />
+              <ReplyAll className="h-4 w-4 cursor-pointer" />
               Reply All
             </Button>
           </motion.div>
@@ -206,72 +215,78 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
             <Button
               variant="ghost"
               size="sm"
-              className="text-slate-300 hover:text-white hover:bg-slate-800"
+              className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer"
             >
-              <Forward className="h-4 w-4 mr-2" />
+              <Forward className="h-4 w-4" />
               Forward
             </Button>
           </motion.div>
         </div>
 
         <div className="flex items-center gap-1">
-          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowNoteInput(!showNoteInput)}
-              className="text-slate-400 hover:text-white hover:bg-slate-800"
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="w-48 bg-slate-900 border-slate-700 text-slate-300"
+              align="end"
             >
-              <Edit className="h-4 w-4" />
-            </Button>
-          </motion.div>
-          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleToggleStar}
-              disabled={isProcessing}
-              className="text-slate-400 hover:text-white hover:bg-slate-800"
-            >
-              <Star
-                className={cn(
-                  'h-4 w-4',
-                  selectedEmail.isStarred && 'fill-blue-500 text-blue-500'
-                )}
-              />
-            </Button>
-          </motion.div>
-          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleArchive}
-              disabled={isProcessing}
-              className="text-slate-400 hover:text-white hover:bg-slate-800"
-            >
-              <Archive className="h-4 w-4" />
-            </Button>
-          </motion.div>
-          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleDelete}
-              disabled={isProcessing}
-              className="text-slate-400 hover:text-red-400 hover:bg-slate-800"
-            >
-              <Trash className="h-4 w-4" />
-            </Button>
-          </motion.div>
-          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-slate-400 hover:text-white hover:bg-slate-800"
-            >
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </motion.div>
+              {selectedEmail.isRead && (
+                <DropdownMenuItem
+                  onClick={() => handleMarkAsRead(false)}
+                  disabled={isProcessing}
+                  className="hover:bg-slate-800 cursor-pointer"
+                >
+                  <MailOpen className="mr-2 h-4 w-4" />
+                  Mark as Unread
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem
+                onClick={() => setShowNoteInput(!showNoteInput)}
+                className="hover:bg-slate-800 cursor-pointer"
+              >
+                <Edit className="mr-2 h-4 w-4" />
+                Note
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleToggleStar}
+                disabled={isProcessing}
+                className="hover:bg-slate-800 cursor-pointer"
+              >
+                <Star
+                  className={cn(
+                    'mr-2 h-4 w-4',
+                    selectedEmail.isStarred && 'fill-blue-500 text-blue-500'
+                  )}
+                />
+                Star
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleArchive}
+                disabled={isProcessing}
+                className="hover:bg-slate-800 cursor-pointer"
+              >
+                <Archive className="mr-2 h-4 w-4" />
+                Archive
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-slate-700" />
+              <DropdownMenuItem
+                onClick={handleDelete}
+                disabled={isProcessing}
+                className="hover:bg-slate-800 text-red-400 hover:text-red-300 cursor-pointer"
+              >
+                <Trash className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
@@ -309,7 +324,7 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
           </Avatar>
 
           <div className="flex-1">
-            <div className="flex items-start justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <p className="text-base font-semibold">
                   {selectedEmail.from.name}
@@ -327,7 +342,7 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
                   )}
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground shrink-0">
+              <p className="text-sm text-muted-foreground sm:shrink-0 mt-2 sm:mt-0">
                 {new Date(selectedEmail.timestamp).toLocaleDateString('en-US', {
                   month: 'short',
                   day: 'numeric',

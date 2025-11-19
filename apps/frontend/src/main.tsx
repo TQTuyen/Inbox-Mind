@@ -4,27 +4,34 @@ import * as ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './app/App';
 
-if (import.meta.env.DEV) {
-  import('./mocks/mockServer');
-}
-
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
-);
-
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
-root.render(
-  <StrictMode>
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <BrowserRouter
-        future={{
-          v7_startTransition: true,
-          v7_relativeSplatPath: true,
-        }}
-      >
-        <App />
-      </BrowserRouter>
-    </GoogleOAuthProvider>
-  </StrictMode>
-);
+async function enableMocking() {
+  if (import.meta.env.DEV) {
+    const { worker } = await import('./mocks/mockServer');
+    return worker.start({
+      onUnhandledRequest: 'bypass',
+    });
+  }
+}
+
+enableMocking().then(() => {
+  const root = ReactDOM.createRoot(
+    document.getElementById('root') as HTMLElement
+  );
+
+  root.render(
+    <StrictMode>
+      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+        <BrowserRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true,
+          }}
+        >
+          <App />
+        </BrowserRouter>
+      </GoogleOAuthProvider>
+    </StrictMode>
+  );
+});

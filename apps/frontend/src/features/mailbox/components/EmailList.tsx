@@ -1,10 +1,25 @@
 import { cn } from '@fe/lib/utils';
+import { emailService } from '@fe/services/emailService'; // Import emailService
 import { Badge } from '@fe/shared/components/ui/badge';
 import { Button } from '@fe/shared/components/ui/button';
 import { Checkbox } from '@fe/shared/components/ui/checkbox';
 import { ScrollArea } from '@fe/shared/components/ui/scroll-area';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@radix-ui/react-dropdown-menu';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Mail, Paperclip, RefreshCw, Star } from 'lucide-react';
+import {
+  Mail,
+  MailOpen,
+  MoreVertical,
+  Paperclip,
+  RefreshCw,
+  Star,
+  Trash,
+} from 'lucide-react'; // Added MailOpen, Trash, and MoreVertical
 import { useState } from 'react';
 import { useEmailStore, type Email } from '../store/emailStore';
 
@@ -26,6 +41,7 @@ export const EmailList = ({ onEmailSelect, onRefresh }: EmailListProps) => {
   } = useEmailStore();
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isProcessing, setIsProcessing] = useState(false); // New state for processing
 
   const handleSelectAll = () => {
     if (selectedIds.size === emails.length) {
@@ -45,11 +61,54 @@ export const EmailList = ({ onEmailSelect, onRefresh }: EmailListProps) => {
     setSelectedIds(newSet);
   };
 
-  const handleBulkDelete = () => {
+  const handleBulkDelete = async () => {
     // eslint-disable-next-line no-restricted-globals
     if (confirm(`Delete ${selectedIds.size} emails?`)) {
-      selectedIds.forEach((id) => deleteEmail(id));
+      setIsProcessing(true);
+      try {
+        await Promise.all(
+          Array.from(selectedIds).map((id) => emailService.deleteEmail(id))
+        );
+        selectedIds.forEach((id) => deleteEmail(id));
+        setSelectedIds(new Set());
+      } catch (error) {
+        console.error('Failed to bulk delete emails:', error);
+        alert('Failed to delete emails. Please try again.');
+      } finally {
+        setIsProcessing(false);
+      }
+    }
+  };
+
+  const handleBulkMarkAsRead = async () => {
+    setIsProcessing(true);
+    try {
+      await Promise.all(
+        Array.from(selectedIds).map((id) => emailService.markAsRead(id))
+      );
+      selectedIds.forEach((id) => updateEmail(id, { isRead: true }));
       setSelectedIds(new Set());
+    } catch (error) {
+      console.error('Failed to bulk mark as read:', error);
+      alert('Failed to mark emails as read. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleBulkMarkAsUnread = async () => {
+    setIsProcessing(true);
+    try {
+      await Promise.all(
+        Array.from(selectedIds).map((id) => emailService.markAsUnread(id))
+      );
+      selectedIds.forEach((id) => updateEmail(id, { isRead: false }));
+      setSelectedIds(new Set());
+    } catch (error) {
+      console.error('Failed to bulk mark as unread:', error);
+      alert('Failed to mark emails as unread. Please try again.');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -84,13 +143,14 @@ export const EmailList = ({ onEmailSelect, onRefresh }: EmailListProps) => {
     <div className="flex h-full flex-col overflow-hidden">
       {/* Compact Toolbar */}
       <div className="shrink-0 border-b border-slate-800 bg-slate-900/80 px-3 py-2">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button
             variant="ghost"
             size="icon"
             onClick={onRefresh}
             aria-label="Refresh"
-            className="h-7 w-7 text-slate-300 hover:text-white hover:bg-slate-800"
+            className="h-7 w-7 text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer"
+            disabled={isProcessing}
           >
             <RefreshCw className="h-3.5 w-3.5" />
           </Button>
@@ -100,29 +160,74 @@ export const EmailList = ({ onEmailSelect, onRefresh }: EmailListProps) => {
               <span className="text-xs text-slate-400">
                 {selectedIds.size} selected
               </span>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleBulkDelete}
-                className="h-7 text-xs"
-              >
-                Delete
-              </Button>
+
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setSelectedIds(new Set())}
-                className="h-7 text-xs text-slate-400"
+                className="h-7 text-xs text-slate-400 cursor-pointer"
+                disabled={isProcessing}
               >
                 Clear
               </Button>
+
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleBulkDelete}
+                className="h-7 text-xs cursor-pointer"
+                disabled={isProcessing}
+                title="Delete"
+              >
+                <Trash className="h-3.5 w-3.5 sm:mr-1" />
+                <span className="hidden sm:inline">Delete</span>
+              </Button>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-slate-400 hover:text-white"
+                    disabled={isProcessing}
+                    title="More actions"
+                  >
+                    <MoreVertical className="h-3.5 w-3.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  className="bg-slate-800 border-blue-700 text-slate-300 relative z-60 p-2 top-3 rounded-md shadow-md
+                  space-y-1"
+                  align="end"
+                >
+                  <DropdownMenuItem
+                    onClick={handleBulkMarkAsRead}
+                    disabled={isProcessing}
+                    className="flex items-center bg-slate-800 hover:bg-slate-700 hover:text-blue-500
+                    cursor-pointer pl-2 pr-2"
+                  >
+                    <Mail className="h-3.5 w-3.5 mr-2" />
+                    Mark as Read
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={handleBulkMarkAsUnread}
+                    disabled={isProcessing}
+                    className="flex items-center bg-slate-800 hover:bg-slate-700 hover:text-blue-500
+                    cursor-pointer pl-2 pr-2"
+                  >
+                    <MailOpen className="h-3.5 w-3.5 mr-2" />
+                    Mark as Unread
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           ) : (
             <Button
               variant="ghost"
               size="sm"
               onClick={handleSelectAll}
-              className="h-7 text-xs text-slate-400 hover:text-white"
+              className="h-7 text-xs text-slate-400 hover:text-white cursor-pointer"
+              disabled={isProcessing}
             >
               Select All
             </Button>
