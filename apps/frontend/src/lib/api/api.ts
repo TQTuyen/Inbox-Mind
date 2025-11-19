@@ -66,6 +66,21 @@ const getTokenExpiration = (token: string): number | null => {
   }
 };
 
+const handleLogout = (error: Error) => {
+  processQueue(error, null);
+  useAuthStore.getState().clearAuth();
+
+  if (tokenChannel) {
+    tokenChannel.postMessage({ type: 'LOGOUT' });
+  }
+  if (refreshTimer) {
+    clearTimeout(refreshTimer);
+  }
+
+  window.location.href = '/login';
+  return Promise.reject(error);
+};
+
 // Centralized token refresh function
 const refreshAccessToken = async (): Promise<string> => {
   // Use Web Locks API to ensure only one refresh happens across all tabs
@@ -120,6 +135,8 @@ const performTokenRefresh = async (): Promise<string> => {
       }
 
       return accessToken;
+    } catch (error) {
+      return handleLogout(error as Error);
     } finally {
       refreshPromise = null;
     }
@@ -292,20 +309,7 @@ api.interceptors.response.use(
 
         return api(originalRequest);
       } catch (refreshError) {
-        processQueue(refreshError as Error, null);
-        useAuthStore.getState().clearAuth();
-
-        // Broadcast logout to other tabs
-        if (tokenChannel) {
-          tokenChannel.postMessage({ type: 'LOGOUT' });
-        }
-
-        if (refreshTimer) {
-          clearTimeout(refreshTimer);
-        }
-
-        window.location.href = '/login';
-        return Promise.reject(refreshError);
+        return handleLogout(refreshError as Error);
       } finally {
         isRefreshing = false;
       }
