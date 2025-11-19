@@ -1,18 +1,16 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-echo "🔍 Running affected checks..."
+echo "🔍 Running affected checks in parallel..."
 
-# Lint affected projects
-npx nx affected --target=lint --uncommitted --parallel=5
+# Get number of CPU cores for parallel execution
+CORES=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
 
-# Type check affected projects
-npx nx affected --target=type-check --uncommitted --parallel=5
+npx nx affected \
+  --targets=lint,type-check,test \
+  --uncommitted \
+  --parallel=$((CORES > 1 ? CORES - 1 : 1))
 
-# Test affected projects
-npx nx affected --target=test --uncommitted --parallel=5
-
-# Format code
 npx nx format:write --uncommitted
 
 echo "✅ All checks passed!"
