@@ -13,7 +13,7 @@ export const PrivateRoute = () => {
     const checkAuth = async () => {
       // Try to restore session from refresh token
       await initializeTokenRefresh();
-      
+
       if (mounted) {
         setIsChecking(false);
       }
