@@ -1,81 +1,152 @@
-# InboxMind
+## Features
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+- Responsive 3-column layout for desktop
+- Mobile-first design with sheet-based navigation
+- Mock email and mailbox data
+- Google OAuth and standard email/password authentication
+- Secure token-based authentication with automatic refresh
+- Bulk email actions (Mark as Read/Unread, Delete)
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
+## Getting Started
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/nest?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+Follow these instructions to get the project running on your local machine.
 
-## Finish your CI setup
+## Video demo
 
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/sOZDMzOT0T)
+- [Inbox Mind](https://youtu.be/mvU-hdmmzw4)
 
-## Run tasks
+### Prerequisites
 
-To run the dev server for your app, use:
+- [Node.js](https://nodejs.org/) (v18 or later recommended)
+- [pnpm](https://pnpm.io/installation)
 
-```sh
-npm run start (or "pnpm run start" or "bun run start")
+### Setup
+
+1.  **Clone the repository:**
+
+    ```bash
+    git clone https://github.com/TQTuyen/Inbox-Mind.git
+    cd inbox-mind
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    pnpm install
+    ```
+
+### Running the Application
+
+To run both the frontend and backend servers in parallel for development, use the `start` script:
+
+```bash
+pnpm start
 ```
 
-To create a production bundle:
+- Frontend will be available at `http://localhost:4200/`
+- Backend will be available at `http://localhost:3000/`
 
-```sh
-npm run build (or "pnpm run build" or "bun run build")
-```
+You can also run them separately:
 
-To see all available targets to run for a project, run:
+- **Frontend only:** `pnpm fe:run`
+- **Backend only:** `pnpm be:run`
 
-```sh
-nx show project <project-name>
-```
+### Other Scripts
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+- **Build for production:** `pnpm build`
+- **Run tests:** `pnpm test`
+- **Lint code:** `pnpm lint`
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## Deployment
 
-## Add new projects
+### Public URL
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
+The application is hosted at: **[Inbox Mind](https://inbox-mind-rosy.vercel.app/)**
 
-Use the plugin's generator to create new projects.
+### Reproducing Deployment Locally
 
-To generate a new application, use:
+1.  **Build the applications:**
 
-```sh
-npx nx g @nx/nest:app demo
-```
+    ```bash
+    pnpm build
+    ```
 
-To generate a new library, use:
+    This command compiles the frontend and backend applications into the `dist/` directory.
 
-```sh
-npx nx g @nx/node:lib mylib
-```
+2.  **Run the production backend:**
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+    ```bash
+    node dist/apps/backend/main.js
+    ```
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+3.  **Serve the production frontend:**
+    The frontend is a standard static site. You can use any static file server. For example, using `serve`:
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+    ```bash
+    # Install serve globally if you haven't already
+    npm install -g serve
 
-## Install Nx Console
+    # Serve the frontend build output
+    serve -s dist/apps/frontend
+    ```
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+## Security & Token Management
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+Authentication is handled via a robust token-based system designed with security in mind.
 
-## Useful links
+### Token Storage Strategy
 
-Learn more:
+- **Access Token (JWT):** A short-lived (e.g., 15 minutes) JSON Web Token is stored in memory using a `Zustand` state management store. It is **not** accessible to `localStorage` or `sessionStorage`, which mitigates the risk of XSS attacks stealing the token. It is sent in the `Authorization` header for API requests.
 
-- [Learn more about this workspace setup](https://nx.dev/nx-api/nest?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- **Refresh Token:** A long-lived, single-use refresh token is stored in a secure, `HttpOnly` cookie. This is the primary credential for maintaining a user's session.
+  - The `HttpOnly` flag prevents any client-side JavaScript from accessing the cookie, providing a strong defense against XSS.
+  - The `withCredentials: true` flag in the `axios` configuration ensures this cookie is automatically sent with requests to the backend authentication endpoints.
 
-And join the Nx community:
+### Token Refresh Flow
 
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+1.  When the access token expires, the backend API returns a `401 Unauthorized` status.
+2.  An `axios` response interceptor on the frontend catches this status.
+3.  It makes a "silent" request to the `/api/v1/auth/refresh` endpoint. This request automatically includes the `HttpOnly` refresh token cookie.
+4.  If the refresh token is valid, the backend issues a new access token.
+5.  The frontend updates the in-memory `Zustand` store with the new access token and automatically retries the original failed request.
+6.  The application also uses a proactive refresh mechanism, where it refreshes the token shortly _before_ it expires to improve user experience.
+7.  A `BroadcastChannel` is used to sync token updates and logout events across multiple browser tabs.
+
+This architecture ensures that the highly sensitive refresh token is never exposed to the client-side application code, providing a secure session management experience.
+
+## Third-Party Services
+
+- **Google OAuth:** Authentication is supported via Google Sign-In. To enable Google OAuth, you need to obtain a Google Client ID from the Google Cloud Console. Follow these steps:
+
+    1.  **Go to the Google Cloud Console:** Navigate to [https://console.cloud.google.com/](https://console.cloud.google.com/).
+    2.  **Create a New Project:**
+        *   Click on the project selector in the header (usually next to "Google Cloud").
+        *   Click "New Project."
+        *   Give your project a name (e.g., "InboxMind OAuth") and click "Create."
+    3.  **Enable the Google People API:**
+        *   In the search bar at the top, search for "Google People API" and select it.
+        *   Click "Enable."
+    4.  **Configure the OAuth Consent Screen:**
+        *   In the left navigation menu, go to "APIs & Services" > "OAuth consent screen."
+        *   Choose "External" as the User type and click "CREATE."
+        *   Fill in the required fields on the "OAuth consent screen" (App name, User support email, Developer contact information). For testing, you can use placeholder values.
+        *   Add your test user accounts (email addresses) to the "Test users" section.
+        *   Click "SAVE AND CONTINUE."
+        *   On the "Scopes" page, you don't necessarily need to add any scopes for basic login if you are only getting basic profile info. Click "SAVE AND CONTINUE."
+        *   Review the summary and click "BACK TO DASHBOARD."
+    5.  **Create OAuth 2.0 Client ID Credentials:**
+        *   In the left navigation menu, go to "APIs & Services" > "Credentials."
+        *   Click "+ CREATE CREDENTIALS" and select "OAuth client ID."
+        *   For "Application type," select "Web application."
+        *   Give your OAuth client a name (e.g., "InboxMind Web Client").
+        *   **Authorized JavaScript origins:** Add `http://localhost:4200` (your frontend development URL). If deploying, also add your production frontend URL (e.g., `https://inbox-mind-rosy.vercel.app`).
+        *   **Authorized redirect URIs:** This field is often not strictly needed for client-side Google Sign-In using `@react-oauth/google` as it handles the redirects internally. However, if your backend also handles Google authentication, you might need to add `http://localhost:3000/api/v1/auth/google/callback` (or your backend's production URL).
+        *   Click "CREATE."
+    6.  **Copy your Client ID:** Your Client ID will be displayed. Copy this string.
+    7.  **Set Environment Variable:** In your frontend project, create a `.env` file (if it doesn't exist) and add your Google Client ID:
+        ```dotenv
+        VITE_GOOGLE_CLIENT_ID="YOUR_GOOGLE_CLIENT_ID"
+        ```
+        Replace `"YOUR_GOOGLE_CLIENT_ID"` with the actual Client ID you copied. Restart your frontend development server for the changes to take effect.
+
+- **Dicebear:** User avatars are generated dynamically using the [Dicebear Avatar API](https://www.dicebear.com/).
+- **Hosting Provider:** Vercel

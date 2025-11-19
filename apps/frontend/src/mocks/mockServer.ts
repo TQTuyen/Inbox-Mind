@@ -78,7 +78,7 @@ const handlers = [
     }
 
     const accessToken = generateToken(15 * 60 * 1000); // 15 minutes
-    const refreshToken = generateToken(7 * 24 * 60 * 60 * 1000); // 7 days
+    const refreshToken = generateToken(7 * 24 * 60 * 60 * 1000); // 7 days --> now modify to 50 seconds 7 * 24 * 60 * 60 * 1000sh
 
     console.log('✅ Login successful for:', user.email);
 
@@ -158,6 +158,15 @@ const handlers = [
     try {
       const payload = JSON.parse(atob(refreshToken.split('.')[1]));
       const user = users.find((u) => u.id === payload.sub);
+
+      if (Date.now() / 1000 > payload.exp) {
+        console.log('❌ Refresh token expired');
+        await delay(2000);
+        return HttpResponse.json(
+          { message: 'Refresh token expired' },
+          { status: 401 }
+        );
+      }
 
       if (!user) {
         console.log('❌ User not found from token');
