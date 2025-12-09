@@ -1,4 +1,6 @@
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   AuthBackground,
   AuthCard,
@@ -9,6 +11,9 @@ import {
 import { useAuth } from '../hooks/useAuth';
 
 export const LoginPage = () => {
+  const [searchParams] = useSearchParams();
+  const [urlError, setUrlError] = useState<string | null>(null);
+
   const {
     isSubmitting,
     authError,
@@ -17,6 +22,22 @@ export const LoginPage = () => {
     handleGoogleSuccess,
     handleGoogleError,
   } = useAuth();
+
+  useEffect(() => {
+    const error = searchParams.get('error');
+    if (error) {
+      const errorMessages: Record<string, string> = {
+        no_token: 'Authentication failed - no token received',
+        callback_failed: 'OAuth callback failed',
+        access_denied: 'Google sign-in was cancelled',
+      };
+      setUrlError(
+        errorMessages[error] || 'Authentication failed. Please try again.'
+      );
+    }
+  }, [searchParams]);
+
+  const displayError = authError || urlError;
 
   return (
     <div className="relative min-h-screen flex items-center justify-center p-4 bg-linear-to-br from-slate-950 via-blue-950/20 to-slate-950">
@@ -37,7 +58,7 @@ export const LoginPage = () => {
           onGoogleSuccess={handleGoogleSuccess}
           onGoogleError={handleGoogleError}
           isSubmitting={isSubmitting}
-          authError={authError}
+          authError={displayError}
         />
 
         <AuthFooter />

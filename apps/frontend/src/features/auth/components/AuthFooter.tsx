@@ -10,14 +10,14 @@ export const AuthFooter = () => {
     >
       By signing in, you agree to our{' '}
       <a
-        href="#"
+        href="/terms"
         className="underline underline-offset-4 hover:text-slate-300 transition-colors"
       >
         Terms of Service
       </a>{' '}
       and{' '}
       <a
-        href="#"
+        href="/privacy"
         className="underline underline-offset-4 hover:text-slate-300 transition-colors"
       >
         Privacy Policy

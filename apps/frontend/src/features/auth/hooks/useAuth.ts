@@ -5,7 +5,7 @@ import type { SignInFormData, SignUpFormData } from '../utils/validation';
 
 export const useAuth = () => {
   const navigate = useNavigate();
-  const { login, register: registerUser, googleLogin } = useAuthStore();
+  const { login, register: registerUser } = useAuthStore();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
@@ -17,8 +17,8 @@ export const useAuth = () => {
     try {
       await login(data.email, data.password);
       navigate('/inbox');
-    } catch (error: any) {
-      setAuthError(error.message || 'Invalid email or password');
+    } catch (error) {
+      setAuthError((error as Error).message || 'Invalid email or password');
     } finally {
       setIsSubmitting(false);
     }
@@ -31,20 +31,20 @@ export const useAuth = () => {
     try {
       await registerUser(data.email, data.password, data.fullName);
       navigate('/inbox');
-    } catch (error: any) {
-      setAuthError(error.message || 'Registration failed. Please try again.');
+    } catch (error) {
+      setAuthError(
+        (error as Error).message || 'Registration failed. Please try again.'
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleGoogleSuccess = async (credentialResponse: any) => {
-    try {
-      await googleLogin(credentialResponse.credential);
-      navigate('/inbox');
-    } catch (error: any) {
-      setAuthError('Google sign-in failed. Please try again.');
-    }
+  // Google OAuth now uses redirect flow - no credential handling needed
+  // handleGoogleSuccess and handleGoogleError are kept for backward compatibility
+  // but are no longer used since GoogleSignInButton redirects directly to backend
+  const handleGoogleSuccess = () => {
+    // No-op: OAuth handled by redirect
   };
 
   const handleGoogleError = () => {
