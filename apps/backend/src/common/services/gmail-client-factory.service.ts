@@ -12,7 +12,7 @@ export class GmailClientFactoryService implements IGmailClientFactory {
     private readonly userService: UserService,
     private readonly encryptionService: EncryptionService,
     private readonly configService: ConfigService,
-    private readonly cacheService: GmailClientCacheService,
+    private readonly cacheService: GmailClientCacheService
   ) {}
 
   async createClient(userId: string): Promise<gmail_v1.Gmail> {
@@ -28,14 +28,14 @@ export class GmailClientFactoryService implements IGmailClientFactory {
 
     const refreshToken = this.encryptionService.decrypt(
       user.googleRefreshToken,
-      user.googleRefreshTokenIV,
+      user.googleRefreshTokenIV
     );
 
     const oauth2Client = this.createOAuth2Client();
     oauth2Client.setCredentials({ refresh_token: refreshToken });
 
     const gmailClient = google.gmail({ version: 'v1', auth: oauth2Client });
-    
+
     this.cacheService.set(userId, gmailClient);
 
     return gmailClient;
@@ -44,7 +44,7 @@ export class GmailClientFactoryService implements IGmailClientFactory {
   private createOAuth2Client() {
     return new google.auth.OAuth2(
       this.configService.get<string>('GOOGLE_CLIENT_ID'),
-      this.configService.get<string>('GOOGLE_CLIENT_SECRET'),
+      this.configService.get<string>('GOOGLE_CLIENT_SECRET')
     );
   }
 }

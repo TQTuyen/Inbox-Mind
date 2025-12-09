@@ -10,7 +10,10 @@ export class EncryptionService {
 
   constructor(private readonly configService: ConfigService) {
     const encryptionKey = this.configService.get<string>('ENCRYPTION_KEY');
-    if (!encryptionKey || encryptionKey.length !== ENCRYPTION_CONFIG.KEY_LENGTH) {
+    if (
+      !encryptionKey ||
+      encryptionKey.length !== ENCRYPTION_CONFIG.KEY_LENGTH
+    ) {
       throw new Error(ERROR_MESSAGES.INVALID_ENCRYPTION_KEY);
     }
     this.key = Buffer.from(encryptionKey, ENCRYPTION_CONFIG.ENCODING.INPUT);
@@ -23,7 +26,11 @@ export class EncryptionService {
       this.key,
       iv
     );
-    let encrypted = cipher.update(text, ENCRYPTION_CONFIG.ENCODING.INPUT, ENCRYPTION_CONFIG.ENCODING.OUTPUT);
+    let encrypted = cipher.update(
+      text,
+      ENCRYPTION_CONFIG.ENCODING.INPUT,
+      ENCRYPTION_CONFIG.ENCODING.OUTPUT
+    );
     encrypted += cipher.final(ENCRYPTION_CONFIG.ENCODING.OUTPUT);
     return {
       encrypted,
@@ -37,7 +44,11 @@ export class EncryptionService {
       this.key,
       Buffer.from(iv, ENCRYPTION_CONFIG.ENCODING.OUTPUT)
     );
-    let decrypted = decipher.update(encrypted, ENCRYPTION_CONFIG.ENCODING.OUTPUT, ENCRYPTION_CONFIG.ENCODING.INPUT);
+    let decrypted = decipher.update(
+      encrypted,
+      ENCRYPTION_CONFIG.ENCODING.OUTPUT,
+      ENCRYPTION_CONFIG.ENCODING.INPUT
+    );
     decrypted += decipher.final(ENCRYPTION_CONFIG.ENCODING.INPUT);
     return decrypted;
   }
