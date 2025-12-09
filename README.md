@@ -2,10 +2,12 @@
 
 - Responsive 3-column layout for desktop
 - Mobile-first design with sheet-based navigation
-- Mock email and mailbox data
-- Google OAuth and standard email/password authentication
+- **Real Google OAuth2 authentication** with automatic token refresh
+- Toggleable mock/real API modes for development
 - Secure token-based authentication with automatic refresh
 - Bulk email actions (Mark as Read/Unread, Delete)
+- Cross-tab authentication synchronization
+- Encrypted Google token storage
 
 ## Getting Started
 
@@ -19,6 +21,8 @@ Follow these instructions to get the project running on your local machine.
 
 - [Node.js](https://nodejs.org/) (v18 or later recommended)
 - [pnpm](https://pnpm.io/installation)
+- [PostgreSQL](https://www.postgresql.org/) (v12 or later)
+- Google Cloud Project with Gmail API enabled (see setup below)
 
 ### Setup
 
@@ -30,8 +34,69 @@ Follow these instructions to get the project running on your local machine.
     ```
 
 2.  **Install dependencies:**
+
     ```bash
     pnpm install
+    ```
+
+3.  **Database Setup:**
+
+    ```bash
+    createdb inbox_mind
+    ```
+
+4.  **Backend Environment Configuration:**
+
+    Copy the example environment file and configure it:
+
+    ```bash
+    cp apps/backend/.env.example apps/backend/.env
+    ```
+
+    Edit `apps/backend/.env` and set:
+
+    - Database credentials
+    - Google OAuth credentials (see Google Cloud Setup below)
+    - JWT secret (generate with: `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"`)
+    - Encryption key (generate with: `node -e "console.log(require('crypto').randomBytes(16).toString('hex'))"`)
+
+5.  **Frontend Environment Configuration:**
+
+    Create `apps/frontend/.env`:
+
+    ```bash
+    echo "VITE_USE_MOCK=false" > apps/frontend/.env
+    ```
+
+    Set `VITE_USE_MOCK=true` to use mock data for frontend-only development.
+
+### Google Cloud Setup
+
+1.  **Go to the Google Cloud Console:** Navigate to [https://console.cloud.google.com/](https://console.cloud.google.com/).
+2.  **Create a New Project** or select an existing one
+3.  **Enable the Gmail API:**
+    - In the search bar, search for "Gmail API" and select it
+    - Click "Enable"
+4.  **Configure the OAuth Consent Screen:**
+    - Go to "APIs & Services" > "OAuth consent screen"
+    - Choose "External" as the User type and click "CREATE"
+    - Fill in required fields (App name, User support email, Developer contact)
+    - Add test users (your email addresses)
+    - Click "SAVE AND CONTINUE"
+5.  **Create OAuth 2.0 Client ID Credentials:**
+    - Go to "APIs & Services" > "Credentials"
+    - Click "+ CREATE CREDENTIALS" and select "OAuth client ID"
+    - Application type: "Web application"
+    - **Authorized JavaScript origins:**
+      - `http://localhost:4200`
+      - `http://localhost:3000`
+    - **Authorized redirect URIs:**
+      - `http://localhost:3000/api/auth/google/callback`
+    - Click "CREATE"
+6.  **Copy credentials** to `apps/backend/.env`:
+    ```env
+    GOOGLE_CLIENT_ID=your_client_id_here.apps.googleusercontent.com
+    GOOGLE_CLIENT_SECRET=your_client_secret_here
     ```
 
 ### Running the Application
@@ -49,6 +114,10 @@ You can also run them separately:
 
 - **Frontend only:** `pnpm fe:run`
 - **Backend only:** `pnpm be:run`
+
+**Quick Start:** See `QUICK_START_OAUTH.md` for a 5-minute setup guide.
+
+**Full Documentation:** See `OAUTH_INTEGRATION_GUIDE.md` for detailed OAuth integration docs.
 
 ### Other Scripts
 
@@ -113,40 +182,32 @@ Authentication is handled via a robust token-based system designed with security
 
 This architecture ensures that the highly sensitive refresh token is never exposed to the client-side application code, providing a secure session management experience.
 
+## Development Modes
+
+### Mock API Mode (Frontend Development)
+
+For frontend-only development without running the backend:
+
+```env
+# apps/frontend/.env
+VITE_USE_MOCK=true
+```
+
+Use credentials: `demo@example.com` / `password123`
+
+### Real API Mode (Full Stack)
+
+For testing with real Google OAuth and Gmail API:
+
+```env
+# apps/frontend/.env
+VITE_USE_MOCK=false
+```
+
+Requires backend running with proper Google OAuth configuration.
+
 ## Third-Party Services
 
-- **Google OAuth:** Authentication is supported via Google Sign-In. To enable Google OAuth, you need to obtain a Google Client ID from the Google Cloud Console. Follow these steps:
-
-    1.  **Go to the Google Cloud Console:** Navigate to [https://console.cloud.google.com/](https://console.cloud.google.com/).
-    2.  **Create a New Project:**
-        *   Click on the project selector in the header (usually next to "Google Cloud").
-        *   Click "New Project."
-        *   Give your project a name (e.g., "InboxMind OAuth") and click "Create."
-    3.  **Enable the Google People API:**
-        *   In the search bar at the top, search for "Google People API" and select it.
-        *   Click "Enable."
-    4.  **Configure the OAuth Consent Screen:**
-        *   In the left navigation menu, go to "APIs & Services" > "OAuth consent screen."
-        *   Choose "External" as the User type and click "CREATE."
-        *   Fill in the required fields on the "OAuth consent screen" (App name, User support email, Developer contact information). For testing, you can use placeholder values.
-        *   Add your test user accounts (email addresses) to the "Test users" section.
-        *   Click "SAVE AND CONTINUE."
-        *   On the "Scopes" page, you don't necessarily need to add any scopes for basic login if you are only getting basic profile info. Click "SAVE AND CONTINUE."
-        *   Review the summary and click "BACK TO DASHBOARD."
-    5.  **Create OAuth 2.0 Client ID Credentials:**
-        *   In the left navigation menu, go to "APIs & Services" > "Credentials."
-        *   Click "+ CREATE CREDENTIALS" and select "OAuth client ID."
-        *   For "Application type," select "Web application."
-        *   Give your OAuth client a name (e.g., "InboxMind Web Client").
-        *   **Authorized JavaScript origins:** Add `http://localhost:4200` (your frontend development URL). If deploying, also add your production frontend URL (e.g., `https://inbox-mind-rosy.vercel.app`).
-        *   **Authorized redirect URIs:** This field is often not strictly needed for client-side Google Sign-In using `@react-oauth/google` as it handles the redirects internally. However, if your backend also handles Google authentication, you might need to add `http://localhost:3000/api/v1/auth/google/callback` (or your backend's production URL).
-        *   Click "CREATE."
-    6.  **Copy your Client ID:** Your Client ID will be displayed. Copy this string.
-    7.  **Set Environment Variable:** In your frontend project, create a `.env` file (if it doesn't exist) and add your Google Client ID:
-        ```dotenv
-        VITE_GOOGLE_CLIENT_ID="YOUR_GOOGLE_CLIENT_ID"
-        ```
-        Replace `"YOUR_GOOGLE_CLIENT_ID"` with the actual Client ID you copied. Restart your frontend development server for the changes to take effect.
-
-- **Dicebear:** User avatars are generated dynamically using the [Dicebear Avatar API](https://www.dicebear.com/).
+- **Google OAuth & Gmail API:** Full integration with Google accounts for authentication and email access
+- **Dicebear:** User avatars are generated dynamically using the [Dicebear Avatar API](https://www.dicebear.com/)
 - **Hosting Provider:** Vercel
