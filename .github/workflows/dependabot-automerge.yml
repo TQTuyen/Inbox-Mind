@@ -1,0 +1,27 @@
+name: Auto-merge Dependabot Security Updates
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  pull_request_target:
+    types: [opened, synchronize]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  automerge:
+    if: >
+      github.actor == 'dependabot[bot]' &&
+      contains(github.event.pull_request.title, 'Bump') &&
+      github.event.pull_request.base.ref == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable auto-merge
+        run: gh pr merge "$PR_URL" --auto --merge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
