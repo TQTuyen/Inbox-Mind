@@ -2,7 +2,7 @@ import { useAuthStore } from '@fe/store/authStore';
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 const api = axios.create({
-  baseURL: '/api/v1',
+  baseURL: `${import.meta.env.VITE_API_BASE_URL}/api`,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -103,7 +103,7 @@ const performTokenRefresh = async (): Promise<string> => {
     try {
       // Call refresh endpoint - httpOnly refresh token is sent automatically
       const response = await axios.post(
-        '/api/v1/auth/refresh',
+        '/api/auth/refresh',
         {},
         { withCredentials: true }
       );
@@ -188,7 +188,7 @@ export const initializeTokenRefresh = async (): Promise<boolean> => {
     console.log('No valid access token, attempting to restore session...');
     try {
       const response = await axios.post(
-        '/api/v1/auth/refresh',
+        '/api/auth/refresh',
         {},
         { withCredentials: true }
       );

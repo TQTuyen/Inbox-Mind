@@ -1,0 +1,382 @@
+import api from '@fe/lib/api/api';
+import { transformGmailLabel, transformGmailMessage } from './transformers';
+
+// ==================== Types ====================
+
+export interface EmailAddress {
+  name: string;
+  email: string;
+}
+
+export interface EmailAttachment {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  partId?: string;
+}
+
+export interface Email {
+  id: string;
+  threadId?: string;
+  from: EmailAddress;
+  to: EmailAddress[];
+  cc?: EmailAddress[];
+  bcc?: EmailAddress[];
+  subject: string;
+  preview: string;
+  body: string;
+  timestamp: string;
+  isRead: boolean;
+  isStarred: boolean;
+  attachments?: EmailAttachment[];
+  labelIds?: string[];
+  snippet?: string;
+  internalDate?: string;
+}
+
+export interface Mailbox {
+  id: string;
+  name: string;
+  unreadCount?: number;
+  type?: string;
+  messagesTotal?: number;
+  messagesUnread?: number;
+  threadsTotal?: number;
+  threadsUnread?: number;
+}
+
+export interface EmailListResponse {
+  emails: Email[];
+  nextPageToken?: string;
+  resultSizeEstimate?: number;
+}
+
+export interface MailboxListResponse {
+  labels: Mailbox[];
+}
+
+export interface SendEmailRequest {
+  to: string;
+  subject: string;
+  body: string;
+  cc?: string;
+  bcc?: string;
+}
+
+export interface ReplyEmailRequest {
+  body: string;
+  cc?: string;
+  bcc?: string;
+}
+
+export interface ModifyLabelsRequest {
+  action: 'add' | 'remove';
+  labelIds: string[];
+}
+
+export interface MarkReadRequest {
+  read: boolean;
+}
+
+export interface DownloadAttachmentResponse {
+  data: Blob;
+  filename: string;
+  mimeType: string;
+  size: number;
+}
+
+export interface ThreadMessage {
+  id: string;
+  from: EmailAddress;
+  to: EmailAddress[];
+  cc?: EmailAddress[];
+  subject: string;
+  body: string;
+  timestamp: string;
+  isRead: boolean;
+  attachments?: EmailAttachment[];
+}
+
+export interface Thread {
+  id: string;
+  messages: ThreadMessage[];
+  snippet: string;
+  historyId: string;
+  participants: EmailAddress[];
+  subject: string;
+  messageCount: number;
+  unreadCount: number;
+  hasAttachments: boolean;
+  labelIds: string[];
+}
+
+export interface ThreadListResponse {
+  threads: Thread[];
+  nextPageToken?: string;
+  resultSizeEstimate?: number;
+}
+
+// ==================== API Service ====================
+
+class GmailApiService {
+  /**
+   * List all mailboxes (labels)
+   */
+  async getMailboxes(): Promise<Mailbox[]> {
+    const response = await api.get<any[]>('/mailboxes');
+    return response.data.map(transformGmailLabel);
+  }
+
+  /**
+   * List emails in a specific mailbox with pagination
+   */
+  async getEmails(params: {
+    mailboxId: string;
+    page?: string;
+    pageSize?: number;
+  }): Promise<EmailListResponse> {
+    const { mailboxId, page, pageSize = 20 } = params;
+
+    const queryParams = new URLSearchParams();
+    if (page) queryParams.append('page', page);
+    queryParams.append('pageSize', pageSize.toString());
+
+    const url = `/mailboxes/${mailboxId}/emails${
+      queryParams.toString() ? `?${queryParams.toString()}` : ''
+    }`;
+
+    const response = await api.get<any>(url);
+
+    // Transform Gmail API response to frontend format
+    return {
+      emails: response.data.emails?.map(transformGmailMessage) || [],
+      nextPageToken: response.data.nextPageToken,
+      resultSizeEstimate: response.data.resultSizeEstimate,
+    };
+  }
+
+  /**
+   * Get a single email by ID
+   */
+  async getEmailById(emailId: string): Promise<Email> {
+    const response = await api.get<any>(`/emails/${emailId}`);
+    return transformGmailMessage(response.data);
+  }
+
+  /**
+   * Mark an email as read or unread
+   */
+  async markAsRead(emailId: string, read: boolean): Promise<void> {
+    await api.put(`/emails/${emailId}/read`, { read });
+  }
+
+  /**
+   * Toggle star status on an email
+   */
+  async toggleStar(emailId: string, isStarred: boolean): Promise<void> {
+    await api.post(`/emails/${emailId}/labels`, {
+      action: isStarred ? 'add' : 'remove',
+      labelIds: ['STARRED'],
+    });
+  }
+
+  /**
+   * Modify labels on an email
+   */
+  async modifyLabels(
+    emailId: string,
+    request: ModifyLabelsRequest
+  ): Promise<void> {
+    await api.post(`/emails/${emailId}/labels`, request);
+  }
+
+  /**
+   * Delete an email (move to trash)
+   */
+  async deleteEmail(emailId: string): Promise<void> {
+    await api.delete(`/emails/${emailId}`);
+  }
+
+  /**
+   * Move email to a specific mailbox/label
+   */
+  async moveToMailbox(emailId: string, mailboxId: string): Promise<void> {
+    // Moving in Gmail means adding the new label and removing the old ones
+    // This is a simplified version - you may need to adjust based on backend implementation
+    await api.post(`/emails/${emailId}/labels`, {
+      action: 'add',
+      labelIds: [mailboxId],
+    });
+  }
+
+  /**
+   * Archive an email (remove INBOX label)
+   */
+  async archiveEmail(emailId: string): Promise<void> {
+    await api.post(`/emails/${emailId}/labels`, {
+      action: 'remove',
+      labelIds: ['INBOX'],
+    });
+  }
+
+  /**
+   * Send a new email
+   */
+  async sendEmail(request: SendEmailRequest): Promise<{ id: string }> {
+    const response = await api.post<{ id: string }>('/emails/send', request);
+    return response.data;
+  }
+
+  /**
+   * Reply to an email
+   */
+  async replyToEmail(
+    emailId: string,
+    request: ReplyEmailRequest
+  ): Promise<{ id: string }> {
+    const response = await api.post<{ id: string }>(
+      `/emails/${emailId}/reply`,
+      request
+    );
+    return response.data;
+  }
+
+  /**
+   * List email attachments
+   */
+  async listAttachments(emailId: string): Promise<EmailAttachment[]> {
+    const response = await api.get<EmailAttachment[]>(
+      `/emails/${emailId}/attachments`
+    );
+    return response.data;
+  }
+
+  /**
+   * Download an attachment
+   */
+  async downloadAttachment(
+    messageId: string,
+    partId: string
+  ): Promise<DownloadAttachmentResponse> {
+    const response = await api.get(`/attachments/${messageId}/${partId}`, {
+      responseType: 'blob',
+    });
+
+    // Extract filename from Content-Disposition header
+    const contentDisposition = response.headers['content-disposition'];
+    let filename = 'attachment';
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+      if (filenameMatch) {
+        filename = decodeURIComponent(filenameMatch[1]);
+      }
+    }
+
+    const mimeType =
+      response.headers['content-type'] || 'application/octet-stream';
+    const size = parseInt(response.headers['content-length'] || '0', 10);
+
+    return {
+      data: response.data,
+      filename,
+      mimeType,
+      size,
+    };
+  }
+
+  /**
+   * List threads in a mailbox
+   */
+  async getThreads(params: {
+    labelId?: string;
+    page?: string;
+    pageSize?: number;
+  }): Promise<ThreadListResponse> {
+    const { labelId, page, pageSize = 20 } = params;
+
+    const queryParams = new URLSearchParams();
+    if (labelId) queryParams.append('labelId', labelId);
+    if (page) queryParams.append('page', page);
+    queryParams.append('pageSize', pageSize.toString());
+
+    const url = `/threads${
+      queryParams.toString() ? `?${queryParams.toString()}` : ''
+    }`;
+
+    const response = await api.get<ThreadListResponse>(url);
+    return response.data;
+  }
+
+  /**
+   * Get a complete thread by ID
+   */
+  async getThreadById(threadId: string): Promise<Thread> {
+    const response = await api.get<Thread>(`/threads/${threadId}`);
+    return response.data;
+  }
+
+  /**
+   * Send email with multipart/form-data (for file attachments)
+   */
+  async sendEmailWithAttachments(
+    emailData: SendEmailRequest,
+    files: File[]
+  ): Promise<{ id: string }> {
+    const formData = new FormData();
+    formData.append('to', emailData.to);
+    formData.append('subject', emailData.subject);
+    formData.append('body', emailData.body);
+    if (emailData.cc) formData.append('cc', emailData.cc);
+    if (emailData.bcc) formData.append('bcc', emailData.bcc);
+
+    files.forEach((file) => {
+      formData.append('attachments', file);
+    });
+
+    const response = await api.post<{ id: string }>(
+      '/emails/send-multipart',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+
+    return response.data;
+  }
+
+  /**
+   * Reply to email with file attachments
+   */
+  async replyToEmailWithAttachments(
+    emailId: string,
+    replyData: ReplyEmailRequest,
+    files: File[]
+  ): Promise<{ id: string }> {
+    const formData = new FormData();
+    formData.append('body', replyData.body);
+    if (replyData.cc) formData.append('cc', replyData.cc);
+    if (replyData.bcc) formData.append('bcc', replyData.bcc);
+
+    files.forEach((file) => {
+      formData.append('attachments', file);
+    });
+
+    const response = await api.post<{ id: string }>(
+      `/emails/${emailId}/reply-multipart`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+
+    return response.data;
+  }
+}
+
+// Export singleton instance
+export const gmailApi = new GmailApiService();
