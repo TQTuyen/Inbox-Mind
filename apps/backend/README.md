@@ -11,7 +11,6 @@ This application uses a **dual-token architecture**:
 1. **App Tokens** (Frontend ↔ Backend)
    - App Access Token: 15 minutes, in-memory on frontend
    - App Refresh Token: 7 days, HttpOnly cookie
-   
 2. **Google Tokens** (Backend ↔ Google API)
    - Google Access Token: refreshed automatically
    - Google Refresh Token: encrypted in database
