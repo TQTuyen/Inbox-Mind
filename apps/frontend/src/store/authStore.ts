@@ -1,5 +1,5 @@
-import { create } from 'zustand';
 import { authService } from '@fe/services/authService';
+import { create } from 'zustand';
 
 interface User {
   id: string;
@@ -20,7 +20,6 @@ interface AuthState {
     password: string,
     fullName: string
   ) => Promise<void>;
-  googleLogin: (credential: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -52,14 +51,6 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({
       user: loginResponse.user,
       accessToken: loginResponse.accessToken,
-      isAuthenticated: true,
-    });
-  },
-  googleLogin: async (credential) => {
-    const response = await authService.googleAuth({ credential });
-    set({
-      user: response.user,
-      accessToken: response.accessToken,
       isAuthenticated: true,
     });
   },

@@ -20,10 +20,6 @@ interface AuthResponse {
   };
 }
 
-interface GoogleAuthCredentials {
-  credential: string;
-}
-
 export const authService = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     const response = await api.post('/auth/login', credentials);
@@ -37,8 +33,12 @@ export const authService = {
     return response.data;
   },
 
-  async googleAuth(credentials: GoogleAuthCredentials): Promise<AuthResponse> {
-    const response = await api.post('/auth/google', credentials);
+  async getCurrentUser(): Promise<{
+    id: string;
+    email: string;
+    fullName: string;
+  }> {
+    const response = await api.get('/auth/me');
     return response.data;
   },
 
