@@ -9,7 +9,12 @@ export class ListEmailsQueryDto {
   @IsString()
   page?: string;
 
-  @ApiPropertyOptional({ minimum: 1, maximum: GMAIL_CONFIG.MAX_PAGE_SIZE, default: GMAIL_CONFIG.DEFAULT_PAGE_SIZE, description: 'Number of items per page' })
+  @ApiPropertyOptional({
+    minimum: 1,
+    maximum: GMAIL_CONFIG.MAX_PAGE_SIZE,
+    default: GMAIL_CONFIG.DEFAULT_PAGE_SIZE,
+    description: 'Number of items per page',
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
