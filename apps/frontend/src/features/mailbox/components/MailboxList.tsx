@@ -1,14 +1,18 @@
 import { useEmailStore } from '@fe/features/mailbox/store/emailStore';
-import {
-  Inbox,
-  Star,
-  Send,
-  FileEdit,
-  Archive,
-  Trash,
-  AlertTriangle,
-} from 'lucide-react';
 import { cn } from '@fe/lib/utils';
+import {
+  AlertTriangle,
+  Archive,
+  Bell,
+  FileEdit,
+  Folder,
+  Inbox,
+  Newspaper,
+  Send,
+  Star,
+  Tag,
+  Trash,
+} from 'lucide-react';
 
 interface MailboxListProps {
   isMobile?: boolean;
@@ -20,27 +24,35 @@ export const MailboxList = ({ isMobile = false }: MailboxListProps) => {
   // Ensure mailboxes is always an array
   const safeMailboxes = Array.isArray(mailboxes) ? mailboxes : [];
 
-  const getMailboxIcon = (name: string) => {
+  const getMailboxIcon = (labelId: string, labelName: string) => {
     const iconClass = 'w-5 h-5';
+    const upperLabelId = labelId.toUpperCase();
+    const lowerLabelName = labelName.toLowerCase();
 
-    switch (name.toLowerCase()) {
-      case 'inbox':
-        return <Inbox className={iconClass} />;
-      case 'starred':
-        return <Star className={iconClass} />;
-      case 'sent':
-        return <Send className={iconClass} />;
-      case 'drafts':
-        return <FileEdit className={iconClass} />;
-      case 'archive':
-        return <Archive className={iconClass} />;
-      case 'trash':
-        return <Trash className={iconClass} />;
-      case 'spam':
-        return <AlertTriangle className={iconClass} />;
-      default:
-        return <Inbox className={iconClass} />;
-    }
+    // Standard Gmail labels
+    if (upperLabelId === 'INBOX') return <Inbox className={iconClass} />;
+    if (upperLabelId === 'STARRED' || upperLabelId === 'IMPORTANT')
+      return <Star className={iconClass} />;
+    if (upperLabelId === 'SENT') return <Send className={iconClass} />;
+    if (upperLabelId === 'DRAFT' || upperLabelId === 'DRAFTS')
+      return <FileEdit className={iconClass} />;
+    if (upperLabelId === 'TRASH') return <Trash className={iconClass} />;
+    if (upperLabelId === 'SPAM') return <AlertTriangle className={iconClass} />;
+
+    // Category labels based on name
+    if (lowerLabelName.includes('newsletter'))
+      return <Newspaper className={iconClass} />;
+    if (lowerLabelName.includes('promotion'))
+      return <Tag className={iconClass} />;
+    if (lowerLabelName.includes('notification'))
+      return <Bell className={iconClass} />;
+    if (lowerLabelName.includes('archive'))
+      return <Archive className={iconClass} />;
+    if (lowerLabelName.includes('work') || lowerLabelName.includes('project'))
+      return <Folder className={iconClass} />;
+
+    // Default icon for custom labels
+    return <Folder className={iconClass} />;
   };
 
   return (
@@ -73,7 +85,7 @@ export const MailboxList = ({ isMobile = false }: MailboxListProps) => {
                   }
                 >
                   <span className="flex items-center space-x-3">
-                    {getMailboxIcon(mailbox.name)}
+                    {getMailboxIcon(mailbox.id, mailbox.name)}
                     <span>{mailbox.name}</span>
                   </span>
                   {mailbox.unreadCount > 0 && (

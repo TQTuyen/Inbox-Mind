@@ -12,6 +12,7 @@ import {
 } from '@radix-ui/react-dropdown-menu';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
+  Loader2,
   Mail,
   MailOpen,
   MoreVertical,
@@ -19,8 +20,9 @@ import {
   RefreshCw,
   Star,
   Trash,
-} from 'lucide-react'; // Added MailOpen, Trash, and MoreVertical
-import { useState } from 'react';
+} from 'lucide-react'; // Added MailOpen, Trash, MoreVertical, and Loader2
+import { useEffect, useRef, useState } from 'react';
+import { useMailbox } from '../hooks/useMailbox';
 import { useEmailStore, type Email } from '../store/emailStore';
 
 interface EmailListProps {
@@ -30,18 +32,39 @@ interface EmailListProps {
 }
 
 export const EmailList = ({ onEmailSelect, onRefresh }: EmailListProps) => {
-  const {
-    emails,
-    selectedEmail,
-    updateEmail,
-    deleteEmail,
-    currentPage,
-    totalPages,
-    setCurrentPage,
-  } = useEmailStore();
+  const { emails, selectedEmail, updateEmail, deleteEmail } = useEmailStore();
+
+  const { fetchNextPage, hasNextPage, isFetchingNextPage } = useMailbox();
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isProcessing, setIsProcessing] = useState(false); // New state for processing
+
+  // Intersection observer ref for infinite scroll
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  // Infinite scroll implementation
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const firstEntry = entries[0];
+        if (firstEntry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentRef = loadMoreRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
+    }
+
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef);
+      }
+    };
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   const handleSelectAll = () => {
     if (selectedIds.size === emails.length) {
@@ -350,39 +373,36 @@ export const EmailList = ({ onEmailSelect, onRefresh }: EmailListProps) => {
                   </motion.li>
                 ))}
               </AnimatePresence>
+
+              {/* Infinite Scroll Trigger */}
+              {hasNextPage && (
+                <div
+                  ref={loadMoreRef}
+                  className="flex items-center justify-center py-4"
+                >
+                  {isFetchingNextPage ? (
+                    <div className="flex items-center gap-2 text-slate-400 text-sm">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Loading more emails...</span>
+                    </div>
+                  ) : (
+                    <div className="text-slate-500 text-xs">
+                      Scroll for more
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* End of list indicator */}
+              {!hasNextPage && emails.length > 0 && (
+                <div className="flex items-center justify-center py-4">
+                  <div className="text-slate-500 text-xs">No more emails</div>
+                </div>
+              )}
             </ul>
           )}
         </ScrollArea>
       </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="shrink-0 border-t border-slate-800 px-3 py-2 flex items-center justify-between bg-slate-900/50">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-            disabled={currentPage === 1}
-            className="h-7 text-xs"
-          >
-            Prev
-          </Button>
-          <span className="text-xs text-slate-400">
-            {currentPage} / {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              setCurrentPage(Math.min(totalPages, currentPage + 1))
-            }
-            disabled={currentPage === totalPages}
-            className="h-7 text-xs"
-          >
-            Next
-          </Button>
-        </div>
-      )}
     </div>
   );
 };

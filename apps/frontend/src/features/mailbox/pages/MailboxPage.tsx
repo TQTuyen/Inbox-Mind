@@ -1,3 +1,4 @@
+import { Button } from '@fe/shared/components/ui/button';
 import {
   ResizableHandle,
   ResizablePanel,
@@ -8,10 +9,10 @@ import {
   SheetContent,
   SheetTrigger,
 } from '@fe/shared/components/ui/sheet';
-import { Button } from '@fe/shared/components/ui/button';
 import { motion } from 'framer-motion';
 import { Menu } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { EmailDetail } from '../components/EmailDetail';
 import { EmailList } from '../components/EmailList';
 import { FilterChips } from '../components/FilterChips';
@@ -19,7 +20,7 @@ import { MailboxBackground } from '../components/MailboxBackground';
 import { Sidebar } from '../components/Sidebar';
 import { Toolbar } from '../components/Toolbar';
 import { useMailbox } from '../hooks/useMailbox';
-import { useEmailStore } from '../store/emailStore';
+import { Email, useEmailStore } from '../store/emailStore';
 
 export function MailboxPage() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -27,14 +28,27 @@ export function MailboxPage() {
   const [showMobileDetail, setShowMobileDetail] = useState(false);
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
 
-  const { searchKeyword, setSearchKeyword, selectedEmail } = useEmailStore();
+  const { mailboxId } = useParams<{ mailboxId: string }>();
+  const navigate = useNavigate();
+  const { searchKeyword, setSearchKeyword, selectedEmail, setSelectedMailbox } =
+    useEmailStore();
   const { handleEmailSelect, refreshEmails } = useMailbox();
+
+  // Sync URL param to store on mount and when URL changes
+  useEffect(() => {
+    if (mailboxId) {
+      setSelectedMailbox(mailboxId);
+    } else {
+      // Redirect to INBOX if no mailboxId in URL
+      navigate('/inbox/INBOX', { replace: true });
+    }
+  }, [mailboxId, setSelectedMailbox, navigate]);
 
   const handleSearchChange = (query: string) => {
     setSearchKeyword(query);
   };
 
-  const handleMobileEmailSelect = (email: any) => {
+  const handleMobileEmailSelect = (email: Email) => {
     handleEmailSelect(email);
     // On mobile, show detail view when email is selected
     if (window.innerWidth < 1024) {

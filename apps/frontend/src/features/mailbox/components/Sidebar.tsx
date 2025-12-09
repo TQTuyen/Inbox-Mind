@@ -35,6 +35,7 @@ import {
   Trash2,
   User,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useEmailStore } from '../store/emailStore';
 
 interface SidebarProps {
@@ -43,34 +44,53 @@ interface SidebarProps {
   isMobile?: boolean;
 }
 
-const mailboxItems = [
-  { id: 'inbox', name: 'Inbox', icon: Inbox },
-  { id: 'starred', name: 'Important', icon: Star },
-  { id: 'newsletter', name: 'Newsletter', icon: Newspaper },
-  { id: 'promotions', name: 'Promotions', icon: Tag },
-  { id: 'notifications', name: 'Notifications', icon: Bell },
-  { id: 'sent', name: 'Sent', icon: Send },
-  { id: 'drafts', name: 'Drafts', icon: FileText },
-  { id: 'archive', name: 'Archive', icon: Archive },
-  { id: 'spam', name: 'Spam', icon: AlertOctagon },
-  { id: 'trash', name: 'Bin', icon: Trash2 },
-  { id: 'work', name: 'Work Project', icon: Folder },
-];
+// Map Gmail label IDs to appropriate icons
+const getMailboxIcon = (labelId: string, labelName: string) => {
+  const upperLabelId = labelId.toUpperCase();
+  const lowerLabelName = labelName.toLowerCase();
+
+  // Standard Gmail labels
+  if (upperLabelId === 'INBOX') return Inbox;
+  if (upperLabelId === 'STARRED' || upperLabelId === 'IMPORTANT') return Star;
+  if (upperLabelId === 'SENT') return Send;
+  if (upperLabelId === 'DRAFT' || upperLabelId === 'DRAFTS') return FileText;
+  if (upperLabelId === 'TRASH') return Trash2;
+  if (upperLabelId === 'SPAM') return AlertOctagon;
+
+  // Category labels based on name
+  if (lowerLabelName.includes('newsletter')) return Newspaper;
+  if (lowerLabelName.includes('promotion')) return Tag;
+  if (lowerLabelName.includes('notification')) return Bell;
+  if (lowerLabelName.includes('archive')) return Archive;
+  if (lowerLabelName.includes('work') || lowerLabelName.includes('project'))
+    return Folder;
+
+  // Default icon for custom labels
+  return Folder;
+};
 
 export function Sidebar({
   isCollapsed,
   onToggleCollapse,
   isMobile = false,
 }: SidebarProps) {
-  const { selectedMailboxId, setSelectedMailbox, mailboxes } = useEmailStore();
+  const navigate = useNavigate();
+  const { selectedMailboxId, mailboxes } = useEmailStore();
   const { logout } = useAuthStore();
-  const getUnreadCount = (mailboxId: string) => {
-    const mailbox = mailboxes.find((m) => m.id === mailboxId);
-    return mailbox?.unreadCount || 0;
-  };
+  // Use mailboxes from store (populated by useMailbox hook)
+  const mailboxItems = mailboxes.map((mailbox) => ({
+    id: mailbox.id,
+    name: mailbox.name,
+    icon: getMailboxIcon(mailbox.id, mailbox.name),
+    unreadCount: mailbox.unreadCount || 0,
+  }));
 
   const handleLogout = () => {
     logout();
+  };
+
+  const handleMailboxClick = (mailboxId: string) => {
+    navigate(`/inbox/${mailboxId}`);
   };
 
   return (
@@ -190,45 +210,51 @@ export function Sidebar({
           {/* Mailbox Navigation */}
           <ScrollArea className="flex-1">
             <nav className="flex flex-col gap-1">
-              {mailboxItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = selectedMailboxId === item.id;
-                const unreadCount = getUnreadCount(item.id);
+              {mailboxItems.length > 0 ? (
+                mailboxItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = selectedMailboxId === item.id;
+                  const unreadCount = item.unreadCount;
 
-                return (
-                  <motion.button
-                    key={item.id}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => setSelectedMailbox(item.id)}
-                    className={cn(
-                      'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors cursor-pointer',
-                      isActive
-                        ? 'bg-blue-900 text-blue-300'
-                        : 'text-slate-300 hover:bg-blue-900/50 hover:text-white',
-                      isCollapsed && 'justify-center px-2'
-                    )}
-                    title={isCollapsed ? item.name : undefined}
-                  >
-                    <Icon
+                  return (
+                    <motion.button
+                      key={item.id}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => handleMailboxClick(item.id)}
                       className={cn(
-                        'h-5 w-5 shrink-0',
-                        isActive ? 'text-blue-300' : ''
+                        'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors cursor-pointer',
+                        isActive
+                          ? 'bg-blue-900 text-blue-300'
+                          : 'text-slate-300 hover:bg-blue-900/50 hover:text-white',
+                        isCollapsed && 'justify-center px-2'
                       )}
-                    />
-                    {!isCollapsed && (
-                      <>
-                        <span className="flex-1 text-left">{item.name}</span>
-                        {unreadCount > 0 && (
-                          <span className="text-xs font-semibold text-blue-400">
-                            {unreadCount}
-                          </span>
+                      title={isCollapsed ? item.name : undefined}
+                    >
+                      <Icon
+                        className={cn(
+                          'h-5 w-5 shrink-0',
+                          isActive ? 'text-blue-300' : ''
                         )}
-                      </>
-                    )}
-                  </motion.button>
-                );
-              })}
+                      />
+                      {!isCollapsed && (
+                        <>
+                          <span className="flex-1 text-left">{item.name}</span>
+                          {unreadCount > 0 && (
+                            <span className="text-xs font-semibold text-blue-400">
+                              {unreadCount}
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </motion.button>
+                  );
+                })
+              ) : (
+                <div className="text-xs text-slate-400 px-3 py-2">
+                  Loading mailboxes...
+                </div>
+              )}
             </nav>
           </ScrollArea>
         </div>

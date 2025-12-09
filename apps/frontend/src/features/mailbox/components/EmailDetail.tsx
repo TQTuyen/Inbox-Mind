@@ -26,12 +26,12 @@ import {
   Edit,
   FileText,
   Forward,
+  MailOpen,
   MoreVertical,
   Reply,
   ReplyAll,
   Star,
   Trash,
-  MailOpen, // Added MailOpen
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -139,6 +139,7 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleMoveToSpam = async () => {
     setIsProcessing(true);
     try {
@@ -169,6 +170,7 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';

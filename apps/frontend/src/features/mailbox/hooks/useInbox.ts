@@ -1,5 +1,5 @@
+import { Email, useEmailStore } from '@fe/features/mailbox/store/emailStore';
 import { emailService } from '@fe/services/emailService';
-import { useEmailStore } from '@fe/features/mailbox/store/emailStore';
 import { useEffect, useState } from 'react';
 
 export function useInbox() {
@@ -68,7 +68,7 @@ export function useInbox() {
   ]);
 
   // Fetch email details when an email is selected
-  const handleEmailSelect = async (email: any) => {
+  const handleEmailSelect = async (email: Email) => {
     setSelectedEmail(email);
 
     if (!email.isRead) {

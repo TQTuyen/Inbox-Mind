@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
 import { initializeTokenRefresh } from '../lib/api/api';
+import { authService } from '../services/authService';
+import { useAuthStore } from '../store/authStore';
 
 export const PrivateRoute = () => {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, setAuth } = useAuthStore();
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
@@ -13,6 +14,21 @@ export const PrivateRoute = () => {
     const checkAuth = async () => {
       // Try to restore session from refresh token
       await initializeTokenRefresh();
+
+      // If we have a token but no user info, fetch it from backend
+      const currentState = useAuthStore.getState();
+      if (currentState.accessToken && !currentState.user) {
+        try {
+          const userData = await authService.getCurrentUser();
+          if (mounted) {
+            setAuth(userData, currentState.accessToken);
+          }
+        } catch (error) {
+          console.error('Failed to fetch user info:', error);
+          // Token might be invalid, clear auth state
+          useAuthStore.getState().clearAuth();
+        }
+      }
 
       if (mounted) {
         setIsChecking(false);
@@ -27,7 +43,7 @@ export const PrivateRoute = () => {
     return () => {
       mounted = false;
     };
-  }, [isChecking]); // Only depend on isChecking
+  }, [isChecking, setAuth]); // Only depend on isChecking and setAuth
 
   // Show loading state while checking authentication
   if (isChecking) {
