@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+export type KanbanStatus = 'inbox' | 'todo' | 'in_progress' | 'done' | 'snoozed';
+
 export interface Email {
   id: string;
   from: {
@@ -22,6 +24,9 @@ export interface Email {
   }>;
   mailboxId: string;
   note?: string;
+  kanbanStatus?: KanbanStatus;
+  snoozeUntil?: string;
+  summary?: string;
 }
 
 export interface Mailbox {
@@ -41,6 +46,7 @@ interface EmailState {
   totalPages: number;
   searchKeyword: string;
   selectedCategory: string;
+  viewMode: 'list' | 'kanban';
   setMailboxes: (mailboxes: Mailbox[]) => void;
   setSelectedMailbox: (id: string) => void;
   setEmails: (emails: Email[], totalPages: number) => void;
@@ -50,6 +56,7 @@ interface EmailState {
   setCurrentPage: (page: number) => void;
   setSearchKeyword: (keyword: string) => void;
   setSelectedCategory: (category: string) => void;
+  setViewMode: (mode: 'list' | 'kanban') => void;
   updateEmail: (id: string, updates: Partial<Email>) => void;
   deleteEmail: (id: string) => void;
 }
@@ -65,6 +72,7 @@ export const useEmailStore = create<EmailState>((set) => ({
   totalPages: 1,
   searchKeyword: '',
   selectedCategory: 'all',
+  viewMode: 'list',
   setMailboxes: (mailboxes) => set({ mailboxes }),
   setSelectedMailbox: (id) => set({ selectedMailboxId: id, currentPage: 1 }),
   setEmails: (emails, totalPages) => set({ emails, totalPages }),
@@ -76,6 +84,7 @@ export const useEmailStore = create<EmailState>((set) => ({
     set({ searchKeyword: keyword, currentPage: 1 }),
   setSelectedCategory: (category) =>
     set({ selectedCategory: category, currentPage: 1 }),
+  setViewMode: (mode) => set({ viewMode: mode }),
   updateEmail: (id, updates) =>
     set((state) => ({
       emails: state.emails.map((email) =>
