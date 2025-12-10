@@ -1,6 +1,11 @@
 import { create } from 'zustand';
 
-export type KanbanStatus = 'inbox' | 'todo' | 'in_progress' | 'done' | 'snoozed';
+export type KanbanStatus =
+  | 'inbox'
+  | 'todo'
+  | 'in_progress'
+  | 'done'
+  | 'snoozed';
 
 export interface Email {
   id: string;

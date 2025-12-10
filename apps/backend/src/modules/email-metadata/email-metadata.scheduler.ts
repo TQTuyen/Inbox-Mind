@@ -11,10 +11,13 @@ export class EmailMetadataScheduler {
   @Cron(CronExpression.EVERY_MINUTE)
   async handleExpiredSnoozes() {
     try {
-      const expiredSnoozes = await this.emailMetadataService.getExpiredSnoozes();
+      const expiredSnoozes =
+        await this.emailMetadataService.getExpiredSnoozes();
 
       if (expiredSnoozes.length > 0) {
-        this.logger.log(`Found ${expiredSnoozes.length} expired snoozes to restore`);
+        this.logger.log(
+          `Found ${expiredSnoozes.length} expired snoozes to restore`
+        );
 
         for (const metadata of expiredSnoozes) {
           await this.emailMetadataService.restoreFromSnooze(metadata.id);

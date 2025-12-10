@@ -10,7 +10,12 @@ import {
 } from 'typeorm';
 import { User } from '../user/user.entity';
 
-export type KanbanStatus = 'inbox' | 'todo' | 'in_progress' | 'done' | 'snoozed';
+export type KanbanStatus =
+  | 'inbox'
+  | 'todo'
+  | 'in_progress'
+  | 'done'
+  | 'snoozed';
 
 @Entity('email_metadata')
 @Index(['userId', 'emailId'], { unique: true })

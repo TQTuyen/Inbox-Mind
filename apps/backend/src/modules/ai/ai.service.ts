@@ -13,7 +13,9 @@ export class AIService {
 
     if (apiKey) {
       this.genAI = new GoogleGenerativeAI(apiKey);
-      this.model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
+      this.model = this.genAI.getGenerativeModel({
+        model: 'gemini-2.0-flash-exp',
+      });
       this.logger.log('Google Gemini AI initialized successfully');
     } else {
       this.logger.warn(
@@ -22,7 +24,10 @@ export class AIService {
     }
   }
 
-  async summarizeEmail(emailBody: string, emailSubject?: string): Promise<string> {
+  async summarizeEmail(
+    emailBody: string,
+    emailSubject?: string
+  ): Promise<string> {
     if (!this.genAI || !this.model) {
       throw new Error(
         'AI service not initialized. Please set GEMINI_API_KEY in environment variables.'
@@ -41,7 +46,9 @@ Summary:`;
       const response = await result.response;
       const summary = response.text().trim();
 
-      this.logger.log(`Generated summary for email: ${summary.substring(0, 50)}...`);
+      this.logger.log(
+        `Generated summary for email: ${summary.substring(0, 50)}...`
+      );
       return summary;
     } catch (error) {
       this.logger.error('Error generating email summary', error);

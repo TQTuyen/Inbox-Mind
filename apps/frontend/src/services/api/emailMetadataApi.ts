@@ -37,10 +37,9 @@ export const emailMetadataApi = {
     emailId: string,
     kanbanStatus: KanbanStatus
   ): Promise<EmailMetadataResponse> => {
-    const response = await api.put(
-      `/email-metadata/${emailId}/kanban-status`,
-      { kanbanStatus }
-    );
+    const response = await api.put(`/email-metadata/${emailId}/kanban-status`, {
+      kanbanStatus,
+    });
     return response.data;
   },
 

@@ -21,7 +21,13 @@ interface KanbanCardProps {
   isGeneratingSummary?: boolean;
 }
 
-export function KanbanCard({ email, onClick, onSnooze, onGenerateSummary, isGeneratingSummary }: KanbanCardProps) {
+export function KanbanCard({
+  email,
+  onClick,
+  onSnooze,
+  onGenerateSummary,
+  isGeneratingSummary,
+}: KanbanCardProps) {
   const {
     attributes,
     listeners,
@@ -78,14 +84,18 @@ export function KanbanCard({ email, onClick, onSnooze, onGenerateSummary, isGene
           </h3>
         </div>
         <div className="flex items-center gap-1 flex-shrink-0">
-          {email.isStarred && <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />}
+          {email.isStarred && (
+            <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+          )}
         </div>
       </div>
 
       {email.summary ? (
         <div className="mb-3 p-2 bg-purple-50 border border-purple-200 rounded text-xs text-gray-700">
           <div className="flex items-start gap-1.5">
-            <span className="text-purple-600 font-semibold flex-shrink-0">AI:</span>
+            <span className="text-purple-600 font-semibold flex-shrink-0">
+              AI:
+            </span>
             <p className="line-clamp-3">{email.summary}</p>
           </div>
         </div>
@@ -144,9 +154,7 @@ export function KanbanCard({ email, onClick, onSnooze, onGenerateSummary, isGene
       {email.snoozeUntil && (
         <div className="mt-2 flex items-center gap-1 text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">
           <Clock className="h-3 w-3" />
-          <span>
-            Until {new Date(email.snoozeUntil).toLocaleString()}
-          </span>
+          <span>Until {new Date(email.snoozeUntil).toLocaleString()}</span>
         </div>
       )}
     </div>

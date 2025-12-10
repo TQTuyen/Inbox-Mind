@@ -40,7 +40,7 @@ export function MailboxPage() {
     setSelectedMailbox,
     viewMode,
     setViewMode,
-    updateEmail
+    updateEmail,
   } = useEmailStore();
   const { handleEmailSelect, refreshEmails } = useMailbox();
 
@@ -71,8 +71,13 @@ export function MailboxPage() {
   };
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({ emailId, status }: { emailId: string; status: KanbanStatus }) =>
-      emailMetadataApi.updateKanbanStatus(emailId, status),
+    mutationFn: ({
+      emailId,
+      status,
+    }: {
+      emailId: string;
+      status: KanbanStatus;
+    }) => emailMetadataApi.updateKanbanStatus(emailId, status),
     onMutate: ({ emailId, status }) => {
       // Optimistic update
       updateEmail(emailId, { kanbanStatus: status });
@@ -85,8 +90,13 @@ export function MailboxPage() {
   });
 
   const snoozeMutation = useMutation({
-    mutationFn: ({ emailId, snoozeUntil }: { emailId: string; snoozeUntil: Date }) =>
-      emailMetadataApi.snoozeEmail(emailId, snoozeUntil),
+    mutationFn: ({
+      emailId,
+      snoozeUntil,
+    }: {
+      emailId: string;
+      snoozeUntil: Date;
+    }) => emailMetadataApi.snoozeEmail(emailId, snoozeUntil),
     onMutate: ({ emailId, snoozeUntil }) => {
       // Optimistic update
       updateEmail(emailId, {
@@ -108,11 +118,16 @@ export function MailboxPage() {
     },
     onError: (error) => {
       console.error('Failed to generate summary:', error);
-      alert('Failed to generate summary. Please make sure GEMINI_API_KEY is configured on the backend.');
+      alert(
+        'Failed to generate summary. Please make sure GEMINI_API_KEY is configured on the backend.'
+      );
     },
   });
 
-  const handleEmailStatusChange = (emailId: string, newStatus: KanbanStatus) => {
+  const handleEmailStatusChange = (
+    emailId: string,
+    newStatus: KanbanStatus
+  ) => {
     updateStatusMutation.mutate({ emailId, status: newStatus });
   };
 

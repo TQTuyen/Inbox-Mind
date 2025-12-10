@@ -5,6 +5,7 @@ This document provides setup instructions for the Week 2 Kanban-based email mana
 ## 🎯 Features Implemented
 
 ### Feature I: Kanban Interface Visualization (25 points)
+
 - ✅ Kanban board with 5 configurable columns (Inbox, To Do, In Progress, Done, Snoozed)
 - ✅ Cards display real email data (Sender, Subject, Content snippet)
 - ✅ Clean, organized Kanban-style layout with color-coded columns
@@ -12,6 +13,7 @@ This document provides setup instructions for the Week 2 Kanban-based email mana
 - ✅ Unread email highlighting
 
 ### Feature II: Drag-and-Drop Workflow Management (25 points)
+
 - ✅ Drag cards between columns using @dnd-kit library
 - ✅ Backend API updates email status on drop
 - ✅ Optimistic UI updates (immediate visual feedback)
@@ -19,6 +21,7 @@ This document provides setup instructions for the Week 2 Kanban-based email mana
 - ✅ Error handling with automatic revert on failure
 
 ### Feature III: Snooze/Deferral Mechanism (25 points)
+
 - ✅ Snooze button on each card (visible on hover)
 - ✅ Cards move to "Snoozed" column when snoozed
 - ✅ Backend scheduled job checks every minute for expired snoozes
@@ -26,6 +29,7 @@ This document provides setup instructions for the Week 2 Kanban-based email mana
 - ✅ Snooze duration display on cards
 
 ### Feature IV: AI Content Summarization (25 points)
+
 - ✅ Google Gemini AI integration (free tier available)
 - ✅ "Summarize with AI" button on cards (visible on hover)
 - ✅ Real-time summary generation from email content
@@ -34,6 +38,7 @@ This document provides setup instructions for the Week 2 Kanban-based email mana
 - ✅ Loading states and error handling
 
 ### Bonus Features
+
 - ✅ Toggle button to switch between List view (Week 1) and Kanban view
 - ✅ Click card to view full email details
 - ✅ Mobile-responsive design
@@ -56,6 +61,7 @@ npm install
 ```
 
 New packages installed:
+
 - `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities` - Drag and drop
 - `@nestjs/schedule` - Scheduled jobs for snooze restoration
 - `@google/generative-ai` - Google Gemini AI SDK
@@ -73,6 +79,7 @@ npm run be:build
 ```
 
 The migration creates:
+
 - `email_metadata` table with columns:
   - `id` (UUID primary key)
   - `userId` (foreign key to users)
@@ -107,6 +114,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
 **How to get a Gemini API Key:**
+
 1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
 2. Sign in with your Google account
 3. Click "Get API Key" or "Create API Key"
@@ -119,11 +127,13 @@ GEMINI_API_KEY=your_gemini_api_key_here
 Open two terminal windows:
 
 **Terminal 1 - Backend:**
+
 ```bash
 npm run be:run
 ```
 
 **Terminal 2 - Frontend:**
+
 ```bash
 npm run fe:run
 ```
@@ -196,6 +206,7 @@ GET    /api/email-metadata/:emailId               # Get metadata
 ### Database Schema
 
 **email_metadata Table:**
+
 ```sql
 CREATE TABLE email_metadata (
   id UUID PRIMARY KEY,
@@ -215,6 +226,7 @@ CREATE INDEX idx_email_metadata_snooze_until ON email_metadata(snoozeUntil);
 ## 🧪 Testing Checklist
 
 ### Feature I: Kanban Interface
+
 - [ ] Kanban view displays with 5 columns
 - [ ] All emails appear in the "Inbox" column by default
 - [ ] Each card shows sender name, subject, and preview
@@ -223,6 +235,7 @@ CREATE INDEX idx_email_metadata_snooze_until ON email_metadata(snoozeUntil);
 - [ ] Starred emails show star icon
 
 ### Feature II: Drag-and-Drop
+
 - [ ] Can drag cards between all columns
 - [ ] Card position updates immediately (optimistic)
 - [ ] Backend persists the status change
@@ -230,6 +243,7 @@ CREATE INDEX idx_email_metadata_snooze_until ON email_metadata(snoozeUntil);
 - [ ] Network errors revert the optimistic update
 
 ### Feature III: Snooze
+
 - [ ] "Snooze" button appears on card hover
 - [ ] Clicking snooze moves card to "Snoozed" column
 - [ ] Snooze duration (2 hours default) displays
@@ -237,6 +251,7 @@ CREATE INDEX idx_email_metadata_snooze_until ON email_metadata(snoozeUntil);
 - [ ] Snoozed emails don't show snooze button
 
 ### Feature IV: AI Summarization
+
 - [ ] "Summarize with AI" button appears on cards without summaries
 - [ ] Clicking shows loading spinner
 - [ ] AI-generated summary appears in purple box
@@ -245,6 +260,7 @@ CREATE INDEX idx_email_metadata_snooze_until ON email_metadata(snoozeUntil);
 - [ ] Cards with summaries don't show the button
 
 ### General
+
 - [ ] Toggle between list and Kanban views works
 - [ ] Click card opens email detail view
 - [ ] Mobile responsive (columns stack/scroll horizontally)
@@ -253,25 +269,33 @@ CREATE INDEX idx_email_metadata_snooze_until ON email_metadata(snoozeUntil);
 ## 🐛 Troubleshooting
 
 ### Issue: "AI service not available" error
+
 **Solution:** Ensure `GEMINI_API_KEY` is set in `apps/backend/.env` and restart the backend server.
 
 ### Issue: Drag-and-drop not working
+
 **Solution:** Check browser console for errors. Ensure `@dnd-kit` packages are installed correctly.
 
 ### Issue: Emails not appearing in Kanban view
+
 **Solution:**
+
 1. Check if emails load in list view first
 2. Open browser console and check for errors
 3. Verify backend is running and database is connected
 
 ### Issue: Snooze not auto-restoring
+
 **Solution:**
+
 1. Check backend logs for cron job execution
 2. Verify `@nestjs/schedule` is installed
 3. Check that `ScheduleModule.forRoot()` is in `app.module.ts`
 
 ### Issue: Database migration not running
+
 **Solution:**
+
 ```bash
 # Option 1: Use synchronize in development
 # In app.module.ts, ensure synchronize: true
@@ -283,29 +307,33 @@ CREATE INDEX idx_email_metadata_snooze_until ON email_metadata(snoozeUntil);
 ## 📝 Implementation Notes
 
 ### Why Gemini Instead of OpenAI?
+
 - **Free tier**: Gemini offers 60 requests/minute for free
 - **No credit card required**: Easy to get started
 - **Fast**: Low latency for summarization tasks
 - **Reliable**: Google's infrastructure
 
 ### Optimistic Updates
+
 The UI updates immediately when dragging cards, providing instant feedback. If the backend request fails, the update is automatically reverted.
 
 ### Cron Job Frequency
+
 The snooze restoration job runs every minute. For production, this could be adjusted based on business requirements.
 
 ### AI Summary Caching
+
 Summaries are stored in the database to avoid regenerating them on every view, saving API costs and improving performance.
 
 ## 🎓 Grading Criteria Mapping
 
-| Feature | Points | Implementation |
-|---------|--------|----------------|
-| **I. Kanban Interface** | 25 | KanbanBoard.tsx, KanbanCard.tsx with real email data |
-| **II. Drag-and-Drop** | 25 | @dnd-kit integration with backend API updates |
-| **III. Snooze** | 25 | Snooze UI + Backend scheduler for auto-restore |
-| **IV. AI Summarization** | 25 | Gemini API + Database caching + UI display |
-| **Total** | **100** | All features fully implemented |
+| Feature                  | Points  | Implementation                                       |
+| ------------------------ | ------- | ---------------------------------------------------- |
+| **I. Kanban Interface**  | 25      | KanbanBoard.tsx, KanbanCard.tsx with real email data |
+| **II. Drag-and-Drop**    | 25      | @dnd-kit integration with backend API updates        |
+| **III. Snooze**          | 25      | Snooze UI + Backend scheduler for auto-restore       |
+| **IV. AI Summarization** | 25      | Gemini API + Database caching + UI display           |
+| **Total**                | **100** | All features fully implemented                       |
 
 ## 🚀 Next Steps
 

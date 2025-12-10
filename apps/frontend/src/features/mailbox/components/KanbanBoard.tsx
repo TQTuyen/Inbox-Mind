@@ -92,7 +92,9 @@ export function KanbanBoard({
 }: KanbanBoardProps) {
   const { emails } = useEmailStore();
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [generatingSummaryFor, setGeneratingSummaryFor] = useState<string | null>(null);
+  const [generatingSummaryFor, setGeneratingSummaryFor] = useState<
+    string | null
+  >(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {

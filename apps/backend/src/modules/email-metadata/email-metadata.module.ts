@@ -8,11 +8,7 @@ import { AIModule } from '../ai/ai.module';
 import { GmailModule } from '../gmail/gmail.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([EmailMetadata]),
-    AIModule,
-    GmailModule,
-  ],
+  imports: [TypeOrmModule.forFeature([EmailMetadata]), AIModule, GmailModule],
   controllers: [EmailMetadataController],
   providers: [EmailMetadataService, EmailMetadataScheduler],
   exports: [EmailMetadataService],
