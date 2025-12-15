@@ -55,7 +55,10 @@ export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
           </Button>
         )}
       </div>
-      <Button type="submit" disabled={isLoading || localQuery.trim().length < 2}>
+      <Button
+        type="submit"
+        disabled={isLoading || localQuery.trim().length < 2}
+      >
         {isLoading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

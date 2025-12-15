@@ -23,11 +23,7 @@ export default defineConfig({
     port: 4200,
     host: 'localhost',
   },
-  plugins: [
-    react(),
-    nxViteTsPaths(),
-    nxCopyAssetsPlugin(['*.md']),
-  ],
+  plugins: [react(), nxViteTsPaths(), nxCopyAssetsPlugin(['*.md'])],
   resolve: {
     alias: {
       '@fe': path.resolve(__dirname, './src'),

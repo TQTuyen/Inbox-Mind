@@ -25,7 +25,11 @@ interface KanbanState {
   setSortBy: (sortBy: SortOption) => void;
   toggleFilter: (filter: FilterOption) => void;
   clearFilters: () => void;
-  moveEmail: (emailId: string, fromColumnId: string, toColumnId: string) => void;
+  moveEmail: (
+    emailId: string,
+    fromColumnId: string,
+    toColumnId: string
+  ) => void;
   updateEmailInColumn: (emailId: string, updates: Partial<Email>) => void;
   deleteEmailFromColumn: (emailId: string) => void;
   setLoading: (loading: boolean) => void;
@@ -138,7 +142,10 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
         return { ...col, emails: updatedFromEmails };
       }
       if (col.id === toColumnId) {
-        return { ...col, emails: get().getSortedAndFilteredEmails(updatedToEmails) };
+        return {
+          ...col,
+          emails: get().getSortedAndFilteredEmails(updatedToEmails),
+        };
       }
       return col;
     });

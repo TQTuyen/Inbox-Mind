@@ -35,7 +35,9 @@ export function KanbanPage() {
             <div className="h-full border-r">
               <Sidebar
                 isCollapsed={isSidebarCollapsed}
-                onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                onToggleCollapse={() =>
+                  setIsSidebarCollapsed(!isSidebarCollapsed)
+                }
               />
             </div>
           </ResizablePanel>
@@ -66,10 +68,7 @@ export function KanbanPage() {
         <KanbanBoard onEmailClick={handleEmailClick} />
 
         {/* Mobile Email Detail Sheet */}
-        <Sheet
-          open={isMobileDetailOpen}
-          onOpenChange={setIsMobileDetailOpen}
-        >
+        <Sheet open={isMobileDetailOpen} onOpenChange={setIsMobileDetailOpen}>
           <SheetContent side="right" className="w-full p-0">
             {selectedEmail && (
               <EmailDetail

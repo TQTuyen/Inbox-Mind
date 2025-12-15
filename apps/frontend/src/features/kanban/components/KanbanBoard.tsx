@@ -108,7 +108,9 @@ export function KanbanBoard({ onEmailClick }: KanbanBoardProps) {
               <div className="w-80 opacity-90">
                 <KanbanCard
                   email={activeEmail}
-                  onEmailClick={() => {}}
+                  onEmailClick={() => {
+                    // No-op: click handler disabled during drag
+                  }}
                 />
               </div>
             ) : null}

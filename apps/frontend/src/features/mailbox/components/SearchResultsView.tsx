@@ -75,7 +75,11 @@ export function SearchResultsView({
 
   return (
     <div className="flex flex-col h-full">
-      <SearchHeader query={query} onBack={onBack} resultCount={results.length} />
+      <SearchHeader
+        query={query}
+        onBack={onBack}
+        resultCount={results.length}
+      />
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-2">
           {results.map((result) => (
@@ -174,7 +178,11 @@ function SearchResultCard({
             <div className="flex items-center gap-1">
               <span className="text-xs text-muted-foreground">Matched:</span>
               {result.matchedFields.map((field) => (
-                <Badge key={field} variant="outline" className="text-xs px-1.5 py-0">
+                <Badge
+                  key={field}
+                  variant="outline"
+                  className="text-xs px-1.5 py-0"
+                >
                   {field}
                 </Badge>
               ))}

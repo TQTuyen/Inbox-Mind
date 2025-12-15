@@ -33,12 +33,12 @@ export class FuzzySearchService {
    */
   async fuzzySearch(
     userId: string,
-    searchDto: FuzzySearchQueryDto,
+    searchDto: FuzzySearchQueryDto
   ): Promise<FuzzySearchResponseDto> {
     const { query, mailboxId = 'INBOX', limit = 20 } = searchDto;
 
     this.logger.log(
-      `Fuzzy search: query="${query}", mailboxId="${mailboxId}", limit=${limit}`,
+      `Fuzzy search: query="${query}", mailboxId="${mailboxId}", limit=${limit}`
     );
 
     // Fetch emails from Gmail API
@@ -59,7 +59,7 @@ export class FuzzySearchService {
    */
   private async fetchEmailsForSearch(
     userId: string,
-    mailboxId: string,
+    mailboxId: string
   ): Promise<EmailSearchData[]> {
     try {
       // Fetch emails using existing Gmail service
@@ -82,13 +82,13 @@ export class FuzzySearchService {
    * Transform Gmail message to searchable data format
    */
   private transformEmailToSearchData(
-    message: gmail_v1.Schema$Message,
+    message: gmail_v1.Schema$Message
   ): EmailSearchData {
     const headers = message.payload?.headers || [];
 
     const getHeader = (name: string): string => {
       const header = headers.find(
-        (h) => h.name?.toLowerCase() === name.toLowerCase(),
+        (h) => h.name?.toLowerCase() === name.toLowerCase()
       );
       return header?.value || '';
     };
@@ -126,9 +126,7 @@ export class FuzzySearchService {
     const parts = message.payload?.parts || [];
     return parts.some(
       (part) =>
-        part.filename &&
-        part.filename.length > 0 &&
-        part.body?.attachmentId,
+        part.filename && part.filename.length > 0 && part.body?.attachmentId
     );
   }
 
@@ -138,7 +136,7 @@ export class FuzzySearchService {
   private performFuzzySearch(
     emails: EmailSearchData[],
     query: string,
-    limit: number,
+    limit: number
   ): FuzzySearchResultDto[] {
     // Configure Fuse.js for fuzzy searching
     const fuse = new Fuse(emails, {

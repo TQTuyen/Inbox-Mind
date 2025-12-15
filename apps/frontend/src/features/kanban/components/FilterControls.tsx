@@ -75,11 +75,7 @@ export function FilterControls() {
             if (!filter) return null;
 
             return (
-              <Badge
-                key={filterId}
-                variant="secondary"
-                className="gap-1 pr-1"
-              >
+              <Badge key={filterId} variant="secondary" className="gap-1 pr-1">
                 {filter.label}
                 <Button
                   variant="ghost"

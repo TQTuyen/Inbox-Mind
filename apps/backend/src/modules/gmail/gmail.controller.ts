@@ -71,7 +71,7 @@ export class GmailController {
     private readonly gmailClientFactory: GmailClientFactoryService,
     private readonly fileUploadService: FileUploadService,
     private readonly threadService: ThreadService,
-    private readonly fuzzySearchService: FuzzySearchService,
+    private readonly fuzzySearchService: FuzzySearchService
   ) {}
 
   @Get('mailboxes')
@@ -112,7 +112,7 @@ export class GmailController {
   @UseGuards(JwtAuthGuard)
   async fuzzySearch(
     @CurrentUser() user: CurrentUserData,
-    @Query() query: FuzzySearchQueryDto,
+    @Query() query: FuzzySearchQueryDto
   ): Promise<FuzzySearchResponseDto> {
     return this.fuzzySearchService.fuzzySearch(user.userId, query);
   }

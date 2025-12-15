@@ -547,7 +547,6 @@ export function useReplyToEmailWithAttachments(
   });
 }
 
-
 // ==================== Fuzzy Search Hooks ====================
 
 /**
@@ -574,4 +573,3 @@ export function useFuzzySearch(
     ...options,
   });
 }
-
