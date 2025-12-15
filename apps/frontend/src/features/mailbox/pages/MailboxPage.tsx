@@ -11,9 +11,10 @@ import {
 } from '@fe/shared/components/ui/sheet';
 import { useFuzzySearch } from '@fe/hooks/useGmailQuery';
 import { motion } from 'framer-motion';
-import { Menu } from 'lucide-react';
+import { Menu, LayoutList, LayoutGrid } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useMutation } from '@tanstack/react-query';
 import { EmailDetail } from '../components/EmailDetail';
 import { EmailList } from '../components/EmailList';
 import { FilterChips } from '../components/FilterChips';
@@ -22,8 +23,10 @@ import { SearchBar } from '../components/SearchBar';
 import { SearchResultsView } from '../components/SearchResultsView';
 import { Sidebar } from '../components/Sidebar';
 import { Toolbar } from '../components/Toolbar';
+import { KanbanBoard } from '../components/KanbanBoard';
 import { useMailbox } from '../hooks/useMailbox';
-import { Email, useEmailStore } from '../store/emailStore';
+import { Email, useEmailStore, KanbanStatus } from '../store/emailStore';
+import { emailMetadataApi } from '../../../services/api/emailMetadataApi';
 
 export function MailboxPage() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -44,6 +47,9 @@ export function MailboxPage() {
     setSearchQuery,
     setSearchResults,
     clearSearch,
+    viewMode,
+    setViewMode,
+    updateEmail,
   } = useEmailStore();
   const { handleEmailSelect, refreshEmails } = useMailbox();
 
@@ -115,6 +121,75 @@ export function MailboxPage() {
     setShowMobileDetail(false);
   };
 
+  const updateStatusMutation = useMutation({
+    mutationFn: ({
+      emailId,
+      status,
+    }: {
+      emailId: string;
+      status: KanbanStatus;
+    }) => emailMetadataApi.updateKanbanStatus(emailId, status),
+    onMutate: ({ emailId, status }) => {
+      // Optimistic update
+      updateEmail(emailId, { kanbanStatus: status });
+    },
+    onError: (error, { emailId }) => {
+      console.error('Failed to update email status:', error);
+      // Revert optimistic update by refetching
+      refreshEmails();
+    },
+  });
+
+  const snoozeMutation = useMutation({
+    mutationFn: ({
+      emailId,
+      snoozeUntil,
+    }: {
+      emailId: string;
+      snoozeUntil: Date;
+    }) => emailMetadataApi.snoozeEmail(emailId, snoozeUntil),
+    onMutate: ({ emailId, snoozeUntil }) => {
+      // Optimistic update
+      updateEmail(emailId, {
+        kanbanStatus: 'snoozed',
+        snoozeUntil: snoozeUntil.toISOString(),
+      });
+    },
+    onError: (error) => {
+      console.error('Failed to snooze email:', error);
+      refreshEmails();
+    },
+  });
+
+  const generateSummaryMutation = useMutation({
+    mutationFn: (emailId: string) => emailMetadataApi.generateSummary(emailId),
+    onSuccess: (response, emailId) => {
+      // Update email with the generated summary
+      updateEmail(emailId, { summary: response.data.summary });
+    },
+    onError: (error) => {
+      console.error('Failed to generate summary:', error);
+      alert(
+        'Failed to generate summary. Please make sure GEMINI_API_KEY is configured on the backend.'
+      );
+    },
+  });
+
+  const handleEmailStatusChange = (
+    emailId: string,
+    newStatus: KanbanStatus
+  ) => {
+    updateStatusMutation.mutate({ emailId, status: newStatus });
+  };
+
+  const handleEmailSnooze = (emailId: string, snoozeUntil: Date) => {
+    snoozeMutation.mutate({ emailId, snoozeUntil });
+  };
+
+  const handleGenerateSummary = async (emailId: string) => {
+    return generateSummaryMutation.mutateAsync(emailId);
+  };
+
   return (
     <div className="relative h-screen w-full overflow-hidden bg-linear-to-br from-slate-950 via-blue-950/20 to-slate-950">
       {/* Animated Background */}
@@ -164,6 +239,59 @@ export function MailboxPage() {
                     <SearchResultsView
                       onBack={handleClearSearch}
                       onEmailSelect={handleEmailSelect}
+                    />
+                  </div>
+                )}
+                <div className="flex items-center gap-2 px-3">
+                  <div className="flex-1">
+                    <Toolbar
+                      searchQuery={searchKeyword}
+                      onSearchChange={handleSearchChange}
+                      onRefresh={refreshEmails}
+                    />
+                  </div>
+                  <div className="flex items-center gap-1 bg-slate-800/50 rounded-lg p-1">
+                    <Button
+                      variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                      size="sm"
+                      onClick={() => setViewMode('list')}
+                      className="h-8 w-8 p-0"
+                      title="List View"
+                    >
+                      <LayoutList className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant={viewMode === 'kanban' ? 'secondary' : 'ghost'}
+                      size="sm"
+                      onClick={() => setViewMode('kanban')}
+                      className="h-8 w-8 p-0"
+                      title="Kanban View"
+                    >
+                      <LayoutGrid className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                {viewMode === 'list' && (
+                  <>
+                    <FilterChips
+                      activeFilter={activeFilter}
+                      onFilterChange={setActiveFilter}
+                    />
+                    <div className="flex-1 min-h-0 overflow-hidden">
+                      <EmailList
+                        onEmailSelect={handleEmailSelect}
+                        onRefresh={refreshEmails}
+                      />
+                    </div>
+                  </>
+                )}
+                {viewMode === 'kanban' && (
+                  <div className="flex-1 min-h-0 overflow-hidden">
+                    <KanbanBoard
+                      onEmailClick={handleEmailSelect}
+                      onEmailStatusChange={handleEmailStatusChange}
+                      onEmailSnooze={handleEmailSnooze}
+                      onGenerateSummary={handleGenerateSummary}
                     />
                   </div>
                 )}
