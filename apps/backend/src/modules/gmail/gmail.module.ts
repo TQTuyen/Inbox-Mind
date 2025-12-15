@@ -9,6 +9,7 @@ import { GmailService } from './gmail.service';
 import { AttachmentService } from './services/attachment.service';
 import { EmailThreadingService } from './services/email-threading.service';
 import { FileUploadService } from './services/file-upload.service';
+import { FuzzySearchService } from './services/fuzzy-search.service';
 import { ThreadService } from './services/thread.service';
 import { AddLabelsStrategy } from './strategies/add-labels.strategy';
 import { LabelModificationStrategyFactory } from './strategies/label-modification-strategy.factory';
@@ -30,6 +31,7 @@ import { RemoveLabelsStrategy } from './strategies/remove-labels.strategy';
     EmailThreadingService,
     FileUploadService,
     ThreadService,
+    FuzzySearchService,
   ],
   exports: [GmailService],
 })

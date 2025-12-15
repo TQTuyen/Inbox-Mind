@@ -1,5 +1,6 @@
 import { LoginPage } from '@fe/features/auth/pages/LoginPage';
 import { OAuthCallbackPage } from '@fe/features/auth/pages/OAuthCallbackPage';
+import { KanbanPage } from '@fe/features/kanban/pages/KanbanPage';
 import { MailboxPage } from '@fe/features/mailbox/pages/MailboxPage';
 import { PrivateRoute } from '@fe/guards/PrivateRoute';
 import { QueryProvider } from '@fe/providers/QueryProvider';
@@ -19,6 +20,7 @@ function App() {
               path="/inbox"
               element={<Navigate to="/inbox/INBOX" replace />}
             />
+            <Route path="/kanban" element={<KanbanPage />} />
           </Route>
           <Route path="/" element={<Navigate to="/inbox/INBOX" replace />} />
           <Route path="*" element={<Navigate to="/inbox/INBOX" replace />} />

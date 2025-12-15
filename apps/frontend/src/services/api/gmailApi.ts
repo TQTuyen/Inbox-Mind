@@ -79,6 +79,24 @@ export interface MarkReadRequest {
   read: boolean;
 }
 
+export interface FuzzySearchResult {
+  id: string;
+  subject: string;
+  from: EmailAddress;
+  snippet: string;
+  timestamp: string;
+  isRead: boolean;
+  hasAttachments: boolean;
+  score: number;
+  matchedFields: string[];
+}
+
+export interface FuzzySearchResponse {
+  results: FuzzySearchResult[];
+  total: number;
+  query: string;
+}
+
 export interface DownloadAttachmentResponse {
   data: Blob;
   filename: string;
@@ -373,6 +391,27 @@ class GmailApiService {
         },
       }
     );
+
+    return response.data;
+  }
+
+  /**
+   * Fuzzy search emails with typo tolerance and partial matching
+   */
+  async fuzzySearch(params: {
+    query: string;
+    mailboxId?: string;
+    limit?: number;
+  }): Promise<FuzzySearchResponse> {
+    const { query, mailboxId = 'INBOX', limit = 20 } = params;
+
+    const queryParams = new URLSearchParams();
+    queryParams.append('query', query);
+    queryParams.append('mailboxId', mailboxId);
+    queryParams.append('limit', limit.toString());
+
+    const url = `/search/fuzzy?${queryParams.toString()}`;
+    const response = await api.get<FuzzySearchResponse>(url);
 
     return response.data;
   }

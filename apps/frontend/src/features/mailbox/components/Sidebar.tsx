@@ -25,6 +25,7 @@ import {
   FileText,
   Folder,
   Inbox,
+  Kanban,
   LogOut,
   Newspaper,
   PenSquare,
@@ -203,6 +204,31 @@ export function Sidebar({
               >
                 <PenSquare className="mr-2 h-4 w-4" />
                 New Email
+              </Button>
+            )}
+          </div>
+
+          {/* View Switcher */}
+          <div className="flex justify-center">
+            {isCollapsed ? (
+              <Button
+                variant="outline"
+                className="h-10 w-10 p-0 border-slate-700 hover:bg-slate-800 cursor-pointer"
+                size="icon"
+                title="Kanban View"
+                onClick={() => navigate('/kanban')}
+              >
+                <Kanban className="h-5 w-5" />
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                className="h-8 w-full border-slate-700 hover:bg-slate-800 cursor-pointer"
+                size="default"
+                onClick={() => navigate('/kanban')}
+              >
+                <Kanban className="mr-2 h-4 w-4" />
+                Kanban View
               </Button>
             )}
           </div>

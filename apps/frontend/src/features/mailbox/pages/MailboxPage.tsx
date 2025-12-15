@@ -9,6 +9,7 @@ import {
   SheetContent,
   SheetTrigger,
 } from '@fe/shared/components/ui/sheet';
+import { useFuzzySearch } from '@fe/hooks/useGmailQuery';
 import { motion } from 'framer-motion';
 import { Menu } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -17,6 +18,8 @@ import { EmailDetail } from '../components/EmailDetail';
 import { EmailList } from '../components/EmailList';
 import { FilterChips } from '../components/FilterChips';
 import { MailboxBackground } from '../components/MailboxBackground';
+import { SearchBar } from '../components/SearchBar';
+import { SearchResultsView } from '../components/SearchResultsView';
 import { Sidebar } from '../components/Sidebar';
 import { Toolbar } from '../components/Toolbar';
 import { useMailbox } from '../hooks/useMailbox';
@@ -30,9 +33,30 @@ export function MailboxPage() {
 
   const { mailboxId } = useParams<{ mailboxId: string }>();
   const navigate = useNavigate();
-  const { searchKeyword, setSearchKeyword, selectedEmail, setSelectedMailbox } =
-    useEmailStore();
+  const {
+    searchKeyword,
+    setSearchKeyword,
+    selectedEmail,
+    setSelectedMailbox,
+    isSearchMode,
+    searchQuery,
+    setSearchMode,
+    setSearchQuery,
+    setSearchResults,
+    clearSearch,
+  } = useEmailStore();
   const { handleEmailSelect, refreshEmails } = useMailbox();
+
+  // Fuzzy search state
+  const [searchInput, setSearchInput] = useState('');
+  const { data: searchData, isLoading: isSearchLoading } = useFuzzySearch(
+    {
+      query: searchQuery,
+      mailboxId: mailboxId || 'INBOX',
+      limit: 20,
+    },
+    { enabled: searchQuery.length >= 2 }
+  );
 
   // Sync URL param to store on mount and when URL changes
   useEffect(() => {
@@ -44,8 +68,39 @@ export function MailboxPage() {
     }
   }, [mailboxId, setSelectedMailbox, navigate]);
 
+  // Update search results when fuzzy search data changes
+  useEffect(() => {
+    if (searchData?.results) {
+      // Transform search results to Email format
+      const transformedResults: Email[] = searchData.results.map((result) => ({
+        id: result.id,
+        subject: result.subject,
+        from: result.from,
+        to: [], // Not provided in search results
+        preview: result.snippet,
+        body: result.snippet,
+        timestamp: result.timestamp,
+        isRead: result.isRead,
+        isStarred: false,
+        attachments: result.hasAttachments ? [] : undefined,
+        mailboxId: mailboxId || 'INBOX',
+      }));
+      setSearchResults(transformedResults);
+    }
+  }, [searchData, setSearchResults, mailboxId]);
+
   const handleSearchChange = (query: string) => {
     setSearchKeyword(query);
+  };
+
+  const handleFuzzySearch = (query: string) => {
+    setSearchQuery(query);
+    setSearchMode(true);
+  };
+
+  const handleClearSearch = () => {
+    clearSearch();
+    setSearchInput('');
   };
 
   const handleMobileEmailSelect = (email: Email) => {
@@ -84,21 +139,34 @@ export function MailboxPage() {
                 transition={{ duration: 0.4, delay: 0.1 }}
                 className="flex h-full flex-col bg-slate-900/50 backdrop-blur-xl border-r border-slate-800"
               >
-                <Toolbar
-                  searchQuery={searchKeyword}
-                  onSearchChange={handleSearchChange}
-                  onRefresh={refreshEmails}
-                />
-                <FilterChips
-                  activeFilter={activeFilter}
-                  onFilterChange={setActiveFilter}
-                />
-                <div className="flex-1 min-h-0 overflow-hidden">
-                  <EmailList
-                    onEmailSelect={handleEmailSelect}
-                    onRefresh={refreshEmails}
+                <div className="p-4 border-b border-slate-800">
+                  <SearchBar
+                    onSearch={handleFuzzySearch}
+                    isLoading={isSearchLoading}
                   />
                 </div>
+                {!isSearchMode && (
+                  <>
+                    <FilterChips
+                      activeFilter={activeFilter}
+                      onFilterChange={setActiveFilter}
+                    />
+                    <div className="flex-1 min-h-0 overflow-hidden">
+                      <EmailList
+                        onEmailSelect={handleEmailSelect}
+                        onRefresh={refreshEmails}
+                      />
+                    </div>
+                  </>
+                )}
+                {isSearchMode && (
+                  <div className="flex-1 min-h-0 overflow-hidden">
+                    <SearchResultsView
+                      onBack={handleClearSearch}
+                      onEmailSelect={handleEmailSelect}
+                    />
+                  </div>
+                )}
               </motion.div>
             </ResizablePanel>
 
@@ -149,25 +217,36 @@ export function MailboxPage() {
                   />
                 </SheetContent>
               </Sheet>
-              <div className="flex-1 min-w-0">
-                <Toolbar
-                  searchQuery={searchKeyword}
-                  onSearchChange={handleSearchChange}
-                  onRefresh={refreshEmails}
+              <div className="flex-1 min-w-0 px-2">
+                <SearchBar
+                  onSearch={handleFuzzySearch}
+                  isLoading={isSearchLoading}
                 />
               </div>
             </div>
-            <FilterChips
-              activeFilter={activeFilter}
-              onFilterChange={setActiveFilter}
-            />
-            <div className="flex-1 min-h-0 overflow-hidden">
-              <EmailList
-                onEmailSelect={handleMobileEmailSelect}
-                onRefresh={refreshEmails}
-                isMobile
-              />
-            </div>
+            {!isSearchMode && (
+              <>
+                <FilterChips
+                  activeFilter={activeFilter}
+                  onFilterChange={setActiveFilter}
+                />
+                <div className="flex-1 min-h-0 overflow-hidden">
+                  <EmailList
+                    onEmailSelect={handleMobileEmailSelect}
+                    onRefresh={refreshEmails}
+                    isMobile
+                  />
+                </div>
+              </>
+            )}
+            {isSearchMode && (
+              <div className="flex-1 min-h-0 overflow-hidden">
+                <SearchResultsView
+                  onBack={handleClearSearch}
+                  onEmailSelect={handleMobileEmailSelect}
+                />
+              </div>
+            )}
           </motion.div>
         ) : (
           /* Show email detail */

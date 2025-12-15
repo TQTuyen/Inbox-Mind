@@ -25,6 +25,7 @@ interface EmailListParams {
   labelId?: string;
   pageToken?: string;
   maxResults?: number;
+  pageSize?: number;
 }
 
 interface SendEmailData {

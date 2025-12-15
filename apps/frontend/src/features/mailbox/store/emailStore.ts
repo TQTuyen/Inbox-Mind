@@ -41,6 +41,11 @@ interface EmailState {
   totalPages: number;
   searchKeyword: string;
   selectedCategory: string;
+  // Fuzzy search state
+  isSearchMode: boolean;
+  searchQuery: string;
+  searchResults: Email[];
+  searchLoading: boolean;
   setMailboxes: (mailboxes: Mailbox[]) => void;
   setSelectedMailbox: (id: string) => void;
   setEmails: (emails: Email[], totalPages: number) => void;
@@ -52,6 +57,12 @@ interface EmailState {
   setSelectedCategory: (category: string) => void;
   updateEmail: (id: string, updates: Partial<Email>) => void;
   deleteEmail: (id: string) => void;
+  // Fuzzy search actions
+  setSearchMode: (isSearchMode: boolean) => void;
+  setSearchQuery: (query: string) => void;
+  setSearchResults: (results: Email[]) => void;
+  setSearchLoading: (loading: boolean) => void;
+  clearSearch: () => void;
 }
 
 export const useEmailStore = create<EmailState>((set) => ({
@@ -65,6 +76,11 @@ export const useEmailStore = create<EmailState>((set) => ({
   totalPages: 1,
   searchKeyword: '',
   selectedCategory: 'all',
+  // Fuzzy search initial state
+  isSearchMode: false,
+  searchQuery: '',
+  searchResults: [],
+  searchLoading: false,
   setMailboxes: (mailboxes) => set({ mailboxes }),
   setSelectedMailbox: (id) => set({ selectedMailboxId: id, currentPage: 1 }),
   setEmails: (emails, totalPages) => set({ emails, totalPages }),
@@ -85,11 +101,30 @@ export const useEmailStore = create<EmailState>((set) => ({
         state.selectedEmail?.id === id
           ? { ...state.selectedEmail, ...updates }
           : state.selectedEmail,
+      // Also update in search results if in search mode
+      searchResults: state.isSearchMode
+        ? state.searchResults.map((email) =>
+            email.id === id ? { ...email, ...updates } : email
+          )
+        : state.searchResults,
     })),
   deleteEmail: (id) =>
     set((state) => ({
       emails: state.emails.filter((email) => email.id !== id),
       selectedEmail:
         state.selectedEmail?.id === id ? null : state.selectedEmail,
+      searchResults: state.searchResults.filter((email) => email.id !== id),
     })),
+  // Fuzzy search actions
+  setSearchMode: (isSearchMode) => set({ isSearchMode }),
+  setSearchQuery: (query) => set({ searchQuery: query }),
+  setSearchResults: (results) => set({ searchResults: results }),
+  setSearchLoading: (loading) => set({ searchLoading: loading }),
+  clearSearch: () =>
+    set({
+      isSearchMode: false,
+      searchQuery: '',
+      searchResults: [],
+      searchLoading: false,
+    }),
 }));

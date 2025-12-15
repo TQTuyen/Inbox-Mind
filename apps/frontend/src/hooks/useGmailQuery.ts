@@ -3,6 +3,7 @@ import {
   Email,
   EmailAttachment,
   EmailListResponse,
+  FuzzySearchResponse,
   gmailApi,
   Mailbox,
   ModifyLabelsRequest,
@@ -39,6 +40,9 @@ export const gmailKeys = {
     [...gmailKeys.threads(), 'detail', threadId] as const,
   attachments: (emailId: string) =>
     [...gmailKeys.emails(), 'attachments', emailId] as const,
+  search: () => [...gmailKeys.all, 'search'] as const,
+  fuzzySearch: (query: string, mailboxId?: string) =>
+    [...gmailKeys.search(), 'fuzzy', query, mailboxId] as const,
 };
 
 // ==================== Mailbox Hooks ====================
@@ -542,3 +546,32 @@ export function useReplyToEmailWithAttachments(
     ...options,
   });
 }
+
+
+// ==================== Fuzzy Search Hooks ====================
+
+/**
+ * Fuzzy search emails with typo tolerance and partial matching
+ */
+export function useFuzzySearch(
+  params: {
+    query: string;
+    mailboxId?: string;
+    limit?: number;
+  },
+  options?: Omit<
+    UseQueryOptions<FuzzySearchResponse, Error>,
+    'queryKey' | 'queryFn'
+  >
+) {
+  const { query, mailboxId, limit } = params;
+
+  return useQuery<FuzzySearchResponse, Error>({
+    queryKey: gmailKeys.fuzzySearch(query, mailboxId),
+    queryFn: () => gmailApi.fuzzySearch({ query, mailboxId, limit }),
+    enabled: query.length >= 2, // Only search if query has at least 2 characters
+    staleTime: 30 * 1000, // 30 seconds - search results can change
+    ...options,
+  });
+}
+
