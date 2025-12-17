@@ -44,7 +44,9 @@ export const SignUpForm = ({ onSubmit, isSubmitting }: SignUpFormProps) => {
           name="fullName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-gray-700 dark:text-slate-200">Full name</FormLabel>
+              <FormLabel className="text-gray-700 dark:text-slate-200">
+                Full name
+              </FormLabel>
               <FormControl>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-400" />
@@ -66,7 +68,9 @@ export const SignUpForm = ({ onSubmit, isSubmitting }: SignUpFormProps) => {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-gray-700 dark:text-slate-200">Email address</FormLabel>
+              <FormLabel className="text-gray-700 dark:text-slate-200">
+                Email address
+              </FormLabel>
               <FormControl>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-400" />
@@ -88,7 +92,9 @@ export const SignUpForm = ({ onSubmit, isSubmitting }: SignUpFormProps) => {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-gray-700 dark:text-slate-200">Password</FormLabel>
+              <FormLabel className="text-gray-700 dark:text-slate-200">
+                Password
+              </FormLabel>
               <FormControl>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-400" />
@@ -123,7 +129,9 @@ export const SignUpForm = ({ onSubmit, isSubmitting }: SignUpFormProps) => {
           name="confirmPassword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-gray-700 dark:text-slate-200">Confirm password</FormLabel>
+              <FormLabel className="text-gray-700 dark:text-slate-200">
+                Confirm password
+              </FormLabel>
               <FormControl>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-400" />

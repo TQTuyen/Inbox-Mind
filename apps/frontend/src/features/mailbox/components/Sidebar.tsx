@@ -118,7 +118,9 @@ export function Sidebar({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Avatar className="h-10 w-10 cursor-pointer border-2 border-gray-200 dark:border-slate-700">
-                  <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userName}`} />
+                  <AvatarImage
+                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userName}`}
+                  />
                   <AvatarFallback>{userInitials}</AvatarFallback>
                 </Avatar>
               </DropdownMenuTrigger>

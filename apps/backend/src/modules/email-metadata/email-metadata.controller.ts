@@ -11,7 +11,10 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { CurrentUser, CurrentUserData } from '../../common/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  CurrentUserData,
+} from '../../common/decorators/current-user.decorator';
 import { EmailMetadataService } from './email-metadata.service';
 import { AIService } from '../ai/ai.service';
 import { UpdateKanbanStatusDto } from './dto/update-kanban-status.dto';

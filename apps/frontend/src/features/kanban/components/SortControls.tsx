@@ -21,7 +21,11 @@ export function SortControls() {
         </SelectTrigger>
         <SelectContent className="bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-700">
           {SORT_OPTIONS.map((option) => (
-            <SelectItem key={option.id} value={option.id} className="text-gray-700 dark:text-slate-300">
+            <SelectItem
+              key={option.id}
+              value={option.id}
+              className="text-gray-700 dark:text-slate-300"
+            >
               {option.label}
             </SelectItem>
           ))}

@@ -284,7 +284,8 @@ export const EmailList = ({ onEmailSelect, onRefresh }: EmailListProps) => {
                     transition={{ duration: 0.15, delay: index * 0.015 }}
                     className={cn(
                       'group hover:bg-gray-100 dark:hover:bg-slate-800/50 transition-colors cursor-pointer',
-                      selectedEmail?.id === email.id && 'bg-gray-200 dark:bg-slate-800/70',
+                      selectedEmail?.id === email.id &&
+                        'bg-gray-200 dark:bg-slate-800/70',
                       !email.isRead && 'bg-primary/5'
                     )}
                     onClick={() => onEmailSelect(email)}
@@ -310,7 +311,9 @@ export const EmailList = ({ onEmailSelect, onRefresh }: EmailListProps) => {
                           <p
                             className={cn(
                               'text-xs font-medium truncate',
-                              !email.isRead ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-slate-300'
+                              !email.isRead
+                                ? 'text-gray-900 dark:text-white'
+                                : 'text-gray-600 dark:text-slate-300'
                             )}
                           >
                             {email.from.name}

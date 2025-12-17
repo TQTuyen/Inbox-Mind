@@ -43,9 +43,12 @@ export const emailMetadataApi = {
       url: `/email-metadata/${emailId}/kanban-status`,
     });
     try {
-      const response = await api.put(`/email-metadata/${emailId}/kanban-status`, {
-        kanbanStatus,
-      });
+      const response = await api.put(
+        `/email-metadata/${emailId}/kanban-status`,
+        {
+          kanbanStatus,
+        }
+      );
       console.log('✅ [API] updateKanbanStatus response:', response.data);
       return response.data;
     } catch (error) {

@@ -119,9 +119,7 @@ export class GmailService {
       );
 
       // Create a map for quick lookup
-      const metadataMap = new Map(
-        metadataList.map((m) => [m.emailId, m])
-      );
+      const metadataMap = new Map(metadataList.map((m) => [m.emailId, m]));
 
       // Enrich emails with their metadata
       const enrichedEmails = emails.map((email) => {

@@ -69,8 +69,12 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
       >
         <div className="text-center text-gray-500 dark:text-slate-400">
           <FileText className="w-24 h-24 mx-auto mb-4 text-gray-300 dark:text-slate-600" />
-          <p className="text-lg font-medium text-gray-700 dark:text-gray-300">No email selected</p>
-          <p className="text-sm mt-1 text-gray-500 dark:text-slate-400">Select an email to view its contents</p>
+          <p className="text-lg font-medium text-gray-700 dark:text-gray-300">
+            No email selected
+          </p>
+          <p className="text-sm mt-1 text-gray-500 dark:text-slate-400">
+            Select an email to view its contents
+          </p>
         </div>
       </motion.div>
     );
@@ -448,7 +452,11 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
                       {(attachment.size / 1024).toFixed(0)} KB
                     </p>
                   </div>
-                  <Button variant="ghost" size="icon" className="shrink-0 text-gray-700 dark:text-slate-300">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 text-gray-700 dark:text-slate-300"
+                  >
                     <Download className="h-4 w-4" />
                   </Button>
                 </motion.div>
@@ -465,7 +473,10 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
             exit={{ opacity: 0, height: 0 }}
             className="mt-6 pt-6 border-t border-border"
           >
-            <label htmlFor="note" className="text-sm font-medium mb-2 block text-gray-900 dark:text-white">
+            <label
+              htmlFor="note"
+              className="text-sm font-medium mb-2 block text-gray-900 dark:text-white"
+            >
               Add a note to this email:
             </label>
             <textarea

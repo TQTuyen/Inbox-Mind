@@ -11,12 +11,7 @@ export function useKanban() {
     useKanbanStore();
 
   // Fetch all Kanban emails (INBOX, TODO, IN_PROGRESS, DONE) in one call
-  const {
-    data: emails = [],
-    isLoading,
-    error,
-    refetch,
-  } = useKanbanEmails();
+  const { data: emails = [], isLoading, error, refetch } = useKanbanEmails();
 
   // Initialize kanban columns when emails are loaded
   useEffect(() => {

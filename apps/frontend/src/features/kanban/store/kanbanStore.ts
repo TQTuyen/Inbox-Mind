@@ -144,7 +144,10 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
     if (!email) return;
 
     // Map labelId to kanbanStatus for optimistic update
-    const kanbanStatusMap: Record<string, 'inbox' | 'todo' | 'in_progress' | 'done'> = {
+    const kanbanStatusMap: Record<
+      string,
+      'inbox' | 'todo' | 'in_progress' | 'done'
+    > = {
       INBOX: 'inbox',
       TODO: 'todo',
       IN_PROGRESS: 'in_progress',
@@ -183,7 +186,10 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
     // Update on server
     try {
       // Map labelId to kanbanStatus
-      const kanbanStatusMap: Record<string, 'inbox' | 'todo' | 'in_progress' | 'done'> = {
+      const kanbanStatusMap: Record<
+        string,
+        'inbox' | 'todo' | 'in_progress' | 'done'
+      > = {
         INBOX: 'inbox',
         TODO: 'todo',
         IN_PROGRESS: 'in_progress',

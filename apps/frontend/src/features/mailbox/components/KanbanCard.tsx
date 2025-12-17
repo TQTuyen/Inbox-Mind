@@ -61,7 +61,8 @@ export function KanbanCard({
         !isDragOverlay && 'cursor-grab active:cursor-grabbing',
         isDragging && !isDragOverlay && 'opacity-50',
         isDragOverlay && 'shadow-2xl cursor-grabbing',
-        !email.isRead && 'border-l-4 border-l-blue-500 bg-blue-50/30 dark:bg-blue-900/20'
+        !email.isRead &&
+          'border-l-4 border-l-blue-500 bg-blue-50/30 dark:bg-blue-900/20'
       )}
     >
       <div className="flex items-start justify-between gap-2 mb-2">
@@ -107,7 +108,9 @@ export function KanbanCard({
         </div>
       ) : (
         <div className="mb-3">
-          <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">{email.preview}</p>
+          <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
+            {email.preview}
+          </p>
           <button
             onClick={(e) => {
               e.stopPropagation();

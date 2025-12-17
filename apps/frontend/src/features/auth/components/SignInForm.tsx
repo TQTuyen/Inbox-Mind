@@ -41,7 +41,9 @@ export const SignInForm = ({ onSubmit, isSubmitting }: SignInFormProps) => {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-gray-700 dark:text-slate-200">Email address</FormLabel>
+              <FormLabel className="text-gray-700 dark:text-slate-200">
+                Email address
+              </FormLabel>
               <FormControl>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-400" />
@@ -64,7 +66,9 @@ export const SignInForm = ({ onSubmit, isSubmitting }: SignInFormProps) => {
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center justify-between">
-                <FormLabel className="text-gray-700 dark:text-slate-200">Password</FormLabel>
+                <FormLabel className="text-gray-700 dark:text-slate-200">
+                  Password
+                </FormLabel>
                 <button
                   type="button"
                   className="text-sm text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 hover:underline transition-colors"

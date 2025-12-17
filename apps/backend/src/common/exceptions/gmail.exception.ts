@@ -76,7 +76,9 @@ export class EmailThreadingException extends InternalServerErrorException {
 }
 
 export class TokenExpiredException extends UnauthorizedException {
-  constructor(message = 'Google OAuth token has expired or been revoked. Please re-authenticate.') {
+  constructor(
+    message = 'Google OAuth token has expired or been revoked. Please re-authenticate.'
+  ) {
     super(message);
     this.name = 'TokenExpiredException';
   }

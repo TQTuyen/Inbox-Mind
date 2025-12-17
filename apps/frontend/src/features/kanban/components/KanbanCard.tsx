@@ -33,7 +33,8 @@ export function KanbanCard({ email, onEmailClick }: KanbanCardProps) {
         className={cn(
           'kanban-card p-3 mb-2 cursor-pointer hover:shadow-md transition-all bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700',
           isDragging && 'opacity-50',
-          !email.isRead && 'bg-blue-50/50 dark:bg-blue-950/20 border-l-4 border-l-blue-500'
+          !email.isRead &&
+            'bg-blue-50/50 dark:bg-blue-950/20 border-l-4 border-l-blue-500'
         )}
         onClick={() => onEmailClick(email)}
       >

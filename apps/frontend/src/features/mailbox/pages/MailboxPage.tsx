@@ -96,7 +96,9 @@ export function MailboxPage() {
   // Refetch emails when switching to Kanban view to ensure latest kanbanStatus from database
   useEffect(() => {
     if (viewMode === 'kanban') {
-      console.log('🔄 [KANBAN] Switching to Kanban view - refetching emails to get latest kanbanStatus from database');
+      console.log(
+        '🔄 [KANBAN] Switching to Kanban view - refetching emails to get latest kanbanStatus from database'
+      );
       refreshEmails();
     }
   }, [viewMode, refreshEmails]);
@@ -275,7 +277,9 @@ export function MailboxPage() {
                           <LayoutList className="h-4 w-4" />
                         </Button>
                         <Button
-                          variant={viewMode === 'kanban' ? 'secondary' : 'ghost'}
+                          variant={
+                            viewMode === 'kanban' ? 'secondary' : 'ghost'
+                          }
                           size="sm"
                           onClick={() => setViewMode('kanban')}
                           className="h-8 w-8 p-0 text-gray-700 dark:text-slate-300"
@@ -301,7 +305,6 @@ export function MailboxPage() {
                 {/* Normal Mode */}
                 {!isSearchMode && (
                   <>
-
                     {/* List View */}
                     {viewMode === 'list' && (
                       <>
@@ -334,7 +337,10 @@ export function MailboxPage() {
               </motion.div>
             </ResizablePanel>
 
-            <ResizableHandle withHandle className="bg-gray-300 dark:bg-slate-800/50" />
+            <ResizableHandle
+              withHandle
+              className="bg-gray-300 dark:bg-slate-800/50"
+            />
 
             {/* Email Detail Panel */}
             <ResizablePanel defaultSize={65} minSize={50}>

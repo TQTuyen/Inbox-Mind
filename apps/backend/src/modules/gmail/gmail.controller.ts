@@ -99,7 +99,10 @@ export class GmailController {
   }
 
   @Get('kanban/emails')
-  @ApiOperation({ summary: 'List all emails for Kanban board (INBOX, TODO, IN_PROGRESS, DONE)' })
+  @ApiOperation({
+    summary:
+      'List all emails for Kanban board (INBOX, TODO, IN_PROGRESS, DONE)',
+  })
   @ApiResponse({ status: 200, description: 'Returns all kanban emails' })
   @UseGuards(JwtAuthGuard)
   async listKanbanEmails(@CurrentUser() user: CurrentUserData) {

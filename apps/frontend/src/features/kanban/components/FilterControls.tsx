@@ -19,7 +19,11 @@ export function FilterControls() {
     <div className="flex items-center gap-2">
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-2 bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-gray-100">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2 bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-gray-100"
+          >
             <Filter className="h-4 w-4" />
             Filters
             {activeFilterCount > 0 && (
@@ -29,10 +33,15 @@ export function FilterControls() {
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-64 bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-700 text-gray-900 dark:text-gray-100" align="start">
+        <PopoverContent
+          className="w-64 bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-700 text-gray-900 dark:text-gray-100"
+          align="start"
+        >
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h4 className="font-medium text-sm text-gray-900 dark:text-gray-100">Filter Emails</h4>
+              <h4 className="font-medium text-sm text-gray-900 dark:text-gray-100">
+                Filter Emails
+              </h4>
               {activeFilterCount > 0 && (
                 <Button
                   variant="ghost"

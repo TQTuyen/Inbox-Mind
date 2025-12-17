@@ -35,9 +35,7 @@ export function KanbanPage() {
         <div className="h-full relative">
           <Sidebar
             isCollapsed={isSidebarCollapsed}
-            onToggleCollapse={() =>
-              setIsSidebarCollapsed(!isSidebarCollapsed)
-            }
+            onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           />
 
           {/* Collapse Toggle Button - Positioned at the border */}
@@ -46,12 +44,32 @@ export function KanbanPage() {
             className="absolute top-1/2 -right-4 -translate-y-1/2 z-10 h-10 w-10 rounded-full border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-md hover:bg-gray-100 dark:hover:bg-slate-800/70 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-slate-400 focus:ring-offset-2 cursor-pointer flex items-center justify-center"
           >
             {isSidebarCollapsed ? (
-              <svg className="h-5 w-5 text-gray-600 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              <svg
+                className="h-5 w-5 text-gray-600 dark:text-slate-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
               </svg>
             ) : (
-              <svg className="h-5 w-5 text-gray-600 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              <svg
+                className="h-5 w-5 text-gray-600 dark:text-slate-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
             )}
           </button>
@@ -86,7 +104,10 @@ export function KanbanPage() {
 
         {/* Mobile Email Detail Sheet */}
         <Sheet open={isMobileDetailOpen} onOpenChange={setIsMobileDetailOpen}>
-          <SheetContent side="right" className="w-full p-0 bg-white dark:bg-slate-900">
+          <SheetContent
+            side="right"
+            className="w-full p-0 bg-white dark:bg-slate-900"
+          >
             {selectedEmail && (
               <EmailDetail
                 isMobile={true}
