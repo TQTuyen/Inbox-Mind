@@ -27,11 +27,11 @@ export function KanbanColumn({
   });
 
   return (
-    <div className="flex flex-col h-full bg-muted/20 rounded-lg border">
+    <div className="kanban-column flex flex-col h-full bg-gray-50 dark:bg-slate-900/50 rounded-lg border border-gray-200 dark:border-slate-700 overflow-hidden">
       {/* Column Header */}
-      <div className="p-4 border-b bg-background">
+      <div className="p-4 border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-sm">{title}</h3>
+          <h3 className="font-semibold text-sm text-gray-900 dark:text-gray-100">{title}</h3>
           <Badge variant="secondary" className="ml-2">
             {emails.length}
           </Badge>
@@ -39,12 +39,12 @@ export function KanbanColumn({
       </div>
 
       {/* Droppable Area */}
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 rounded-b-lg">
         <div
           ref={setNodeRef}
           className={cn(
             'p-3 min-h-[200px] transition-colors',
-            isOver && 'bg-primary/5 ring-2 ring-primary/20 ring-inset'
+            isOver && 'bg-blue-50 dark:bg-blue-950/20 ring-2 ring-blue-500/20 ring-inset'
           )}
         >
           <SortableContext
@@ -52,7 +52,7 @@ export function KanbanColumn({
             strategy={verticalListSortingStrategy}
           >
             {emails.length === 0 ? (
-              <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">
+              <div className="flex items-center justify-center h-32 text-sm text-gray-400 dark:text-slate-500">
                 No emails
               </div>
             ) : (

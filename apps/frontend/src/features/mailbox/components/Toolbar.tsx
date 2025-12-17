@@ -15,17 +15,17 @@ export function Toolbar({
   onRefresh,
 }: ToolbarProps) {
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-border bg-card px-4 py-3">
+    <div className="flex items-center justify-between gap-4 border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 px-4 py-3">
       {/* Search Bar */}
       <div className="flex-1 max-w-xl">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 dark:text-slate-400" />
           <Input
             type="search"
             placeholder="Search mail..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10 bg-accent/50"
+            className="pl-10 bg-gray-50 dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100"
             aria-label="Search emails"
           />
         </div>

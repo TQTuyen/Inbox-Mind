@@ -10,6 +10,8 @@ import {
   useSensors,
   closestCorners,
   useDroppable,
+  defaultDropAnimationSideEffects,
+  type DropAnimation,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -49,31 +51,31 @@ const KANBAN_COLUMNS: KanbanColumn[] = [
     id: 'inbox',
     title: 'Inbox',
     icon: <Inbox className="h-5 w-5" />,
-    color: 'bg-gray-100 border-gray-300',
+    color: 'bg-gray-100 dark:bg-slate-800 border-gray-300 dark:border-slate-600',
   },
   {
     id: 'todo',
     title: 'To Do',
     icon: <ListTodo className="h-5 w-5" />,
-    color: 'bg-blue-100 border-blue-300',
+    color: 'bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700',
   },
   {
     id: 'in_progress',
     title: 'In Progress',
     icon: <PlayCircle className="h-5 w-5" />,
-    color: 'bg-yellow-100 border-yellow-300',
+    color: 'bg-yellow-100 dark:bg-yellow-900/30 border-yellow-300 dark:border-yellow-700',
   },
   {
     id: 'done',
     title: 'Done',
     icon: <CheckCircle2 className="h-5 w-5" />,
-    color: 'bg-green-100 border-green-300',
+    color: 'bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-700',
   },
   {
     id: 'snoozed',
     title: 'Snoozed',
     icon: <Clock className="h-5 w-5" />,
-    color: 'bg-orange-100 border-orange-300',
+    color: 'bg-orange-100 dark:bg-orange-900/30 border-orange-300 dark:border-orange-700',
   },
 ];
 
@@ -112,6 +114,7 @@ export function KanbanBoard({
       done: [],
       snoozed: [],
     };
+    console.log('Grouping emails for Kanban board', emails);
 
     emails.forEach((email) => {
       const status = email.kanbanStatus || 'inbox';
@@ -193,6 +196,18 @@ export function KanbanBoard({
     }
   };
 
+  const dropAnimation: DropAnimation = {
+    duration: 200,
+    easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+    sideEffects: defaultDropAnimationSideEffects({
+      styles: {
+        active: {
+          opacity: '0.5',
+        },
+      },
+    }),
+  };
+
   return (
     <DndContext
       sensors={sensors}
@@ -212,15 +227,15 @@ export function KanbanBoard({
                 )}
               >
                 {column.icon}
-                <h2 className="font-semibold text-gray-900">{column.title}</h2>
-                <span className="ml-auto bg-white px-2 py-0.5 rounded-full text-sm font-medium text-gray-700">
+                <h2 className="font-semibold text-gray-900 dark:text-gray-100">{column.title}</h2>
+                <span className="ml-auto bg-white dark:bg-slate-700 px-2 py-0.5 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300">
                   {groupedEmails[column.id].length}
                 </span>
               </div>
               <DroppableColumn
                 id={column.id}
                 className={cn(
-                  'flex-1 border-2 border-t-0 rounded-b-lg bg-gray-50 min-h-[400px] overflow-y-auto',
+                  'flex-1 border-2 border-t-0 rounded-b-lg bg-gray-50 dark:bg-slate-900/50 min-h-[400px] overflow-y-auto',
                   column.color
                 )}
               >
@@ -240,7 +255,7 @@ export function KanbanBoard({
                       />
                     ))}
                     {groupedEmails[column.id].length === 0 && (
-                      <div className="flex items-center justify-center h-32 text-gray-400 text-sm">
+                      <div className="flex items-center justify-center h-32 text-gray-400 dark:text-slate-500 text-sm">
                         Drop emails here
                       </div>
                     )}
@@ -252,22 +267,21 @@ export function KanbanBoard({
         </div>
       </div>
 
-      <DragOverlay>
+      <DragOverlay dropAnimation={dropAnimation}>
         {activeEmail ? (
-          <div className="rotate-3 opacity-90">
-            <KanbanCard
-              email={activeEmail}
-              onClick={() => {
-                // DragOverlay card is not interactive
-              }}
-              onSnooze={() => {
-                // DragOverlay card is not interactive
-              }}
-              onGenerateSummary={() => {
-                // DragOverlay card is not interactive
-              }}
-            />
-          </div>
+          <KanbanCard
+            email={activeEmail}
+            onClick={() => {
+              // DragOverlay card is not interactive
+            }}
+            onSnooze={() => {
+              // DragOverlay card is not interactive
+            }}
+            onGenerateSummary={() => {
+              // DragOverlay card is not interactive
+            }}
+            isDragOverlay={true}
+          />
         ) : null}
       </DragOverlay>
     </DndContext>

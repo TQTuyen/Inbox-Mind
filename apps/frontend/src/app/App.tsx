@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { LoginPage } from '@fe/features/auth/pages/LoginPage';
 import { OAuthCallbackPage } from '@fe/features/auth/pages/OAuthCallbackPage';
 import { KanbanPage } from '@fe/features/kanban/pages/KanbanPage';
@@ -6,8 +7,20 @@ import { PrivateRoute } from '@fe/guards/PrivateRoute';
 import { QueryProvider } from '@fe/providers/QueryProvider';
 import { ErrorBoundary } from '@fe/shared/components/ErrorBoundary';
 import { Navigate, Route, Routes } from 'react-router-dom';
+import { useThemeStore } from '../store/themeStore';
 
 function App() {
+  const { isDarkMode } = useThemeStore();
+
+  // Initialize theme on mount
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
+
   return (
     <QueryProvider>
       <ErrorBoundary>

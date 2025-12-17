@@ -98,6 +98,14 @@ export class GmailController {
     });
   }
 
+  @Get('kanban/emails')
+  @ApiOperation({ summary: 'List all emails for Kanban board (INBOX, TODO, IN_PROGRESS, DONE)' })
+  @ApiResponse({ status: 200, description: 'Returns all kanban emails' })
+  @UseGuards(JwtAuthGuard)
+  async listKanbanEmails(@CurrentUser() user: CurrentUserData) {
+    return this.gmailService.listKanbanEmails(user.userId);
+  }
+
   @Get('search/fuzzy')
   @ApiOperation({
     summary: 'Fuzzy search emails with typo tolerance',

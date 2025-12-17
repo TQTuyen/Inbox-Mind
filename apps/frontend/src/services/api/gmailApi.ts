@@ -33,6 +33,10 @@ export interface Email {
   labelIds?: string[];
   snippet?: string;
   internalDate?: string;
+  mailboxId?: string;
+  kanbanStatus?: 'inbox' | 'todo' | 'in_progress' | 'done' | 'snoozed';
+  snoozeUntil?: string | null;
+  summary?: string | null;
 }
 
 export interface Mailbox {
@@ -175,6 +179,14 @@ class GmailApiService {
   }
 
   /**
+   * Get all emails for Kanban board (INBOX, TODO, IN_PROGRESS, DONE)
+   */
+  async getKanbanEmails(): Promise<Email[]> {
+    const response = await api.get<any>('/kanban/emails');
+    return response.data.emails?.map(transformGmailMessage) || [];
+  }
+
+  /**
    * Get a single email by ID
    */
   async getEmailById(emailId: string): Promise<Email> {
@@ -225,6 +237,18 @@ class GmailApiService {
     await api.post(`/emails/${emailId}/labels`, {
       action: 'add',
       labelIds: [mailboxId],
+    });
+  }
+
+  /**
+   * Update Kanban status in database
+   */
+  async updateKanbanStatus(
+    emailId: string,
+    kanbanStatus: 'inbox' | 'todo' | 'in_progress' | 'done'
+  ): Promise<void> {
+    await api.put(`/email-metadata/${emailId}/kanban-status`, {
+      kanbanStatus,
     });
   }
 

@@ -15,7 +15,7 @@ export const AuthHeader = ({
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="text-4xl font-bold tracking-tight text-white"
+        className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white"
       >
         {title}
       </motion.h1>
@@ -23,7 +23,7 @@ export const AuthHeader = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.3 }}
-        className="text-slate-400"
+        className="text-gray-600 dark:text-slate-400"
       >
         {subtitle}
       </motion.p>

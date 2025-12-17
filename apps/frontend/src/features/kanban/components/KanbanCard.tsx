@@ -31,16 +31,16 @@ export function KanbanCard({ email, onEmailClick }: KanbanCardProps) {
     <div ref={setNodeRef} style={style} {...attributes}>
       <Card
         className={cn(
-          'p-3 mb-2 cursor-pointer hover:shadow-md transition-all',
+          'kanban-card p-3 mb-2 cursor-pointer hover:shadow-md transition-all bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700',
           isDragging && 'opacity-50',
-          !email.isRead && 'bg-blue-50/50 dark:bg-blue-950/20'
+          !email.isRead && 'bg-blue-50/50 dark:bg-blue-950/20 border-l-4 border-l-blue-500'
         )}
         onClick={() => onEmailClick(email)}
       >
         <div className="flex items-start gap-2">
           {/* Drag Handle */}
           <button
-            className="cursor-grab active:cursor-grabbing mt-1 text-muted-foreground hover:text-foreground"
+            className="cursor-grab active:cursor-grabbing mt-1 text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200"
             {...listeners}
           >
             <GripVertical className="h-4 w-4" />
@@ -53,7 +53,7 @@ export function KanbanCard({ email, onEmailClick }: KanbanCardProps) {
               <div className="flex items-center gap-2 min-w-0 flex-1">
                 <span
                   className={cn(
-                    'text-sm font-medium truncate',
+                    'text-sm font-medium truncate text-gray-900 dark:text-gray-100',
                     !email.isRead && 'font-semibold'
                   )}
                 >
@@ -63,18 +63,18 @@ export function KanbanCard({ email, onEmailClick }: KanbanCardProps) {
                   <Mail className="h-3 w-3 text-blue-600 flex-shrink-0" />
                 )}
               </div>
-              <span className="text-xs text-muted-foreground whitespace-nowrap">
+              <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
                 {format(new Date(email.timestamp), 'MMM dd')}
               </span>
             </div>
 
             {/* Subject */}
-            <div className="text-sm font-medium mb-1 line-clamp-1">
+            <div className="text-sm font-medium mb-1 line-clamp-1 text-gray-900 dark:text-gray-100">
               {email.subject || '(No Subject)'}
             </div>
 
             {/* Preview */}
-            <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+            <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">
               {email.preview}
             </p>
 

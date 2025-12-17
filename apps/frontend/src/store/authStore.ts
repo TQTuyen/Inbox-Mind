@@ -57,5 +57,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: async () => {
     await authService.logout();
     set({ user: null, accessToken: null, isAuthenticated: false });
+
+    // Redirect to login page
+    window.location.href = '/login';
   },
 }));

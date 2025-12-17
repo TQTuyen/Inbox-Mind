@@ -18,7 +18,7 @@ export function FilterChips({
   onFilterChange,
 }: FilterChipsProps) {
   return (
-    <div className="shrink-0 flex gap-2 overflow-x-auto border-b border-slate-800 px-4 py-2.5 bg-slate-900/50">
+    <div className="shrink-0 flex gap-2 overflow-x-auto border-b border-gray-200 dark:border-slate-800 px-4 py-2.5 bg-gray-50 dark:bg-slate-900/50">
       {filters.map((filter) => (
         <motion.button
           key={filter.id}
@@ -28,8 +28,8 @@ export function FilterChips({
           className={cn(
             'flex h-7 shrink-0 items-center justify-center gap-x-2 rounded-md px-3 text-sm font-medium transition-colors whitespace-nowrap cursor-pointer',
             activeFilter === filter.id
-              ? ' bg-blue-600 hover:bg-blue-700 text-white font-medium'
-              : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700 hover:text-white'
+              ? 'bg-blue-600 hover:bg-blue-700 text-white font-medium'
+              : '!bg-white dark:!bg-slate-800/50 text-gray-700 dark:text-slate-300 hover:!bg-gray-100 dark:hover:!bg-slate-700 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-slate-700'
           )}
         >
           {filter.label}

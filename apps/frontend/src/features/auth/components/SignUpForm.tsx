@@ -44,19 +44,19 @@ export const SignUpForm = ({ onSubmit, isSubmitting }: SignUpFormProps) => {
           name="fullName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-slate-200">Full name</FormLabel>
+              <FormLabel className="text-gray-700 dark:text-slate-200">Full name</FormLabel>
               <FormControl>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-400" />
                   <Input
                     type="text"
                     placeholder="John Doe"
-                    className="pl-10 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus-visible:ring-blue-500"
+                    className="pl-10 !bg-white dark:!bg-slate-800/50 border-gray-300 dark:border-slate-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus-visible:ring-blue-500"
                     {...field}
                   />
                 </div>
               </FormControl>
-              <FormMessage className="text-red-400" />
+              <FormMessage className="text-red-500 dark:text-red-400" />
             </FormItem>
           )}
         />
@@ -66,19 +66,19 @@ export const SignUpForm = ({ onSubmit, isSubmitting }: SignUpFormProps) => {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-slate-200">Email address</FormLabel>
+              <FormLabel className="text-gray-700 dark:text-slate-200">Email address</FormLabel>
               <FormControl>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-400" />
                   <Input
                     type="email"
                     placeholder="name@example.com"
-                    className="pl-10 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus-visible:ring-blue-500"
+                    className="pl-10 !bg-white dark:!bg-slate-800/50 border-gray-300 dark:border-slate-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus-visible:ring-blue-500"
                     {...field}
                   />
                 </div>
               </FormControl>
-              <FormMessage className="text-red-400" />
+              <FormMessage className="text-red-500 dark:text-red-400" />
             </FormItem>
           )}
         />
@@ -88,21 +88,21 @@ export const SignUpForm = ({ onSubmit, isSubmitting }: SignUpFormProps) => {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-slate-200">Password</FormLabel>
+              <FormLabel className="text-gray-700 dark:text-slate-200">Password</FormLabel>
               <FormControl>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-400" />
                   <Input
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Create a strong password"
-                    className="pl-10 pr-10 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus-visible:ring-blue-500"
+                    className="pl-10 pr-10 !bg-white dark:!bg-slate-800/50 border-gray-300 dark:border-slate-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus-visible:ring-blue-500"
                     {...field}
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="absolute right-0 top-0 h-full px-3 hover:bg-transparent text-slate-400 hover:text-slate-300"
+                    className="absolute right-0 top-0 h-full px-3 hover:bg-transparent text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-300"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
@@ -113,7 +113,7 @@ export const SignUpForm = ({ onSubmit, isSubmitting }: SignUpFormProps) => {
                   </Button>
                 </div>
               </FormControl>
-              <FormMessage className="text-red-400" />
+              <FormMessage className="text-red-500 dark:text-red-400" />
             </FormItem>
           )}
         />
@@ -123,21 +123,21 @@ export const SignUpForm = ({ onSubmit, isSubmitting }: SignUpFormProps) => {
           name="confirmPassword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-slate-200">Confirm password</FormLabel>
+              <FormLabel className="text-gray-700 dark:text-slate-200">Confirm password</FormLabel>
               <FormControl>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-400" />
                   <Input
                     type={showConfirmPassword ? 'text' : 'password'}
                     placeholder="Re-enter your password"
-                    className="pl-10 pr-10 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus-visible:ring-blue-500"
+                    className="pl-10 pr-10 !bg-white dark:!bg-slate-800/50 border-gray-300 dark:border-slate-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus-visible:ring-blue-500"
                     {...field}
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="absolute right-0 top-0 h-full px-3 hover:bg-transparent text-slate-400 hover:text-slate-300"
+                    className="absolute right-0 top-0 h-full px-3 hover:bg-transparent text-gray-400 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-300"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
                     {showConfirmPassword ? (
@@ -148,7 +148,7 @@ export const SignUpForm = ({ onSubmit, isSubmitting }: SignUpFormProps) => {
                   </Button>
                 </div>
               </FormControl>
-              <FormMessage className="text-red-400" />
+              <FormMessage className="text-red-500 dark:text-red-400" />
             </FormItem>
           )}
         />

@@ -1,4 +1,4 @@
-import { api } from './gmailApi';
+import api from '@fe/lib/api/api';
 import { KanbanStatus } from '../../features/mailbox/store/emailStore';
 
 export interface EmailMetadataResponse {
@@ -37,10 +37,21 @@ export const emailMetadataApi = {
     emailId: string,
     kanbanStatus: KanbanStatus
   ): Promise<EmailMetadataResponse> => {
-    const response = await api.put(`/email-metadata/${emailId}/kanban-status`, {
+    console.log('📡 [API] Calling updateKanbanStatus:', {
+      emailId,
       kanbanStatus,
+      url: `/email-metadata/${emailId}/kanban-status`,
     });
-    return response.data;
+    try {
+      const response = await api.put(`/email-metadata/${emailId}/kanban-status`, {
+        kanbanStatus,
+      });
+      console.log('✅ [API] updateKanbanStatus response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('❌ [API] updateKanbanStatus error:', error);
+      throw error;
+    }
   },
 
   snoozeEmail: async (

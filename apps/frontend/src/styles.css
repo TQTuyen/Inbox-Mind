@@ -4,6 +4,31 @@
 
 @layer base {
   :root {
+    /* Light mode colors */
+    --color-background: 0 0% 100%; /* white */
+    --color-foreground: 222.2 84% 4.9%; /* dark text */
+    --color-card: 0 0% 100%;
+    --color-card-foreground: 222.2 84% 4.9%;
+    --color-popover: 0 0% 100%;
+    --color-popover-foreground: 222.2 84% 4.9%;
+    --color-primary: 221 87% 50%; /* #135bec */
+    --color-primary-foreground: 0 0% 100%;
+    --color-secondary: 210 40% 96.1%;
+    --color-secondary-foreground: 222.2 47.4% 11.2%;
+    --color-muted: 210 40% 96.1%;
+    --color-muted-foreground: 215.4 16.3% 46.9%;
+    --color-accent: 210 40% 96.1%;
+    --color-accent-foreground: 222.2 47.4% 11.2%;
+    --color-destructive: 0 84.2% 60.2%;
+    --color-destructive-foreground: 210 40% 98%;
+    --color-border: 214.3 31.8% 91.4%;
+    --color-input: 214.3 31.8% 91.4%;
+    --color-ring: 221 87% 50%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Dark mode colors */
     --color-background: 220 40% 9%; /* #101622 */
     --color-foreground: 210 40% 98%;
     --color-card: 220 35% 11%;
@@ -23,7 +48,6 @@
     --color-border: 217.2 32.6% 17.5%;
     --color-input: 217.2 32.6% 17.5%;
     --color-ring: 221 87% 50%;
-    --radius: 0.5rem;
   }
 }
 
@@ -79,5 +103,62 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* Custom scrollbar styling */
+@layer base {
+  /* Light mode scrollbar */
+  :root {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9; /* gray-300 thumb, gray-100 track */
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f1f5f9; /* gray-100 */
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1; /* gray-300 */
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8; /* gray-400 */
+  }
+
+  /* Dark mode scrollbar */
+  .dark {
+    scrollbar-color: #475569 #1e293b; /* slate-600 thumb, slate-800 track */
+  }
+
+  .dark ::-webkit-scrollbar-track {
+    background: #1e293b; /* slate-800 */
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    background: #475569; /* slate-600 */
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: #64748b; /* slate-500 */
+  }
+}
+
+/* Hide scrollbar for drag-to-scroll areas */
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
   }
 }

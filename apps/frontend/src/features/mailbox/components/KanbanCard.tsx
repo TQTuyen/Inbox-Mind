@@ -19,6 +19,7 @@ interface KanbanCardProps {
   onSnooze: (emailId: string) => void;
   onGenerateSummary: (emailId: string) => void;
   isGeneratingSummary?: boolean;
+  isDragOverlay?: boolean;
 }
 
 export function KanbanCard({
@@ -27,6 +28,7 @@ export function KanbanCard({
   onSnooze,
   onGenerateSummary,
   isGeneratingSummary,
+  isDragOverlay = false,
 }: KanbanCardProps) {
   const {
     attributes,
@@ -37,10 +39,12 @@ export function KanbanCard({
     isDragging,
   } = useSortable({ id: email.id });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
+  const style = isDragOverlay
+    ? {}
+    : {
+        transform: CSS.Transform.toString(transform),
+        transition,
+      };
 
   const formattedTime = formatDistanceToNow(new Date(email.timestamp), {
     addSuffix: true,
@@ -48,31 +52,33 @@ export function KanbanCard({
 
   return (
     <div
-      ref={setNodeRef}
+      ref={isDragOverlay ? undefined : setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
+      {...(isDragOverlay ? {} : attributes)}
+      {...(isDragOverlay ? {} : listeners)}
       className={cn(
-        'group relative rounded-lg border bg-white p-4 shadow-sm transition-all hover:shadow-md cursor-move',
-        isDragging && 'opacity-50 cursor-grabbing',
-        !email.isRead && 'border-l-4 border-l-blue-500 bg-blue-50/30'
+        'group relative rounded-lg border bg-white dark:bg-slate-800 p-4 shadow-sm transition-all hover:shadow-md',
+        !isDragOverlay && 'cursor-grab active:cursor-grabbing',
+        isDragging && !isDragOverlay && 'opacity-50',
+        isDragOverlay && 'shadow-2xl cursor-grabbing',
+        !email.isRead && 'border-l-4 border-l-blue-500 bg-blue-50/30 dark:bg-blue-900/20'
       )}
     >
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             {email.isRead ? (
-              <MailOpen className="h-4 w-4 text-gray-400 flex-shrink-0" />
+              <MailOpen className="h-4 w-4 text-gray-400 dark:text-slate-500 flex-shrink-0" />
             ) : (
               <Mail className="h-4 w-4 text-blue-500 flex-shrink-0" />
             )}
-            <span className="text-sm font-semibold text-gray-900 truncate">
+            <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
               {email.from.name || email.from.email}
             </span>
           </div>
           <h3
             className={cn(
-              'text-sm font-medium text-gray-900 line-clamp-2 cursor-pointer hover:text-blue-600',
+              'text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-2 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400',
               !email.isRead && 'font-semibold'
             )}
             onClick={(e) => {
@@ -91,9 +97,9 @@ export function KanbanCard({
       </div>
 
       {email.summary ? (
-        <div className="mb-3 p-2 bg-purple-50 border border-purple-200 rounded text-xs text-gray-700">
+        <div className="mb-3 p-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded text-xs text-gray-700 dark:text-gray-300">
           <div className="flex items-start gap-1.5">
-            <span className="text-purple-600 font-semibold flex-shrink-0">
+            <span className="text-purple-600 dark:text-purple-400 font-semibold flex-shrink-0">
               AI:
             </span>
             <p className="line-clamp-3">{email.summary}</p>
@@ -101,14 +107,14 @@ export function KanbanCard({
         </div>
       ) : (
         <div className="mb-3">
-          <p className="text-xs text-gray-600 line-clamp-2">{email.preview}</p>
+          <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">{email.preview}</p>
           <button
             onClick={(e) => {
               e.stopPropagation();
               onGenerateSummary(email.id);
             }}
             disabled={isGeneratingSummary}
-            className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-purple-600 hover:text-purple-700 text-xs font-medium disabled:opacity-50"
+            className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 text-xs font-medium disabled:opacity-50"
             title="Generate AI Summary"
           >
             {isGeneratingSummary ? (
@@ -126,7 +132,7 @@ export function KanbanCard({
         </div>
       )}
 
-      <div className="flex items-center justify-between text-xs text-gray-500">
+      <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
         <div className="flex items-center gap-3">
           <span>{formattedTime}</span>
           {email.attachments && email.attachments.length > 0 && (
@@ -142,7 +148,7 @@ export function KanbanCard({
               e.stopPropagation();
               onSnooze(email.id);
             }}
-            className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-gray-500 hover:text-blue-600 px-2 py-1 rounded hover:bg-gray-100"
+            className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-slate-700"
             title="Snooze"
           >
             <Clock className="h-3 w-3" />
@@ -152,7 +158,7 @@ export function KanbanCard({
       </div>
 
       {email.snoozeUntil && (
-        <div className="mt-2 flex items-center gap-1 text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">
+        <div className="mt-2 flex items-center gap-1 text-xs text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 px-2 py-1 rounded">
           <Clock className="h-3 w-3" />
           <span>Until {new Date(email.snoozeUntil).toLocaleString()}</span>
         </div>

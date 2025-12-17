@@ -2,6 +2,7 @@ import {
   BadRequestException,
   InternalServerErrorException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 
 export class GmailOperationException extends InternalServerErrorException {
@@ -71,5 +72,12 @@ export class EmailThreadingException extends InternalServerErrorException {
     if (originalError) {
       console.error(`Email threading error:`, originalError);
     }
+  }
+}
+
+export class TokenExpiredException extends UnauthorizedException {
+  constructor(message = 'Google OAuth token has expired or been revoked. Please re-authenticate.') {
+    super(message);
+    this.name = 'TokenExpiredException';
   }
 }

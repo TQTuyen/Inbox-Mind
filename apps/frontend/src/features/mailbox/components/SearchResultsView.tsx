@@ -1,4 +1,3 @@
-import { FuzzySearchResult } from '@fe/services/api/gmailApi';
 import { Badge } from '@fe/shared/components/ui/badge';
 import { Button } from '@fe/shared/components/ui/button';
 import { Card } from '@fe/shared/components/ui/card';
@@ -6,63 +5,29 @@ import { ScrollArea } from '@fe/shared/components/ui/scroll-area';
 import { cn } from '@fe/lib/utils';
 import { format } from 'date-fns';
 import { ArrowLeft, Mail, Paperclip, Search } from 'lucide-react';
-import { Email } from '../store/emailStore';
+import { Email, useEmailStore } from '../store/emailStore';
 
 interface SearchResultsViewProps {
-  results: FuzzySearchResult[];
-  query: string;
-  isLoading: boolean;
-  error: Error | null;
-  onEmailClick: (result: FuzzySearchResult) => void;
+  onEmailSelect: (email: Email) => void;
   onBack: () => void;
 }
 
 export function SearchResultsView({
-  results,
-  query,
-  isLoading,
-  error,
-  onEmailClick,
+  onEmailSelect,
   onBack,
 }: SearchResultsViewProps) {
-  if (isLoading) {
-    return (
-      <div className="flex flex-col h-full">
-        <SearchHeader query={query} onBack={onBack} resultCount={0} />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4 animate-pulse" />
-            <p className="text-sm text-muted-foreground">Searching...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col h-full">
-        <SearchHeader query={query} onBack={onBack} resultCount={0} />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-sm text-destructive">
-              Error: {error.message || 'Failed to search emails'}
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const { searchResults, searchQuery } = useEmailStore();
+  const results = searchResults;
 
   if (results.length === 0) {
     return (
       <div className="flex flex-col h-full">
-        <SearchHeader query={query} onBack={onBack} resultCount={0} />
+        <SearchHeader query={searchQuery} onBack={onBack} resultCount={0} />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-sm text-muted-foreground">
-              No results found for "{query}"
+              No results found for "{searchQuery}"
             </p>
             <p className="text-xs text-muted-foreground mt-2">
               Try a different search term
@@ -76,17 +41,17 @@ export function SearchResultsView({
   return (
     <div className="flex flex-col h-full">
       <SearchHeader
-        query={query}
+        query={searchQuery}
         onBack={onBack}
         resultCount={results.length}
       />
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-2">
-          {results.map((result) => (
+          {results.map((email) => (
             <SearchResultCard
-              key={result.id}
-              result={result}
-              onClick={() => onEmailClick(result)}
+              key={email.id}
+              email={email}
+              onClick={() => onEmailSelect(email)}
             />
           ))}
         </div>
@@ -124,17 +89,17 @@ function SearchHeader({
 }
 
 function SearchResultCard({
-  result,
+  email,
   onClick,
 }: {
-  result: FuzzySearchResult;
+  email: Email;
   onClick: () => void;
 }) {
   return (
     <Card
       className={cn(
         'p-4 cursor-pointer hover:shadow-md transition-all',
-        !result.isRead && 'bg-blue-50/50 dark:bg-blue-950/20'
+        !email.isRead && 'bg-blue-50/50 dark:bg-blue-950/20'
       )}
       onClick={onClick}
     >
@@ -145,52 +110,36 @@ function SearchResultCard({
             <span
               className={cn(
                 'text-sm font-medium truncate',
-                !result.isRead && 'font-semibold'
+                !email.isRead && 'font-semibold'
               )}
             >
-              {result.from.name || result.from.email}
+              {email.from.name || email.from.email}
             </span>
-            {!result.isRead && (
+            {!email.isRead && (
               <Mail className="h-3 w-3 text-blue-600 flex-shrink-0" />
             )}
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <Badge variant="secondary" className="text-xs">
-              {Math.round(result.score * 100)}% match
-            </Badge>
             <span className="text-xs text-muted-foreground whitespace-nowrap">
-              {format(new Date(result.timestamp), 'MMM dd, yyyy')}
+              {format(new Date(email.timestamp), 'MMM dd, yyyy')}
             </span>
           </div>
         </div>
 
         {/* Subject */}
-        <div className="text-sm font-medium line-clamp-1">{result.subject}</div>
+        <div className="text-sm font-medium line-clamp-1">{email.subject}</div>
 
-        {/* Snippet */}
+        {/* Preview/Snippet */}
         <p className="text-xs text-muted-foreground line-clamp-2">
-          {result.snippet}
+          {email.preview}
         </p>
 
-        {/* Footer: Matched Fields and Attachments */}
+        {/* Footer: Attachments */}
         <div className="flex items-center gap-2 flex-wrap">
-          {result.matchedFields.length > 0 && (
-            <div className="flex items-center gap-1">
-              <span className="text-xs text-muted-foreground">Matched:</span>
-              {result.matchedFields.map((field) => (
-                <Badge
-                  key={field}
-                  variant="outline"
-                  className="text-xs px-1.5 py-0"
-                >
-                  {field}
-                </Badge>
-              ))}
-            </div>
-          )}
-          {result.hasAttachments && (
+          {email.attachments && email.attachments.length > 0 && (
             <Badge variant="secondary" className="text-xs px-1.5 py-0">
-              <Paperclip className="h-3 w-3" />
+              <Paperclip className="h-3 w-3 mr-1" />
+              {email.attachments.length}
             </Badge>
           )}
         </div>

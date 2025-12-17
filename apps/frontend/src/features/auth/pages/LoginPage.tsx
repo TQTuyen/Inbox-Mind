@@ -40,7 +40,7 @@ export const LoginPage = () => {
   const displayError = authError || urlError;
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center p-4 bg-linear-to-br from-slate-950 via-blue-950/20 to-slate-950">
+    <div className="relative min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100 dark:from-slate-950 dark:via-blue-950/20 dark:to-slate-950">
       <AuthBackground />
       <AuthLogo />
 

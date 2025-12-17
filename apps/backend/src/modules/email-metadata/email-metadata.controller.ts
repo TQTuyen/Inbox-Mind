@@ -11,34 +11,41 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { CurrentUser, CurrentUserData } from '../../common/decorators/current-user.decorator';
 import { EmailMetadataService } from './email-metadata.service';
 import { AIService } from '../ai/ai.service';
-import { GmailService } from '../gmail/gmail.service';
 import { UpdateKanbanStatusDto } from './dto/update-kanban-status.dto';
 import { SnoozeEmailDto } from './dto/snooze-email.dto';
+import { GenerateSummaryDto } from './dto/generate-summary.dto';
 
-@Controller('api/email-metadata')
+@Controller('email-metadata')
 @UseGuards(JwtAuthGuard)
 export class EmailMetadataController {
   constructor(
     private readonly emailMetadataService: EmailMetadataService,
-    private readonly aiService: AIService,
-    private readonly gmailService: GmailService
+    private readonly aiService: AIService
   ) {}
 
   @Put(':emailId/kanban-status')
   @HttpCode(HttpStatus.OK)
   async updateKanbanStatus(
-    @CurrentUser() user: any,
+    @CurrentUser() user: CurrentUserData,
     @Param('emailId') emailId: string,
     @Body() dto: UpdateKanbanStatusDto
   ) {
+    console.log('🔵 [BACKEND] updateKanbanStatus endpoint called:', {
+      userId: user?.userId,
+      emailId,
+      kanbanStatus: dto.kanbanStatus,
+    });
+
     const metadata = await this.emailMetadataService.updateKanbanStatus(
-      user.id,
+      user.userId,
       emailId,
       dto.kanbanStatus
     );
+
+    console.log('✅ [BACKEND] Metadata saved successfully:', metadata);
 
     return {
       success: true,
@@ -49,7 +56,7 @@ export class EmailMetadataController {
   @Post(':emailId/snooze')
   @HttpCode(HttpStatus.OK)
   async snoozeEmail(
-    @CurrentUser() user: any,
+    @CurrentUser() user: CurrentUserData,
     @Param('emailId') emailId: string,
     @Body() dto: SnoozeEmailDto
   ) {
@@ -60,7 +67,7 @@ export class EmailMetadataController {
     }
 
     const metadata = await this.emailMetadataService.snoozeEmail(
-      user.id,
+      user.userId,
       emailId,
       snoozeUntil
     );
@@ -74,11 +81,11 @@ export class EmailMetadataController {
   @Post(':emailId/unsnooze')
   @HttpCode(HttpStatus.OK)
   async unsnoozeEmail(
-    @CurrentUser() user: any,
+    @CurrentUser() user: CurrentUserData,
     @Param('emailId') emailId: string
   ) {
     const metadata = await this.emailMetadataService.unsnoozeEmail(
-      user.id,
+      user.userId,
       emailId
     );
 
@@ -91,8 +98,9 @@ export class EmailMetadataController {
   @Post(':emailId/generate-summary')
   @HttpCode(HttpStatus.OK)
   async generateSummary(
-    @CurrentUser() user: any,
-    @Param('emailId') emailId: string
+    @CurrentUser() user: CurrentUserData,
+    @Param('emailId') emailId: string,
+    @Body() dto: GenerateSummaryDto
   ) {
     if (!this.aiService.isAvailable()) {
       throw new BadRequestException(
@@ -100,22 +108,19 @@ export class EmailMetadataController {
       );
     }
 
-    // Fetch the email from Gmail
-    const email = await this.gmailService.getEmail(user, emailId);
-
-    if (!email) {
-      throw new BadRequestException('Email not found');
+    if (!dto.emailBody) {
+      throw new BadRequestException('Email body is required');
     }
 
-    // Generate summary
+    // Generate summary using provided email body and subject
     const summary = await this.aiService.summarizeEmail(
-      email.body,
-      email.subject
+      dto.emailBody,
+      dto.subject || 'No Subject'
     );
 
     // Save summary to database
     const metadata = await this.emailMetadataService.updateSummary(
-      user.id,
+      user.userId,
       emailId,
       summary
     );
@@ -131,11 +136,11 @@ export class EmailMetadataController {
 
   @Get(':emailId')
   async getMetadata(
-    @CurrentUser() user: any,
+    @CurrentUser() user: CurrentUserData,
     @Param('emailId') emailId: string
   ) {
     const metadata = await this.emailMetadataService.getMetadata(
-      user.id,
+      user.userId,
       emailId
     );
 

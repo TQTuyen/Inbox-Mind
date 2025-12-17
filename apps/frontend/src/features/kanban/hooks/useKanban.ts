@@ -1,20 +1,24 @@
 import { useEffect } from 'react';
-import { useMailbox } from '../../mailbox/hooks/useMailbox';
-import { useEmailStore } from '../../mailbox/store/emailStore';
+import { useKanbanEmails } from '@fe/hooks/useGmailQuery';
 import { useKanbanStore } from '../store/kanbanStore';
 
 /**
- * Custom hook that integrates mailbox data with kanban board
- * Syncs emails from useMailbox to Kanban columns
+ * Custom hook that fetches Kanban emails and manages Kanban board state
+ * Uses dedicated /api/kanban/emails endpoint to fetch from all Kanban labels
  */
 export function useKanban() {
-  const { emails, loading } = useEmailStore();
-  const { initializeColumns, setLoading, moveEmail } = useKanbanStore();
+  const { initializeColumns, setLoading, setError, moveEmail } =
+    useKanbanStore();
 
-  // Use existing mailbox hook for data fetching
-  const mailboxHook = useMailbox();
+  // Fetch all Kanban emails (INBOX, TODO, IN_PROGRESS, DONE) in one call
+  const {
+    data: emails = [],
+    isLoading,
+    error,
+    refetch,
+  } = useKanbanEmails();
 
-  // Initialize kanban columns when emails change
+  // Initialize kanban columns when emails are loaded
   useEffect(() => {
     if (emails.length > 0) {
       initializeColumns(emails);
@@ -23,8 +27,17 @@ export function useKanban() {
 
   // Sync loading state
   useEffect(() => {
-    setLoading(loading);
-  }, [loading, setLoading]);
+    setLoading(isLoading);
+  }, [isLoading, setLoading]);
+
+  // Sync error state
+  useEffect(() => {
+    if (error) {
+      setError(error.message || 'Failed to load Kanban emails');
+    } else {
+      setError(null);
+    }
+  }, [error, setError]);
 
   // Handle moving emails between columns (updates backend)
   const handleMoveEmail = async (
@@ -32,26 +45,15 @@ export function useKanban() {
     fromColumnId: string,
     toColumnId: string
   ) => {
-    // Optimistically update UI
-    moveEmail(emailId, fromColumnId, toColumnId);
-
-    // TODO: Call API to update email labels
-    // This would modify the email's labels in Gmail
-    // Example:
-    // try {
-    //   await gmailApi.modifyLabels(emailId, {
-    //     addLabelIds: [toColumnLabelId],
-    //     removeLabelIds: [fromColumnLabelId]
-    //   });
-    // } catch (error) {
-    //   // Revert optimistic update on error
-    //   moveEmail(emailId, toColumnId, fromColumnId);
-    //   toast.error('Failed to move email');
-    // }
+    // The moveEmail action handles optimistic updates and API calls
+    await moveEmail(emailId, fromColumnId, toColumnId);
   };
 
   return {
-    ...mailboxHook,
+    emails,
+    loading: isLoading,
+    error: error?.message || null,
+    refetch,
     handleMoveEmail,
   };
 }

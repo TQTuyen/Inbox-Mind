@@ -8,12 +8,14 @@ import {
 } from '@fe/shared/components/ui/resizable';
 import { Sheet, SheetContent } from '@fe/shared/components/ui/sheet';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { KanbanBoard } from '../components/KanbanBoard';
 import { useKanban } from '../hooks/useKanban';
 
 export function KanbanPage() {
   const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const navigate = useNavigate();
 
   const { selectedEmail, setSelectedEmail } = useEmailStore();
 
@@ -26,41 +28,56 @@ export function KanbanPage() {
   };
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-screen flex bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100 dark:from-slate-950 dark:via-blue-950/20 dark:to-slate-950">
       {/* Desktop Layout */}
-      <div className="hidden md:flex flex-1 overflow-hidden">
-        <ResizablePanelGroup direction="horizontal">
-          {/* Sidebar */}
-          <ResizablePanel defaultSize={20} minSize={15} maxSize={30}>
-            <div className="h-full border-r">
-              <Sidebar
-                isCollapsed={isSidebarCollapsed}
-                onToggleCollapse={() =>
-                  setIsSidebarCollapsed(!isSidebarCollapsed)
-                }
-              />
-            </div>
-          </ResizablePanel>
+      <div className="hidden md:flex flex-1 overflow-hidden relative">
+        {/* Sidebar - No gap */}
+        <div className="h-full relative">
+          <Sidebar
+            isCollapsed={isSidebarCollapsed}
+            onToggleCollapse={() =>
+              setIsSidebarCollapsed(!isSidebarCollapsed)
+            }
+          />
 
-          <ResizableHandle />
+          {/* Collapse Toggle Button - Positioned at the border */}
+          <button
+            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            className="absolute top-1/2 -right-4 -translate-y-1/2 z-10 h-10 w-10 rounded-full border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-md hover:bg-gray-100 dark:hover:bg-slate-800/70 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-slate-400 focus:ring-offset-2 cursor-pointer flex items-center justify-center"
+          >
+            {isSidebarCollapsed ? (
+              <svg className="h-5 w-5 text-gray-600 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            ) : (
+              <svg className="h-5 w-5 text-gray-600 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            )}
+          </button>
+        </div>
 
-          {/* Kanban Board */}
-          <ResizablePanel defaultSize={selectedEmail ? 50 : 80} minSize={40}>
-            <KanbanBoard onEmailClick={handleEmailClick} />
-          </ResizablePanel>
+        {/* Main Content Area */}
+        <div className="flex-1 flex overflow-hidden">
+          <ResizablePanelGroup direction="horizontal">
+            {/* Kanban Board */}
+            <ResizablePanel defaultSize={selectedEmail ? 70 : 100} minSize={50}>
+              <KanbanBoard onEmailClick={handleEmailClick} />
+            </ResizablePanel>
 
-          {/* Email Detail */}
-          {selectedEmail && (
-            <>
-              <ResizableHandle />
-              <ResizablePanel defaultSize={30} minSize={25} maxSize={40}>
-                <div className="h-full border-l">
-                  <EmailDetail />
-                </div>
-              </ResizablePanel>
-            </>
-          )}
-        </ResizablePanelGroup>
+            {/* Email Detail */}
+            {selectedEmail && (
+              <>
+                <ResizableHandle className="bg-gray-300 dark:bg-slate-800/50" />
+                <ResizablePanel defaultSize={30} minSize={25} maxSize={40}>
+                  <div className="h-full border-l border-gray-200 dark:border-slate-800">
+                    <EmailDetail />
+                  </div>
+                </ResizablePanel>
+              </>
+            )}
+          </ResizablePanelGroup>
+        </div>
       </div>
 
       {/* Mobile Layout */}
@@ -69,7 +86,7 @@ export function KanbanPage() {
 
         {/* Mobile Email Detail Sheet */}
         <Sheet open={isMobileDetailOpen} onOpenChange={setIsMobileDetailOpen}>
-          <SheetContent side="right" className="w-full p-0">
+          <SheetContent side="right" className="w-full p-0 bg-white dark:bg-slate-900">
             {selectedEmail && (
               <EmailDetail
                 isMobile={true}

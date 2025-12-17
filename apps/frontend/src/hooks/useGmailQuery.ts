@@ -33,6 +33,7 @@ export const gmailKeys = {
     [...gmailKeys.emails(), 'list', mailboxId, filters] as const,
   emailDetail: (emailId: string) =>
     [...gmailKeys.emails(), 'detail', emailId] as const,
+  kanbanEmails: () => [...gmailKeys.emails(), 'kanban'] as const,
   threads: () => [...gmailKeys.all, 'threads'] as const,
   threadList: (labelId?: string) =>
     [...gmailKeys.threads(), 'list', labelId] as const,
@@ -101,6 +102,20 @@ export function useInfiniteEmails(
     getNextPageParam: (lastPage) => lastPage.nextPageToken ?? undefined,
     initialPageParam: undefined as string | undefined,
     enabled: !!mailboxId,
+    ...options,
+  });
+}
+
+/**
+ * Fetch all emails for Kanban board (INBOX, TODO, IN_PROGRESS, DONE)
+ */
+export function useKanbanEmails(
+  options?: Omit<UseQueryOptions<Email[], Error>, 'queryKey' | 'queryFn'>
+) {
+  return useQuery<Email[], Error>({
+    queryKey: gmailKeys.kanbanEmails(),
+    queryFn: () => gmailApi.getKanbanEmails(),
+    staleTime: 30 * 1000, // 30 seconds - Kanban data updates frequently
     ...options,
   });
 }

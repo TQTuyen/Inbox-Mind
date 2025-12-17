@@ -36,19 +36,19 @@ export const AuthCard = ({
   const [activeTab, setActiveTab] = useState('signin');
 
   return (
-    <Card className="border-slate-800 bg-slate-900/50 backdrop-blur-xl shadow-2xl">
+    <Card className="border-gray-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/50 backdrop-blur-xl shadow-2xl">
       <CardContent className="p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6 bg-slate-800/50">
+          <TabsList className="grid w-full grid-cols-2 mb-6 bg-gray-100 dark:bg-slate-800/50">
             <TabsTrigger
               value="signin"
-              className="relative data-[state=active]:bg-blue-500 data-[state=active]:text-blue-100 hover:bg-blue-900"
+              className="relative data-[state=active]:bg-blue-500 data-[state=active]:text-white hover:bg-blue-100 dark:hover:bg-blue-900"
             >
               Sign In
             </TabsTrigger>
             <TabsTrigger
               value="signup"
-              className="relative data-[state=active]:bg-blue-500 data-[state=active]:text-blue-100 hover:bg-blue-900"
+              className="relative data-[state=active]:bg-blue-500 data-[state=active]:text-white hover:bg-blue-100 dark:hover:bg-blue-900"
             >
               Sign Up
             </TabsTrigger>
