@@ -5,6 +5,7 @@ import { GmailFormat, GmailLabel } from '../../common/enums';
 import { GmailOperationException } from '../../common/exceptions/gmail.exception';
 import { AppLoggerService } from '../../common/logger/app-logger.service';
 import { GmailClientFactoryService } from '../../common/services/gmail-client-factory.service';
+import { EmailMetadataService } from '../email-metadata/email-metadata.service';
 import { EmailReplyBuilder } from './builders/email-reply.builder';
 import { EmailBuilder } from './builders/email.builder';
 import { MimeMultipartBuilder } from './builders/mime-multipart.builder';
@@ -25,6 +26,7 @@ interface EmailListParams {
   labelId?: string;
   pageToken?: string;
   maxResults?: number;
+  pageSize?: number;
 }
 
 interface SendEmailData {
@@ -56,7 +58,8 @@ export class GmailService {
     private readonly logger: AppLoggerService,
     private readonly attachmentService: AttachmentService,
     private readonly threadingService: EmailThreadingService,
-    private readonly fileUploadService: FileUploadService
+    private readonly fileUploadService: FileUploadService,
+    private readonly emailMetadataService: EmailMetadataService
   ) {
     this.logger.setContext('GmailService');
   }
@@ -107,12 +110,112 @@ export class GmailService {
       const messages = response.data.messages || [];
       const emails = await this.fetchEmailsMetadata(gmail, messages);
 
+      // Enrich emails with metadata from database (kanbanStatus, snoozeUntil, summary)
+      // Use batch query to avoid N+1 problem
+      const emailIds = emails.map((email) => email.id);
+      const metadataList = await this.emailMetadataService.getMetadataForEmails(
+        userId,
+        emailIds
+      );
+
+      // Create a map for quick lookup
+      const metadataMap = new Map(metadataList.map((m) => [m.emailId, m]));
+
+      // Enrich emails with their metadata
+      const enrichedEmails = emails.map((email) => {
+        const metadata = metadataMap.get(email.id);
+        return {
+          ...email,
+          kanbanStatus: metadata?.kanbanStatus || 'inbox',
+          snoozeUntil: metadata?.snoozeUntil || null,
+          summary: metadata?.summary || null,
+        };
+      });
+
       return {
-        emails,
+        emails: enrichedEmails,
         nextPageToken: response.data.nextPageToken,
       };
     } catch (error) {
       throw new GmailOperationException('fetch emails', error);
+    }
+  }
+
+  async listKanbanEmails(userId: string) {
+    try {
+      const gmail = await this.getGmailClient(userId);
+      const kanbanLabels = ['INBOX', 'TODO', 'IN_PROGRESS', 'DONE'];
+
+      // Fetch emails from all kanban labels in parallel
+      const emailsPromises = kanbanLabels.map(async (labelId) => {
+        try {
+          const response = await gmail.users.messages.list({
+            userId: GMAIL_CONFIG.USER_ID,
+            labelIds: [labelId],
+            maxResults: 100, // Get up to 100 emails per label
+          });
+
+          const messages = response.data.messages || [];
+          const emails = await this.fetchEmailsMetadata(gmail, messages);
+
+          // Set the correct mailboxId for each email
+          return emails.map((email) => ({
+            ...email,
+            mailboxId: labelId,
+          }));
+        } catch (error) {
+          this.logger.error(
+            { labelId, error: error.message },
+            `Failed to fetch emails for label ${labelId}`
+          );
+          return [];
+        }
+      });
+
+      const allEmailsArrays = await Promise.all(emailsPromises);
+      const allEmails = allEmailsArrays.flat();
+
+      // Remove duplicates (emails with multiple labels will appear multiple times)
+      // Keep the email with the most specific label (DONE > IN_PROGRESS > TODO > INBOX)
+      const labelPriority = { DONE: 4, IN_PROGRESS: 3, TODO: 2, INBOX: 1 };
+      const emailMap = new Map();
+
+      allEmails.forEach((email) => {
+        const existing = emailMap.get(email.id);
+        const currentPriority = labelPriority[email.mailboxId] || 0;
+        const existingPriority = existing
+          ? labelPriority[existing.mailboxId] || 0
+          : 0;
+
+        if (!existing || currentPriority > existingPriority) {
+          emailMap.set(email.id, email);
+        }
+      });
+
+      const uniqueEmails = Array.from(emailMap.values());
+
+      // Enrich with metadata
+      const emailIds = uniqueEmails.map((email) => email.id);
+      const metadataList = await this.emailMetadataService.getMetadataForEmails(
+        userId,
+        emailIds
+      );
+
+      const metadataMap = new Map(metadataList.map((m) => [m.emailId, m]));
+
+      const enrichedEmails = uniqueEmails.map((email) => {
+        const metadata = metadataMap.get(email.id);
+        return {
+          ...email,
+          kanbanStatus: metadata?.kanbanStatus || 'inbox',
+          snoozeUntil: metadata?.snoozeUntil || null,
+          summary: metadata?.summary || null,
+        };
+      });
+
+      return { emails: enrichedEmails };
+    } catch (error) {
+      throw new GmailOperationException('fetch kanban emails', error);
     }
   }
 

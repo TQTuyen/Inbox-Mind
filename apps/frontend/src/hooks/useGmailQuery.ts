@@ -3,6 +3,7 @@ import {
   Email,
   EmailAttachment,
   EmailListResponse,
+  FuzzySearchResponse,
   gmailApi,
   Mailbox,
   ModifyLabelsRequest,
@@ -32,6 +33,7 @@ export const gmailKeys = {
     [...gmailKeys.emails(), 'list', mailboxId, filters] as const,
   emailDetail: (emailId: string) =>
     [...gmailKeys.emails(), 'detail', emailId] as const,
+  kanbanEmails: () => [...gmailKeys.emails(), 'kanban'] as const,
   threads: () => [...gmailKeys.all, 'threads'] as const,
   threadList: (labelId?: string) =>
     [...gmailKeys.threads(), 'list', labelId] as const,
@@ -39,6 +41,9 @@ export const gmailKeys = {
     [...gmailKeys.threads(), 'detail', threadId] as const,
   attachments: (emailId: string) =>
     [...gmailKeys.emails(), 'attachments', emailId] as const,
+  search: () => [...gmailKeys.all, 'search'] as const,
+  fuzzySearch: (query: string, mailboxId?: string) =>
+    [...gmailKeys.search(), 'fuzzy', query, mailboxId] as const,
 };
 
 // ==================== Mailbox Hooks ====================
@@ -97,6 +102,20 @@ export function useInfiniteEmails(
     getNextPageParam: (lastPage) => lastPage.nextPageToken ?? undefined,
     initialPageParam: undefined as string | undefined,
     enabled: !!mailboxId,
+    ...options,
+  });
+}
+
+/**
+ * Fetch all emails for Kanban board (INBOX, TODO, IN_PROGRESS, DONE)
+ */
+export function useKanbanEmails(
+  options?: Omit<UseQueryOptions<Email[], Error>, 'queryKey' | 'queryFn'>
+) {
+  return useQuery<Email[], Error>({
+    queryKey: gmailKeys.kanbanEmails(),
+    queryFn: () => gmailApi.getKanbanEmails(),
+    staleTime: 30 * 1000, // 30 seconds - Kanban data updates frequently
     ...options,
   });
 }
@@ -539,6 +558,33 @@ export function useReplyToEmailWithAttachments(
       queryClient.invalidateQueries({ queryKey: gmailKeys.threads() });
       queryClient.invalidateQueries({ queryKey: gmailKeys.emails() });
     },
+    ...options,
+  });
+}
+
+// ==================== Fuzzy Search Hooks ====================
+
+/**
+ * Fuzzy search emails with typo tolerance and partial matching
+ */
+export function useFuzzySearch(
+  params: {
+    query: string;
+    mailboxId?: string;
+    limit?: number;
+  },
+  options?: Omit<
+    UseQueryOptions<FuzzySearchResponse, Error>,
+    'queryKey' | 'queryFn'
+  >
+) {
+  const { query, mailboxId, limit } = params;
+
+  return useQuery<FuzzySearchResponse, Error>({
+    queryKey: gmailKeys.fuzzySearch(query, mailboxId),
+    queryFn: () => gmailApi.fuzzySearch({ query, mailboxId, limit }),
+    enabled: query.length >= 2, // Only search if query has at least 2 characters
+    staleTime: 30 * 1000, // 30 seconds - search results can change
     ...options,
   });
 }

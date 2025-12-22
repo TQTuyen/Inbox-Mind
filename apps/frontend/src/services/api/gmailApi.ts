@@ -33,6 +33,10 @@ export interface Email {
   labelIds?: string[];
   snippet?: string;
   internalDate?: string;
+  mailboxId?: string;
+  kanbanStatus?: 'inbox' | 'todo' | 'in_progress' | 'done' | 'snoozed';
+  snoozeUntil?: string | null;
+  summary?: string | null;
 }
 
 export interface Mailbox {
@@ -77,6 +81,24 @@ export interface ModifyLabelsRequest {
 
 export interface MarkReadRequest {
   read: boolean;
+}
+
+export interface FuzzySearchResult {
+  id: string;
+  subject: string;
+  from: EmailAddress;
+  snippet: string;
+  timestamp: string;
+  isRead: boolean;
+  hasAttachments: boolean;
+  score: number;
+  matchedFields: string[];
+}
+
+export interface FuzzySearchResponse {
+  results: FuzzySearchResult[];
+  total: number;
+  query: string;
 }
 
 export interface DownloadAttachmentResponse {
@@ -157,6 +179,14 @@ class GmailApiService {
   }
 
   /**
+   * Get all emails for Kanban board (INBOX, TODO, IN_PROGRESS, DONE)
+   */
+  async getKanbanEmails(): Promise<Email[]> {
+    const response = await api.get<any>('/kanban/emails');
+    return response.data.emails?.map(transformGmailMessage) || [];
+  }
+
+  /**
    * Get a single email by ID
    */
   async getEmailById(emailId: string): Promise<Email> {
@@ -207,6 +237,18 @@ class GmailApiService {
     await api.post(`/emails/${emailId}/labels`, {
       action: 'add',
       labelIds: [mailboxId],
+    });
+  }
+
+  /**
+   * Update Kanban status in database
+   */
+  async updateKanbanStatus(
+    emailId: string,
+    kanbanStatus: 'inbox' | 'todo' | 'in_progress' | 'done'
+  ): Promise<void> {
+    await api.put(`/email-metadata/${emailId}/kanban-status`, {
+      kanbanStatus,
     });
   }
 
@@ -373,6 +415,27 @@ class GmailApiService {
         },
       }
     );
+
+    return response.data;
+  }
+
+  /**
+   * Fuzzy search emails with typo tolerance and partial matching
+   */
+  async fuzzySearch(params: {
+    query: string;
+    mailboxId?: string;
+    limit?: number;
+  }): Promise<FuzzySearchResponse> {
+    const { query, mailboxId = 'INBOX', limit = 20 } = params;
+
+    const queryParams = new URLSearchParams();
+    queryParams.append('query', query);
+    queryParams.append('mailboxId', mailboxId);
+    queryParams.append('limit', limit.toString());
+
+    const url = `/search/fuzzy?${queryParams.toString()}`;
+    const response = await api.get<FuzzySearchResponse>(url);
 
     return response.data;
   }

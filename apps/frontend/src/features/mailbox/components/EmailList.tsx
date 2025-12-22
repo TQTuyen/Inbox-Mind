@@ -165,14 +165,14 @@ export const EmailList = ({ onEmailSelect, onRefresh }: EmailListProps) => {
   return (
     <div className="flex h-full flex-col overflow-hidden">
       {/* Compact Toolbar */}
-      <div className="shrink-0 border-b border-slate-800 bg-slate-900/80 px-3 py-2">
+      <div className="shrink-0 border-b border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900/80 px-3 py-2">
         <div className="flex items-center gap-2 flex-wrap">
           <Button
             variant="ghost"
             size="icon"
             onClick={onRefresh}
             aria-label="Refresh"
-            className="h-7 w-7 text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer"
+            className="h-7 w-7 text-gray-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-slate-800 cursor-pointer"
             disabled={isProcessing}
           >
             <RefreshCw className="h-3.5 w-3.5" />
@@ -180,7 +180,7 @@ export const EmailList = ({ onEmailSelect, onRefresh }: EmailListProps) => {
 
           {selectedIds.size > 0 ? (
             <>
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-gray-600 dark:text-slate-400">
                 {selectedIds.size} selected
               </span>
 
@@ -188,7 +188,7 @@ export const EmailList = ({ onEmailSelect, onRefresh }: EmailListProps) => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setSelectedIds(new Set())}
-                className="h-7 text-xs text-slate-400 cursor-pointer"
+                className="h-7 text-xs text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white cursor-pointer"
                 disabled={isProcessing}
               >
                 Clear
@@ -211,7 +211,7 @@ export const EmailList = ({ onEmailSelect, onRefresh }: EmailListProps) => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7 text-slate-400 hover:text-white"
+                    className="h-7 w-7 text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800"
                     disabled={isProcessing}
                     title="More actions"
                   >
@@ -219,14 +219,14 @@ export const EmailList = ({ onEmailSelect, onRefresh }: EmailListProps) => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                  className="bg-slate-800 border-blue-700 text-slate-300 relative z-60 p-2 top-3 rounded-md shadow-md
+                  className="bg-white dark:bg-slate-800 border-gray-200 dark:border-blue-700 text-gray-900 dark:text-slate-300 relative z-60 p-2 top-3 rounded-md shadow-md
                   space-y-1"
                   align="end"
                 >
                   <DropdownMenuItem
                     onClick={handleBulkMarkAsRead}
                     disabled={isProcessing}
-                    className="flex items-center bg-slate-800 hover:bg-slate-700 hover:text-blue-500
+                    className="flex items-center bg-white dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-500
                     cursor-pointer pl-2 pr-2"
                   >
                     <Mail className="h-3.5 w-3.5 mr-2" />
@@ -235,7 +235,7 @@ export const EmailList = ({ onEmailSelect, onRefresh }: EmailListProps) => {
                   <DropdownMenuItem
                     onClick={handleBulkMarkAsUnread}
                     disabled={isProcessing}
-                    className="flex items-center bg-slate-800 hover:bg-slate-700 hover:text-blue-500
+                    className="flex items-center bg-white dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-500
                     cursor-pointer pl-2 pr-2"
                   >
                     <MailOpen className="h-3.5 w-3.5 mr-2" />
@@ -249,7 +249,7 @@ export const EmailList = ({ onEmailSelect, onRefresh }: EmailListProps) => {
               variant="ghost"
               size="sm"
               onClick={handleSelectAll}
-              className="h-7 text-xs text-slate-400 hover:text-white cursor-pointer"
+              className="h-7 text-xs text-gray-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white cursor-pointer"
               disabled={isProcessing}
             >
               Select All
@@ -273,7 +273,7 @@ export const EmailList = ({ onEmailSelect, onRefresh }: EmailListProps) => {
               </div>
             </motion.div>
           ) : (
-            <ul className="divide-y divide-slate-800">
+            <ul className="divide-y divide-gray-200 dark:divide-slate-800">
               <AnimatePresence initial={false}>
                 {emails.map((email, index) => (
                   <motion.li
@@ -283,8 +283,9 @@ export const EmailList = ({ onEmailSelect, onRefresh }: EmailListProps) => {
                     exit={{ opacity: 0, x: -50 }}
                     transition={{ duration: 0.15, delay: index * 0.015 }}
                     className={cn(
-                      'group hover:bg-slate-800/50 transition-colors cursor-pointer',
-                      selectedEmail?.id === email.id && 'bg-slate-800/70',
+                      'group hover:bg-gray-100 dark:hover:bg-slate-800/50 transition-colors cursor-pointer',
+                      selectedEmail?.id === email.id &&
+                        'bg-gray-200 dark:bg-slate-800/70',
                       !email.isRead && 'bg-primary/5'
                     )}
                     onClick={() => onEmailSelect(email)}
@@ -310,12 +311,14 @@ export const EmailList = ({ onEmailSelect, onRefresh }: EmailListProps) => {
                           <p
                             className={cn(
                               'text-xs font-medium truncate',
-                              !email.isRead ? 'text-white' : 'text-slate-300'
+                              !email.isRead
+                                ? 'text-gray-900 dark:text-white'
+                                : 'text-gray-600 dark:text-slate-300'
                             )}
                           >
                             {email.from.name}
                           </p>
-                          <span className="text-[10px] text-slate-500 whitespace-nowrap shrink-0">
+                          <span className="text-[10px] text-gray-500 dark:text-slate-500 whitespace-nowrap shrink-0">
                             {formatTimestamp(email.timestamp)}
                           </span>
                         </div>
@@ -324,14 +327,14 @@ export const EmailList = ({ onEmailSelect, onRefresh }: EmailListProps) => {
                           className={cn(
                             'text-xs truncate',
                             !email.isRead
-                              ? 'font-medium text-slate-100'
-                              : 'text-slate-400'
+                              ? 'font-medium text-gray-800 dark:text-slate-100'
+                              : 'text-gray-500 dark:text-slate-400'
                           )}
                         >
                           {email.subject}
                         </p>
 
-                        <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
+                        <p className="text-[11px] text-gray-500 dark:text-slate-500 line-clamp-1 mt-0.5">
                           {email.preview}
                         </p>
 

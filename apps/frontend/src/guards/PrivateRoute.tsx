@@ -48,10 +48,10 @@ export const PrivateRoute = () => {
   // Show loading state while checking authentication
   if (isChecking) {
     return (
-      <div className="flex items-center justify-center h-screen bg-[#101622]">
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100 dark:from-slate-950 dark:via-blue-950/20 dark:to-slate-950">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#135bec] mx-auto"></div>
-          <p className="mt-4 text-gray-400">Loading...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 dark:border-blue-400 mx-auto"></div>
+          <p className="mt-4 text-gray-700 dark:text-gray-300">Loading...</p>
         </div>
       </div>
     );

@@ -9,6 +9,9 @@ export default [
       '**/dist',
       '**/vite.config.*.timestamp*',
       '**/vitest.config.*.timestamp*',
+      '**/.nx/**',
+      '**/node_modules/**',
+      '**/public/mockServiceWorker.js',
     ],
   },
   {

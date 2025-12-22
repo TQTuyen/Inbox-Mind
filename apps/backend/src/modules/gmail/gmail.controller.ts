@@ -36,6 +36,10 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { GmailClientFactoryService } from '../../common/services/gmail-client-factory.service';
 import { AttachmentParamsDto } from './dto/attachment-params.dto';
 import { EmailIdParamDto } from './dto/email-id-param.dto';
+import {
+  FuzzySearchQueryDto,
+  FuzzySearchResponseDto,
+} from './dto/fuzzy-search.dto';
 import { ListEmailsQueryDto } from './dto/list-emails-query.dto';
 import { ListThreadsQueryDto } from './dto/list-threads-query.dto';
 import { MailboxIdParamDto } from './dto/mailbox-id-param.dto';
@@ -52,6 +56,7 @@ import { ThreadIdParamDto } from './dto/thread-id-param.dto';
 import { ThreadResponseDto } from './dto/thread-response.dto';
 import { GmailService } from './gmail.service';
 import { FileUploadService } from './services/file-upload.service';
+import { FuzzySearchService } from './services/fuzzy-search.service';
 import { ThreadService } from './services/thread.service';
 import { LabelModificationStrategyFactory } from './strategies/label-modification-strategy.factory';
 
@@ -65,7 +70,8 @@ export class GmailController {
     private readonly labelStrategyFactory: LabelModificationStrategyFactory,
     private readonly gmailClientFactory: GmailClientFactoryService,
     private readonly fileUploadService: FileUploadService,
-    private readonly threadService: ThreadService
+    private readonly threadService: ThreadService,
+    private readonly fuzzySearchService: FuzzySearchService
   ) {}
 
   @Get('mailboxes')
@@ -90,6 +96,36 @@ export class GmailController {
       pageToken: query.page,
       maxResults: query.pageSize || GMAIL_CONFIG.DEFAULT_PAGE_SIZE,
     });
+  }
+
+  @Get('kanban/emails')
+  @ApiOperation({
+    summary:
+      'List all emails for Kanban board (INBOX, TODO, IN_PROGRESS, DONE)',
+  })
+  @ApiResponse({ status: 200, description: 'Returns all kanban emails' })
+  @UseGuards(JwtAuthGuard)
+  async listKanbanEmails(@CurrentUser() user: CurrentUserData) {
+    return this.gmailService.listKanbanEmails(user.userId);
+  }
+
+  @Get('search/fuzzy')
+  @ApiOperation({
+    summary: 'Fuzzy search emails with typo tolerance',
+    description:
+      'Search emails with fuzzy matching supporting typos and partial matches. Searches across subject, sender name, sender email, and email body.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns fuzzy search results ranked by relevance',
+    type: FuzzySearchResponseDto,
+  })
+  @UseGuards(JwtAuthGuard)
+  async fuzzySearch(
+    @CurrentUser() user: CurrentUserData,
+    @Query() query: FuzzySearchQueryDto
+  ): Promise<FuzzySearchResponseDto> {
+    return this.fuzzySearchService.fuzzySearch(user.userId, query);
   }
 
   @Get('emails/:id')

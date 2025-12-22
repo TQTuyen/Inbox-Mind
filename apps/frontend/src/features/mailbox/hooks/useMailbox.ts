@@ -145,6 +145,9 @@ export const useMailbox = () => {
         isStarred: email.isStarred,
         attachments: email.attachments,
         mailboxId: selectedMailboxId || 'INBOX',
+        kanbanStatus: email.kanbanStatus || 'inbox',
+        snoozeUntil: email.snoozeUntil,
+        summary: email.summary,
       }));
 
       // For infinite scroll, we always have 1 "page" conceptually

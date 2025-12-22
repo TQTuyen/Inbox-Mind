@@ -65,12 +65,16 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="flex-1 bg-background flex items-center justify-center h-full"
+        className="flex-1 bg-white dark:bg-slate-900/30 flex items-center justify-center h-full"
       >
-        <div className="text-center text-muted-foreground">
-          <FileText className="w-24 h-24 mx-auto mb-4 text-muted-foreground/30" />
-          <p className="text-lg font-medium">No email selected</p>
-          <p className="text-sm mt-1">Select an email to view its contents</p>
+        <div className="text-center text-gray-500 dark:text-slate-400">
+          <FileText className="w-24 h-24 mx-auto mb-4 text-gray-300 dark:text-slate-600" />
+          <p className="text-lg font-medium text-gray-700 dark:text-gray-300">
+            No email selected
+          </p>
+          <p className="text-sm mt-1 text-gray-500 dark:text-slate-400">
+            Select an email to view its contents
+          </p>
         </div>
       </motion.div>
     );
@@ -182,10 +186,10 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.3 }}
-      className="flex h-full flex-col overflow-hidden bg-slate-900/30 backdrop-blur-xl"
+      className="flex h-full flex-col overflow-hidden bg-gray-50/50 dark:bg-slate-900/30 backdrop-blur-xl"
     >
       {/* Toolbar */}
-      <div className="shrink-0 flex items-center justify-between gap-2 border-b border-slate-800 bg-slate-900/80 px-4 py-3">
+      <div className="shrink-0 flex items-center justify-between gap-2 border-b border-gray-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/80 px-4 py-3">
         <div className="flex items-center gap-1">
           {isMobile && onBack && (
             <Button variant="ghost" size="icon" onClick={onBack}>
@@ -197,7 +201,7 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
             <Button
               variant="ghost"
               size="sm"
-              className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer"
+              className="text-gray-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-slate-800 cursor-pointer"
             >
               <Reply className="h-4 w-4" />
               Reply
@@ -207,7 +211,7 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
             <Button
               variant="ghost"
               size="sm"
-              className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer"
+              className="text-gray-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-slate-800 cursor-pointer"
             >
               <ReplyAll className="h-4 w-4 cursor-pointer" />
               Reply All
@@ -217,7 +221,7 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
             <Button
               variant="ghost"
               size="sm"
-              className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer"
+              className="text-gray-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-slate-800 cursor-pointer"
             >
               <Forward className="h-4 w-4" />
               Forward
@@ -231,20 +235,20 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
+                className="text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 cursor-pointer"
               >
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="w-48 bg-slate-900 border-slate-700 text-slate-300"
+              className="w-48 bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700 text-gray-900 dark:text-slate-300"
               align="end"
             >
               {selectedEmail.isRead && (
                 <DropdownMenuItem
                   onClick={() => handleMarkAsRead(false)}
                   disabled={isProcessing}
-                  className="hover:bg-slate-800 cursor-pointer"
+                  className="hover:bg-gray-100 dark:hover:bg-slate-800 cursor-pointer"
                 >
                   <MailOpen className="mr-2 h-4 w-4" />
                   Mark as Unread
@@ -252,7 +256,7 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
               )}
               <DropdownMenuItem
                 onClick={() => setShowNoteInput(!showNoteInput)}
-                className="hover:bg-slate-800 cursor-pointer"
+                className="hover:bg-gray-100 dark:hover:bg-slate-800 cursor-pointer"
               >
                 <Edit className="mr-2 h-4 w-4" />
                 Note
@@ -260,7 +264,7 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
               <DropdownMenuItem
                 onClick={handleToggleStar}
                 disabled={isProcessing}
-                className="hover:bg-slate-800 cursor-pointer"
+                className="hover:bg-gray-100 dark:hover:bg-slate-800 cursor-pointer"
               >
                 <Star
                   className={cn(
@@ -273,16 +277,16 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
               <DropdownMenuItem
                 onClick={handleArchive}
                 disabled={isProcessing}
-                className="hover:bg-slate-800 cursor-pointer"
+                className="hover:bg-gray-100 dark:hover:bg-slate-800 cursor-pointer"
               >
                 <Archive className="mr-2 h-4 w-4" />
                 Archive
               </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-slate-700" />
+              <DropdownMenuSeparator className="bg-gray-200 dark:bg-slate-700" />
               <DropdownMenuItem
                 onClick={handleDelete}
                 disabled={isProcessing}
-                className="hover:bg-slate-800 text-red-400 hover:text-red-300 cursor-pointer"
+                className="hover:bg-red-50 dark:hover:bg-slate-800 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 cursor-pointer"
               >
                 <Trash className="mr-2 h-4 w-4" />
                 Delete
@@ -300,7 +304,7 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <h1 className="text-3xl font-bold leading-tight tracking-tight mb-6">
+          <h1 className="text-3xl font-bold leading-tight tracking-tight mb-6 text-gray-900 dark:text-white">
             {selectedEmail.subject}
           </h1>
         </motion.div>
@@ -328,23 +332,23 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
           <div className="flex-1">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <p className="text-base font-semibold">
+                <p className="text-base font-semibold text-gray-900 dark:text-white">
                   {selectedEmail.from.name}
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-gray-600 dark:text-slate-400">
                   {selectedEmail.from.email}
                 </p>
-                <div className="flex items-center gap-1 mt-1 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1 mt-1 text-sm text-gray-600 dark:text-slate-400">
                   <span>To:</span>
                   <span>{selectedEmail.to.map((t) => t.email).join(', ')}</span>
                   {selectedEmail.cc && selectedEmail.cc.length > 0 && (
-                    <span className="text-primary cursor-pointer hover:underline">
+                    <span className="text-blue-600 dark:text-blue-400 cursor-pointer hover:underline">
                       , {selectedEmail.cc.length} more
                     </span>
                   )}
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground sm:shrink-0 mt-2 sm:mt-0">
+              <p className="text-sm text-gray-600 dark:text-slate-400 sm:shrink-0 mt-2 sm:mt-0">
                 {new Date(selectedEmail.timestamp).toLocaleDateString('en-US', {
                   month: 'short',
                   day: 'numeric',
@@ -414,7 +418,7 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
-          className="prose prose-sm md:prose-base max-w-none mb-10"
+          className="prose prose-sm md:prose-base max-w-none mb-10 text-gray-800 dark:text-slate-200"
           dangerouslySetInnerHTML={{ __html: selectedEmail.body }}
         />
 
@@ -426,7 +430,7 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
             transition={{ delay: 0.3 }}
             className="pt-6 border-t border-border"
           >
-            <h3 className="font-semibold mb-3">
+            <h3 className="font-semibold mb-3 text-gray-900 dark:text-white">
               {selectedEmail.attachments.length} Attachment
               {selectedEmail.attachments.length > 1 ? 's' : ''}
             </h3>
@@ -435,20 +439,24 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
                 <motion.div
                   key={attachment.id}
                   whileHover={{ scale: 1.01 }}
-                  className="flex items-center gap-3 p-3 border border-border rounded-lg bg-card hover:bg-accent transition-colors"
+                  className="flex items-center gap-3 p-3 border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                 >
-                  <div className="flex items-center justify-center h-10 w-10 bg-primary/10 rounded-md shrink-0">
-                    <FileText className="h-5 w-5 text-primary" />
+                  <div className="flex items-center justify-center h-10 w-10 bg-blue-100 dark:bg-blue-900/30 rounded-md shrink-0">
+                    <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div className="flex-1 overflow-hidden">
-                    <p className="text-sm font-medium truncate">
+                    <p className="text-sm font-medium truncate text-gray-900 dark:text-white">
                       {attachment.name}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-gray-600 dark:text-slate-400">
                       {(attachment.size / 1024).toFixed(0)} KB
                     </p>
                   </div>
-                  <Button variant="ghost" size="icon" className="shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 text-gray-700 dark:text-slate-300"
+                  >
                     <Download className="h-4 w-4" />
                   </Button>
                 </motion.div>
@@ -465,14 +473,17 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
             exit={{ opacity: 0, height: 0 }}
             className="mt-6 pt-6 border-t border-border"
           >
-            <label htmlFor="note" className="text-sm font-medium mb-2 block">
+            <label
+              htmlFor="note"
+              className="text-sm font-medium mb-2 block text-gray-900 dark:text-white"
+            >
               Add a note to this email:
             </label>
             <textarea
               id="note"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring bg-background text-foreground"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-white"
               rows={3}
               placeholder="Enter your note here..."
             />
