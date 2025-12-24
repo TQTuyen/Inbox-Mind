@@ -32,7 +32,8 @@ export class CreateKanbanColumnDto {
   columnId?: string;
 
   @ApiPropertyOptional({
-    description: 'Existing Gmail label ID to associate (new label created if not provided)',
+    description:
+      'Existing Gmail label ID to associate (new label created if not provided)',
     example: 'Label_123',
     maxLength: 100,
   })
@@ -67,7 +68,8 @@ export class UpdateKanbanColumnDto {
   title?: string;
 
   @ApiPropertyOptional({
-    description: 'Whether to update the Gmail label name to match the new title',
+    description:
+      'Whether to update the Gmail label name to match the new title',
     example: false,
     default: false,
   })

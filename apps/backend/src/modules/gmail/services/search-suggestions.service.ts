@@ -5,7 +5,10 @@ import { SearchHistory } from '../entities/search-history.entity';
 import { GmailService } from '../gmail.service';
 import { EmbeddingsService } from '../../email-metadata/services/embeddings.service';
 import { FuzzySearchService } from './fuzzy-search.service';
-import { SearchSuggestionDto, SuggestionType } from '../dto/search-suggestions.dto';
+import {
+  SearchSuggestionDto,
+  SuggestionType,
+} from '../dto/search-suggestions.dto';
 
 @Injectable()
 export class SearchSuggestionsService {
@@ -16,7 +19,7 @@ export class SearchSuggestionsService {
     private readonly searchHistoryRepository: Repository<SearchHistory>,
     private readonly gmailService: GmailService,
     private readonly embeddingsService: EmbeddingsService,
-    private readonly fuzzySearchService: FuzzySearchService,
+    private readonly fuzzySearchService: FuzzySearchService
   ) {}
 
   /**
@@ -85,10 +88,7 @@ export class SearchSuggestionsService {
       });
 
       // Extract unique contacts
-      const contacts = new Map<
-        string,
-        { name: string; email: string }
-      >();
+      const contacts = new Map<string, { name: string; email: string }>();
 
       for (const email of emails.emails) {
         const key = email.from.email.toLowerCase();

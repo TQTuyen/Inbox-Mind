@@ -9,14 +9,25 @@ import { useKanbanStore } from '../store/kanbanStore';
  * Also loads dynamic column configuration from the backend
  */
 export function useKanban() {
-  const { initializeColumns, setLoading, setError, setColumnConfig, moveEmail } =
-    useKanbanStore();
+  const {
+    initializeColumns,
+    setLoading,
+    setError,
+    setColumnConfig,
+    moveEmail,
+  } = useKanbanStore();
 
   // Fetch dynamic column configuration
-  const { data: columnConfig = [], isLoading: isConfigLoading } = useKanbanConfig();
+  const { data: columnConfig = [], isLoading: isConfigLoading } =
+    useKanbanConfig();
 
   // Fetch all Kanban emails (INBOX, TODO, IN_PROGRESS, DONE) in one call
-  const { data: emails = [], isLoading: isEmailsLoading, error, refetch } = useKanbanEmails();
+  const {
+    data: emails = [],
+    isLoading: isEmailsLoading,
+    error,
+    refetch,
+  } = useKanbanEmails();
 
   // Store column config in zustand
   useEffect(() => {

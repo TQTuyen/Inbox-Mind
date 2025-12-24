@@ -36,7 +36,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@fe/shared/components/ui/alert-dialog';
-import { GripVertical, Plus, Settings, Trash2, Loader2, Check, X } from 'lucide-react';
+import {
+  GripVertical,
+  Plus,
+  Settings,
+  Trash2,
+  Loader2,
+  Check,
+  X,
+} from 'lucide-react';
 import {
   useKanbanConfig,
   useCreateKanbanColumn,
@@ -53,11 +61,22 @@ interface SortableColumnItemProps {
   onUpdate: (columnId: string, title: string) => void;
 }
 
-function SortableColumnItem({ column, onDelete, onUpdate }: SortableColumnItemProps) {
+function SortableColumnItem({
+  column,
+  onDelete,
+  onUpdate,
+}: SortableColumnItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(column.title);
 
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
     id: column.columnId,
   });
 
@@ -156,7 +175,11 @@ function SortableColumnItem({ column, onDelete, onUpdate }: SortableColumnItemPr
         disabled={isInbox}
         title={isInbox ? 'Cannot delete Inbox column' : 'Delete column'}
       >
-        <Trash2 className={`h-4 w-4 ${isInbox ? 'text-muted-foreground/50' : 'text-red-600'}`} />
+        <Trash2
+          className={`h-4 w-4 ${
+            isInbox ? 'text-muted-foreground/50' : 'text-red-600'
+          }`}
+        />
       </Button>
     </div>
   );
@@ -307,8 +330,8 @@ export function KanbanSettings() {
           <SheetHeader>
             <SheetTitle>Kanban Board Settings</SheetTitle>
             <SheetDescription>
-              Customize your Kanban columns. Drag to reorder, click to rename, or delete columns you
-              don't need.
+              Customize your Kanban columns. Drag to reorder, click to rename,
+              or delete columns you don't need.
             </SheetDescription>
           </SheetHeader>
 
@@ -326,7 +349,9 @@ export function KanbanSettings() {
                 />
                 <Button
                   onClick={handleCreateColumn}
-                  disabled={!newColumnTitle.trim() || createColumnMutation.isPending}
+                  disabled={
+                    !newColumnTitle.trim() || createColumnMutation.isPending
+                  }
                   size="sm"
                 >
                   {createColumnMutation.isPending ? (
@@ -400,12 +425,15 @@ export function KanbanSettings() {
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This will delete the column "
-              {columns.find((col) => col.columnId === columnToDelete)?.title}". Emails in this
-              column will not be deleted, but the column configuration will be removed.
+              {columns.find((col) => col.columnId === columnToDelete)?.title}".
+              Emails in this column will not be deleted, but the column
+              configuration will be removed.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setColumnToDelete(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setColumnToDelete(null)}>
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"

@@ -47,7 +47,7 @@ export class EmailMetadataController {
     private readonly aiService: AIService,
     private readonly embeddingsService: EmbeddingsService,
     private readonly gmailService: GmailService,
-    private readonly kanbanConfigService: KanbanConfigService,
+    private readonly kanbanConfigService: KanbanConfigService
   ) {}
 
   @Put(':emailId/kanban-status')

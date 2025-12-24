@@ -14,7 +14,7 @@ export class EmailEmbeddingsScheduler {
     private readonly embeddingsService: EmbeddingsService,
     private readonly gmailService: GmailService,
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private readonly userRepository: Repository<User>
   ) {}
 
   /**

@@ -1,6 +1,14 @@
-import { MigrationInterface, QueryRunner, Table, TableIndex, TableForeignKey } from 'typeorm';
+import {
+  MigrationInterface,
+  QueryRunner,
+  Table,
+  TableIndex,
+  TableForeignKey,
+} from 'typeorm';
 
-export class CreateEmailEmbeddingsTable1735000000000 implements MigrationInterface {
+export class CreateEmailEmbeddingsTable1735000000000
+  implements MigrationInterface
+{
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Enable pgvector extension
     await queryRunner.query('CREATE EXTENSION IF NOT EXISTS vector');

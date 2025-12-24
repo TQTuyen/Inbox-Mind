@@ -1,6 +1,14 @@
-import { MigrationInterface, QueryRunner, Table, TableIndex, TableForeignKey } from 'typeorm';
+import {
+  MigrationInterface,
+  QueryRunner,
+  Table,
+  TableIndex,
+  TableForeignKey,
+} from 'typeorm';
 
-export class CreateSearchHistoryTable1735100000000 implements MigrationInterface {
+export class CreateSearchHistoryTable1735100000000
+  implements MigrationInterface
+{
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create search_history table
     await queryRunner.createTable(

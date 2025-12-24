@@ -16,7 +16,12 @@ export interface EmailAttachment {
   partId?: string;
 }
 
-export type KanbanStatus = 'inbox' | 'todo' | 'in_progress' | 'done' | 'snoozed';
+export type KanbanStatus =
+  | 'inbox'
+  | 'todo'
+  | 'in_progress'
+  | 'done'
+  | 'snoozed';
 
 /**
  * Core Email interface used throughout the application

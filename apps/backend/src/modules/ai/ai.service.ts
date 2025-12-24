@@ -85,7 +85,9 @@ Summary:`;
       const embedding = result.embedding.values;
 
       this.logger.log(
-        `Generated embedding with ${embedding.length} dimensions for text: ${truncatedText.substring(0, 50)}...`
+        `Generated embedding with ${
+          embedding.length
+        } dimensions for text: ${truncatedText.substring(0, 50)}...`
       );
 
       return embedding;
@@ -125,7 +127,9 @@ Summary:`;
       results.push(...batchResults);
 
       this.logger.log(
-        `Processed batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(texts.length / batchSize)} (${results.length}/${texts.length} embeddings)`
+        `Processed batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(
+          texts.length / batchSize
+        )} (${results.length}/${texts.length} embeddings)`
       );
 
       // Rate limiting: 60 requests/minute for Gemini API
@@ -135,9 +139,7 @@ Summary:`;
       }
     }
 
-    this.logger.log(
-      `Successfully generated ${results.length} embeddings`
-    );
+    this.logger.log(`Successfully generated ${results.length} embeddings`);
 
     return results;
   }

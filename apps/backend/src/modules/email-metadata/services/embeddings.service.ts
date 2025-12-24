@@ -13,7 +13,7 @@ export class EmbeddingsService {
     @InjectRepository(EmailEmbedding)
     private readonly embeddingsRepository: Repository<EmailEmbedding>,
     private readonly aiService: AIService,
-    private readonly gmailService: GmailService,
+    private readonly gmailService: GmailService
   ) {}
 
   /**
@@ -96,9 +96,7 @@ export class EmbeddingsService {
       .getMany();
 
     const existingEmailIds = new Set(existingEmbeddings.map((e) => e.emailId));
-    const emailsToProcess = emailIds.filter(
-      (id) => !existingEmailIds.has(id)
-    );
+    const emailsToProcess = emailIds.filter((id) => !existingEmailIds.has(id));
 
     if (emailsToProcess.length === 0) {
       this.logger.log(

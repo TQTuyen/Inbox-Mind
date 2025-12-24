@@ -50,7 +50,8 @@ export class KanbanConfigService {
 
     // Generate columnId if not provided
     const columnId =
-      dto.columnId || `CUSTOM_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      dto.columnId ||
+      `CUSTOM_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
     // Check for duplicate columnId
     const existing = await this.kanbanConfigRepository.findOne({
@@ -144,9 +145,7 @@ export class KanbanConfigService {
             `Updated Gmail label ${column.gmailLabelId} to "${dto.title}"`
           );
         } catch (error) {
-          this.logger.error(
-            `Failed to update Gmail label: ${error.message}`
-          );
+          this.logger.error(`Failed to update Gmail label: ${error.message}`);
           // Continue anyway - database update should succeed even if Gmail fails
         }
       }

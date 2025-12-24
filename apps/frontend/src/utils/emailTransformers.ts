@@ -46,12 +46,13 @@ export function transformKanbanEmailToStoreFormat(apiEmail: Email): Email {
  */
 export function transformSearchResultToEmail(
   result: any,
-  mailboxId: string = 'INBOX'
+  mailboxId = 'INBOX'
 ): Email {
   // Handle both fuzzy and semantic search result formats
   const emailId = 'emailId' in result ? result.emailId : result.id;
   const snippet = 'snippet' in result ? result.snippet : result.preview;
-  const hasAttachments = 'hasAttachments' in result ? result.hasAttachments : false;
+  const hasAttachments =
+    'hasAttachments' in result ? result.hasAttachments : false;
 
   return {
     id: emailId,
@@ -80,7 +81,9 @@ export function transformKanbanEmailsBatch(apiEmails: Email[]): Email[] {
  */
 export function transformSearchResultsBatch(
   results: any[],
-  mailboxId: string = 'INBOX'
+  mailboxId = 'INBOX'
 ): Email[] {
-  return results.map((result) => transformSearchResultToEmail(result, mailboxId));
+  return results.map((result) =>
+    transformSearchResultToEmail(result, mailboxId)
+  );
 }

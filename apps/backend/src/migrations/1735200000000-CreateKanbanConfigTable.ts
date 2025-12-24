@@ -1,6 +1,14 @@
-import { MigrationInterface, QueryRunner, Table, TableIndex, TableForeignKey } from 'typeorm';
+import {
+  MigrationInterface,
+  QueryRunner,
+  Table,
+  TableIndex,
+  TableForeignKey,
+} from 'typeorm';
 
-export class CreateKanbanConfigTable1735200000000 implements MigrationInterface {
+export class CreateKanbanConfigTable1735200000000
+  implements MigrationInterface
+{
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create kanban_config table
     await queryRunner.createTable(

@@ -16,7 +16,7 @@ import {
 } from '@fe/hooks/useGmailQuery';
 import { motion } from 'framer-motion';
 import { Menu, LayoutList, LayoutGrid } from 'lucide-react';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { ThemeToggle } from '../../../components/ThemeToggle';
@@ -196,7 +196,9 @@ export function MailboxPage() {
       });
       // Refetch Kanban emails if in Kanban view to get latest data
       if (viewMode === 'kanban') {
-        console.log('🔄 [MUTATION] Refetching Kanban emails after status update');
+        console.log(
+          '🔄 [MUTATION] Refetching Kanban emails after status update'
+        );
         refetchKanbanEmails();
       }
     },

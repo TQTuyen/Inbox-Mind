@@ -85,7 +85,10 @@ export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
     }
   };
 
-  const handleSuggestionClick = (suggestionText: string, type: SuggestionType) => {
+  const handleSuggestionClick = (
+    suggestionText: string,
+    type: SuggestionType
+  ) => {
     setLocalQuery(suggestionText);
     setIsPopoverOpen(false);
     setSelectedIndex(-1);
