@@ -1,29 +1,41 @@
 import { useEffect } from 'react';
 import { useKanbanEmails } from '@fe/hooks/useGmailQuery';
+import { useKanbanConfig } from '@fe/hooks/useKanbanConfig';
 import { useKanbanStore } from '../store/kanbanStore';
 
 /**
  * Custom hook that fetches Kanban emails and manages Kanban board state
  * Uses dedicated /api/kanban/emails endpoint to fetch from all Kanban labels
+ * Also loads dynamic column configuration from the backend
  */
 export function useKanban() {
-  const { initializeColumns, setLoading, setError, moveEmail } =
+  const { initializeColumns, setLoading, setError, setColumnConfig, moveEmail } =
     useKanbanStore();
 
+  // Fetch dynamic column configuration
+  const { data: columnConfig = [], isLoading: isConfigLoading } = useKanbanConfig();
+
   // Fetch all Kanban emails (INBOX, TODO, IN_PROGRESS, DONE) in one call
-  const { data: emails = [], isLoading, error, refetch } = useKanbanEmails();
+  const { data: emails = [], isLoading: isEmailsLoading, error, refetch } = useKanbanEmails();
 
-  // Initialize kanban columns when emails are loaded
+  // Store column config in zustand
   useEffect(() => {
-    if (emails.length > 0) {
-      initializeColumns(emails);
+    if (columnConfig.length > 0) {
+      setColumnConfig(columnConfig);
     }
-  }, [emails, initializeColumns]);
+  }, [columnConfig, setColumnConfig]);
 
-  // Sync loading state
+  // Initialize kanban columns when both config and emails are loaded
   useEffect(() => {
-    setLoading(isLoading);
-  }, [isLoading, setLoading]);
+    if (columnConfig.length > 0 && emails.length >= 0) {
+      initializeColumns(emails, columnConfig);
+    }
+  }, [emails, columnConfig, initializeColumns]);
+
+  // Sync loading state (true if either emails or config are loading)
+  useEffect(() => {
+    setLoading(isEmailsLoading || isConfigLoading);
+  }, [isEmailsLoading, isConfigLoading, setLoading]);
 
   // Sync error state
   useEffect(() => {
@@ -46,7 +58,7 @@ export function useKanban() {
 
   return {
     emails,
-    loading: isLoading,
+    loading: isEmailsLoading || isConfigLoading,
     error: error?.message || null,
     refetch,
     handleMoveEmail,

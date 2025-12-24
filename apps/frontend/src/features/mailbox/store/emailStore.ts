@@ -1,44 +1,8 @@
 import { create } from 'zustand';
+import { Email, Mailbox, KanbanStatus } from '@fe/types/email.types';
 
-export type KanbanStatus =
-  | 'inbox'
-  | 'todo'
-  | 'in_progress'
-  | 'done'
-  | 'snoozed';
-
-export interface Email {
-  id: string;
-  from: {
-    name: string;
-    email: string;
-  };
-  to: Array<{ name: string; email: string }>;
-  cc?: Array<{ name: string; email: string }>;
-  subject: string;
-  preview: string;
-  body: string;
-  timestamp: string;
-  isRead: boolean;
-  isStarred: boolean;
-  attachments?: Array<{
-    id: string;
-    name: string;
-    size: number;
-    type: string;
-  }>;
-  mailboxId: string;
-  note?: string;
-  kanbanStatus?: KanbanStatus;
-  snoozeUntil?: string;
-  summary?: string;
-}
-
-export interface Mailbox {
-  id: string;
-  name: string;
-  unreadCount: number;
-}
+// Re-export types for backward compatibility
+export type { Email, Mailbox, KanbanStatus };
 
 interface EmailState {
   mailboxes: Mailbox[];

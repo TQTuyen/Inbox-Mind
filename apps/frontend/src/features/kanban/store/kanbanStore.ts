@@ -1,11 +1,10 @@
 import { create } from 'zustand';
-import { gmailApi } from '@fe/services/api/gmailApi';
+import { gmailApi, KanbanColumn as KanbanColumnConfig } from '@fe/services/api/gmailApi';
 import { Email } from '../../mailbox/store/emailStore';
 import {
   KanbanColumn,
   SortOption,
   FilterOption,
-  KANBAN_COLUMNS,
   SORT_OPTIONS,
   FILTER_OPTIONS,
 } from '../types';
@@ -13,6 +12,7 @@ import {
 interface KanbanState {
   // Data
   columns: KanbanColumn[];
+  columnConfig: KanbanColumnConfig[]; // Dynamic column configuration from API
 
   // UI State
   sortBy: SortOption;
@@ -22,7 +22,8 @@ interface KanbanState {
 
   // Actions
   setColumns: (columns: KanbanColumn[]) => void;
-  initializeColumns: (emails: Email[]) => void;
+  setColumnConfig: (config: KanbanColumnConfig[]) => void;
+  initializeColumns: (emails: Email[], config?: KanbanColumnConfig[]) => void;
   setSortBy: (sortBy: SortOption) => void;
   toggleFilter: (filter: FilterOption) => void;
   clearFilters: () => void;
@@ -42,7 +43,8 @@ interface KanbanState {
 
 export const useKanbanStore = create<KanbanState>((set, get) => ({
   // Initial state
-  columns: KANBAN_COLUMNS.map((col) => ({ ...col, emails: [] })),
+  columns: [],
+  columnConfig: [],
   sortBy: 'date-desc',
   activeFilters: [],
   loading: false,
@@ -50,34 +52,49 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
 
   // Actions
   setColumns: (columns) => set({ columns }),
+  setColumnConfig: (config) => set({ columnConfig: config }),
 
-  initializeColumns: (emails: Email[]) => {
-    const columns = KANBAN_COLUMNS.map((columnDef) => {
-      // Map labelId to kanbanStatus (INBOX -> inbox, IN_PROGRESS -> in_progress, etc.)
+  initializeColumns: (emails: Email[], config?: KanbanColumnConfig[]) => {
+    // Use provided config or fallback to stored config
+    const columnDefinitions = config || get().columnConfig;
+
+    if (columnDefinitions.length === 0) {
+      console.warn('No column configuration available. Please load config first.');
+      return;
+    }
+
+    const columns = columnDefinitions.map((columnDef) => {
+      // Map columnId to kanbanStatus (INBOX -> inbox, etc.)
+      // Use the columnId as the status identifier
+      const columnIdLower = columnDef.columnId.toLowerCase();
+
+      // Map specific known column IDs to their kanban status
       const kanbanStatusMap: Record<string, string> = {
-        INBOX: 'inbox',
-        TODO: 'todo',
-        IN_PROGRESS: 'in_progress',
-        DONE: 'done',
+        'INBOX': 'inbox',
+        'TODO': 'todo',
+        'IN_PROGRESS': 'in_progress',
+        'DONE': 'done',
       };
 
-      const expectedStatus = kanbanStatusMap[columnDef.labelId];
+      const expectedStatus = kanbanStatusMap[columnDef.columnId] || columnIdLower;
 
       // Filter emails by kanbanStatus matching column
-      // If email doesn't have kanbanStatus, fall back to mailboxId for backwards compatibility
       const columnEmails = emails.filter((email) => {
         if (email.kanbanStatus) {
           return email.kanbanStatus === expectedStatus;
         }
-        // Fallback: use mailboxId for emails without kanbanStatus
-        return email.mailboxId === columnDef.labelId;
+        // Fallback: match by gmailLabelId or mailboxId
+        return email.mailboxId === columnDef.gmailLabelId ||
+               email.mailboxId === columnDef.columnId;
       });
 
       // Apply sorting and filtering
       const processedEmails = get().getSortedAndFilteredEmails(columnEmails);
 
       return {
-        ...columnDef,
+        id: columnDef.columnId,
+        title: columnDef.title,
+        labelId: columnDef.gmailLabelId,
         emails: processedEmails,
       };
     });
@@ -131,7 +148,7 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
   },
 
   moveEmail: async (emailId, fromColumnId, toColumnId) => {
-    const { columns } = get();
+    const { columns, columnConfig } = get();
 
     // Find source and destination columns
     const fromColumn = columns.find((col) => col.id === fromColumnId);
@@ -143,22 +160,28 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
     const email = fromColumn.emails.find((e) => e.id === emailId);
     if (!email) return;
 
-    // Map labelId to kanbanStatus for optimistic update
-    const kanbanStatusMap: Record<
-      string,
-      'inbox' | 'todo' | 'in_progress' | 'done'
-    > = {
-      INBOX: 'inbox',
-      TODO: 'todo',
-      IN_PROGRESS: 'in_progress',
-      DONE: 'done',
+    // Find the column config to get the proper kanban status mapping
+    const toColumnConfig = columnConfig.find((c) => c.columnId === toColumnId);
+    if (!toColumnConfig) {
+      console.error('Column configuration not found for:', toColumnId);
+      return;
+    }
+
+    // Map columnId to kanbanStatus
+    const kanbanStatusMap: Record<string, string> = {
+      'INBOX': 'inbox',
+      'TODO': 'todo',
+      'IN_PROGRESS': 'in_progress',
+      'DONE': 'done',
     };
+
+    const newKanbanStatus = kanbanStatusMap[toColumnId] || toColumnId.toLowerCase();
 
     // Optimistic update - update UI first
     const updatedEmail = {
       ...email,
       mailboxId: toColumn.labelId,
-      kanbanStatus: kanbanStatusMap[toColumn.labelId],
+      kanbanStatus: newKanbanStatus as 'inbox' | 'todo' | 'in_progress' | 'done',
     };
 
     // Remove from source column
@@ -185,28 +208,15 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
 
     // Update on server
     try {
-      // Map labelId to kanbanStatus
-      const kanbanStatusMap: Record<
-        string,
-        'inbox' | 'todo' | 'in_progress' | 'done'
-      > = {
-        INBOX: 'inbox',
-        TODO: 'todo',
-        IN_PROGRESS: 'in_progress',
-        DONE: 'done',
-      };
-
-      const newKanbanStatus = kanbanStatusMap[toColumn.labelId];
-
       // Update kanban status in database first
-      await gmailApi.updateKanbanStatus(emailId, newKanbanStatus);
+      await gmailApi.updateKanbanStatus(emailId, newKanbanStatus as 'inbox' | 'todo' | 'in_progress' | 'done');
 
-      // Then update Gmail labels
+      // Then update Gmail labels using the actual Gmail label IDs from config
       const labelsToRemove = [fromColumn.labelId];
-      const labelsToAdd = [toColumn.labelId];
+      const labelsToAdd = [toColumnConfig.gmailLabelId];
 
       // Remove old label(s)
-      if (labelsToRemove.length > 0) {
+      if (labelsToRemove.length > 0 && labelsToRemove[0]) {
         await gmailApi.modifyLabels(emailId, {
           action: 'remove',
           labelIds: labelsToRemove,
@@ -214,7 +224,7 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
       }
 
       // Add new label(s)
-      if (labelsToAdd.length > 0) {
+      if (labelsToAdd.length > 0 && labelsToAdd[0]) {
         await gmailApi.modifyLabels(emailId, {
           action: 'add',
           labelIds: labelsToAdd,

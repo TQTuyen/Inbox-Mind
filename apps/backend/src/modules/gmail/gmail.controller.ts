@@ -41,6 +41,11 @@ import {
   FuzzySearchResponseDto,
 } from './dto/fuzzy-search.dto';
 import { ListEmailsQueryDto } from './dto/list-emails-query.dto';
+import {
+  AutoSuggestionsQueryDto,
+  AutoSuggestionsResponseDto,
+  SaveSearchHistoryDto,
+} from './dto/search-suggestions.dto';
 import { ListThreadsQueryDto } from './dto/list-threads-query.dto';
 import { MailboxIdParamDto } from './dto/mailbox-id-param.dto';
 import { MarkReadDto } from './dto/mark-read.dto';
@@ -57,6 +62,7 @@ import { ThreadResponseDto } from './dto/thread-response.dto';
 import { GmailService } from './gmail.service';
 import { FileUploadService } from './services/file-upload.service';
 import { FuzzySearchService } from './services/fuzzy-search.service';
+import { SearchSuggestionsService } from './services/search-suggestions.service';
 import { ThreadService } from './services/thread.service';
 import { LabelModificationStrategyFactory } from './strategies/label-modification-strategy.factory';
 
@@ -71,7 +77,8 @@ export class GmailController {
     private readonly gmailClientFactory: GmailClientFactoryService,
     private readonly fileUploadService: FileUploadService,
     private readonly threadService: ThreadService,
-    private readonly fuzzySearchService: FuzzySearchService
+    private readonly fuzzySearchService: FuzzySearchService,
+    private readonly searchSuggestionsService: SearchSuggestionsService
   ) {}
 
   @Get('mailboxes')
@@ -126,6 +133,56 @@ export class GmailController {
     @Query() query: FuzzySearchQueryDto
   ): Promise<FuzzySearchResponseDto> {
     return this.fuzzySearchService.fuzzySearch(user.userId, query);
+  }
+
+  @Get('search/suggestions')
+  @ApiOperation({
+    summary: 'Get auto-suggestions for search queries',
+    description:
+      'Returns intelligent search suggestions from 4 sources: search history, recent contacts, subject keywords, and semantic matches. Minimum query length is 2 characters.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns auto-suggestions ranked by priority',
+    type: AutoSuggestionsResponseDto,
+  })
+  @UseGuards(JwtAuthGuard)
+  async getAutoSuggestions(
+    @CurrentUser() user: CurrentUserData,
+    @Query() query: AutoSuggestionsQueryDto
+  ): Promise<AutoSuggestionsResponseDto> {
+    const suggestions = await this.searchSuggestionsService.getAutoSuggestions(
+      user.userId,
+      query.query,
+      query.limit || 5
+    );
+    return {
+      suggestions,
+      query: query.query,
+    };
+  }
+
+  @Post('search/history')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: 'Save search query to history',
+    description:
+      'Records a search query to user history for future auto-suggestions. Duplicate queries within 1 hour are skipped.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Search history saved successfully',
+  })
+  @UseGuards(JwtAuthGuard)
+  async saveSearchHistory(
+    @CurrentUser() user: CurrentUserData,
+    @Body() dto: SaveSearchHistoryDto
+  ) {
+    await this.searchSuggestionsService.saveSearchHistory(
+      user.userId,
+      dto.query
+    );
+    return { message: 'Search history saved successfully' };
   }
 
   @Get('emails/:id')

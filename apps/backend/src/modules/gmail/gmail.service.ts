@@ -874,4 +874,90 @@ export class GmailService {
       throw new GmailOperationException('reply with multipart files', error);
     }
   }
+
+  /**
+   * Create a new Gmail label
+   */
+  async createLabel(
+    userId: string,
+    name: string
+  ): Promise<{ id: string; name: string }> {
+    try {
+      const gmail = await this.getGmailClient(userId);
+
+      const response = await gmail.users.labels.create({
+        userId: GMAIL_CONFIG.USER_ID,
+        requestBody: {
+          name,
+          labelListVisibility: 'labelShow',
+          messageListVisibility: 'show',
+        },
+      });
+
+      this.logger.log(
+        {
+          userId,
+          labelId: response.data.id,
+          labelName: name,
+        },
+        'Created Gmail label'
+      );
+
+      return {
+        id: response.data.id || '',
+        name: response.data.name || name,
+      };
+    } catch (error) {
+      this.logger.error(
+        {
+          userId,
+          labelName: name,
+          error: error.message,
+        },
+        'Failed to create Gmail label'
+      );
+      throw new GmailOperationException('create label', error);
+    }
+  }
+
+  /**
+   * Update an existing Gmail label's name
+   */
+  async updateLabel(
+    userId: string,
+    labelId: string,
+    newName: string
+  ): Promise<void> {
+    try {
+      const gmail = await this.getGmailClient(userId);
+
+      await gmail.users.labels.update({
+        userId: GMAIL_CONFIG.USER_ID,
+        id: labelId,
+        requestBody: {
+          name: newName,
+        },
+      });
+
+      this.logger.log(
+        {
+          userId,
+          labelId,
+          newName,
+        },
+        'Updated Gmail label'
+      );
+    } catch (error) {
+      this.logger.error(
+        {
+          userId,
+          labelId,
+          newName,
+          error: error.message,
+        },
+        'Failed to update Gmail label'
+      );
+      throw new GmailOperationException('update label', error);
+    }
+  }
 }
