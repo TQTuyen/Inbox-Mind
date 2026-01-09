@@ -3,11 +3,14 @@
 ## Issues Found
 
 ### 1. **Duplicate Migration Locations**
+
 - **Problem:** Migrations exist in TWO different locations:
+
   - `apps/backend/src/migrations/` (4 files)
   - `apps/backend/src/modules/migrations/` (1 file)
 
 - **Files:**
+
   - `apps/backend/src/migrations/1733134751000-CreateUsersTable.ts`
   - `apps/backend/src/migrations/1735000000000-CreateEmailEmbeddingsTable.ts`
   - `apps/backend/src/migrations/1735100000000-CreateSearchHistoryTable.ts`
@@ -17,13 +20,17 @@
 - **Solution:** Consolidate all migrations to `apps/backend/src/migrations/`
 
 ### 2. **Unused DTO Files**
+
 - **Problem:** Created but never imported/used:
+
   - `send-email-multipart.dto.ts` - Not imported anywhere
 
 - **Solution:** Delete unused DTO file
 
 ### 3. **Unnecessary App Module Files**
+
 - **Problem:** Default NestJS boilerplate files that serve no purpose:
+
   - `app.controller.ts` - Just returns "Hello API"
   - `app.service.ts` - Just returns a message
   - `app.controller.spec.ts` - Test for unused controller
@@ -32,11 +39,14 @@
 - **Solution:** Keep only `app.module.ts`, remove controller and service
 
 ### 4. **Inconsistent Entity/DTO Organization**
+
 - **Problem:** DTOs and entities mixed in same directory
+
   - email-metadata module has entities at root level
   - Some have `services/` subdirectory, some don't
 
 - **Current Structure:**
+
 ```
 email-metadata/
 ├── email-metadata.entity.ts
@@ -58,6 +68,7 @@ email-metadata/
 ```
 
 - **Better Structure:**
+
 ```
 email-metadata/
 ├── entities/
@@ -82,9 +93,11 @@ email-metadata/
 ```
 
 ### 5. **Gmail Module Organization**
+
 - **Similar Issue:** Entities mixed with services
 
 - **Current:**
+
 ```
 gmail/
 ├── entities/
@@ -108,7 +121,9 @@ gmail/
 - **This is actually GOOD!** Gmail module is already well-organized.
 
 ### 6. **Duplicate Search History Entity Location**
+
 - **Problem:** search-history.entity.ts is in gmail/entities/
+
   - But it's for a table created by a migration in migrations/
 
 - **Solution:** Keep it in gmail/entities/ (it's fine where it is)
@@ -118,39 +133,49 @@ gmail/
 ## Refactoring Steps
 
 ### Step 1: Consolidate Migrations
+
 **Action:** Move `1734000000000-CreateEmailMetadataTable.ts` from `modules/migrations/` to `migrations/`
 
 **Files to modify:**
+
 - Move: `apps/backend/src/modules/migrations/1734000000000-CreateEmailMetadataTable.ts`
   → `apps/backend/src/migrations/1734000000000-CreateEmailMetadataTable.ts`
 - Delete: `apps/backend/src/modules/migrations/` directory
 
 ### Step 2: Remove Unused App Files
+
 **Action:** Delete unnecessary boilerplate
 
 **Files to delete:**
+
 - `apps/backend/src/app/app.controller.ts`
 - `apps/backend/src/app/app.service.ts`
 - `apps/backend/src/app/app.controller.spec.ts`
 - `apps/backend/src/app/app.service.spec.ts`
 
 **Files to modify:**
+
 - `apps/backend/src/app/app.module.ts` - Remove AppController and AppService imports/providers
 
 ### Step 3: Remove Unused DTO
+
 **Action:** Delete unused DTO file
 
 **Files to delete:**
+
 - `apps/backend/src/modules/gmail/dto/send-email-multipart.dto.ts`
 
 ### Step 4: Reorganize Email-Metadata Module
+
 **Action:** Create subdirectories and move files
 
 **New directories to create:**
+
 - `apps/backend/src/modules/email-metadata/entities/`
 - `apps/backend/src/modules/email-metadata/schedulers/`
 
 **Files to move:**
+
 - `email-metadata.entity.ts` → `entities/email-metadata.entity.ts`
 - `email-embeddings.entity.ts` → `entities/email-embeddings.entity.ts`
 - `kanban-config.entity.ts` → `entities/kanban-config.entity.ts`
@@ -159,21 +184,26 @@ gmail/
 - `email-embeddings.scheduler.ts` → `schedulers/email-embeddings.scheduler.ts`
 
 **Files to update imports:**
+
 - `email-metadata.module.ts`
 - `email-metadata.controller.ts`
 - All services that import these entities
 - All schedulers
 
 ### Step 5: Update TypeORM Configuration
+
 **Action:** Update entity paths in database config
 
 **Files to modify:**
+
 - Check TypeORM config to ensure entity paths include new locations
 
 ### Step 6: Run Tests
+
 **Action:** Verify everything still works
 
 **Commands:**
+
 ```bash
 npm run be:lint
 npm run be:test
@@ -185,6 +215,7 @@ npm run be:build
 ## File Counts Summary
 
 ### Files to DELETE: 6 files
+
 1. `apps/backend/src/app/app.controller.ts`
 2. `apps/backend/src/app/app.service.ts`
 3. `apps/backend/src/app/app.controller.spec.ts`
@@ -193,6 +224,7 @@ npm run be:build
 6. `apps/backend/src/modules/migrations/` (entire directory after moving file)
 
 ### Files to MOVE: 7 files
+
 1. Migration: `modules/migrations/1734000000000-CreateEmailMetadataTable.ts` → `migrations/`
 2. Entity: `email-metadata.entity.ts` → `entities/`
 3. Entity: `email-embeddings.entity.ts` → `entities/`
@@ -202,6 +234,7 @@ npm run be:build
 7. Scheduler: `email-embeddings.scheduler.ts` → `schedulers/`
 
 ### Files to UPDATE IMPORTS: ~15 files
+
 - `app.module.ts`
 - `email-metadata.module.ts`
 - `email-metadata.controller.ts`
@@ -226,13 +259,16 @@ npm run be:build
 ## Implementation Priority
 
 ### High Priority (Do First):
+
 1. ✅ Consolidate migrations
 2. ✅ Remove unused files (DTOs, app controller/service)
 
 ### Medium Priority (Do Next):
+
 3. ✅ Reorganize email-metadata module structure
 
 ### Low Priority (Optional):
+
 4. Consider adding barrel exports (index.ts) for cleaner imports
 5. Add README.md in each module explaining structure
 
@@ -266,10 +302,12 @@ All refactoring steps have been completed successfully!
 ### Changes Made:
 
 1. ✅ **Consolidated Migrations**
+
    - Moved `1734000000000-CreateEmailMetadataTable.ts` from `modules/migrations/` to `migrations/`
    - Deleted duplicate `modules/migrations/` directory
 
 2. ✅ **Removed Unused Files**
+
    - Deleted `app/app.controller.ts`
    - Deleted `app/app.service.ts`
    - Deleted `app/app.controller.spec.ts`
@@ -277,6 +315,7 @@ All refactoring steps have been completed successfully!
    - Updated `app.module.ts` to remove references
 
 3. ✅ **Reorganized Email-Metadata Module**
+
    - Created `entities/` subdirectory
    - Created `schedulers/` subdirectory
    - Moved all entities to `entities/`
@@ -284,6 +323,7 @@ All refactoring steps have been completed successfully!
    - Moved all schedulers to `schedulers/`
 
 4. ✅ **Updated All Import Paths**
+
    - Updated `email-metadata.module.ts`
    - Updated `email-metadata.controller.ts`
    - Updated `email-metadata.service.ts`
@@ -301,6 +341,7 @@ All refactoring steps have been completed successfully!
 ### Note on Build Errors
 
 The backend build shows TypeScript errors in `search-suggestions.service.ts`, but these are **pre-existing issues** unrelated to our refactoring:
+
 - Error: Property 'from' does not exist on type
 - Cause: Type mismatch in `listEmails` return type
 - Impact: This bug existed before refactoring and should be fixed separately
@@ -317,4 +358,3 @@ The backend build shows TypeScript errors in `search-suggestions.service.ts`, bu
 2. ⏭️ Fix pre-existing TypeScript errors in search-suggestions.service.ts (separate task)
 3. ⏭️ Commit changes with clear message
 4. ⏭️ Optional: Add barrel exports (index.ts) for cleaner imports
-

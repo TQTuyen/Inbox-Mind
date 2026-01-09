@@ -12,6 +12,7 @@
 **Inbox Mind** is a production-grade email management application that transforms Gmail into an intelligent, Kanban-style productivity tool. The project demonstrates mastery of full-stack development, AI integration, and modern web technologies.
 
 ### Key Achievements:
+
 - ✅ **Full Gmail API Integration** (not mocks)
 - ✅ **Production-grade OAuth2 Authentication**
 - ✅ **AI-Powered Features** (Gemini API + pgvector)
@@ -26,25 +27,25 @@
 
 ### Core Features: 46.15 / 47.75 points (96.6%)
 
-| Category | Max Points | Score | % | Status |
-|----------|-----------|-------|---|--------|
-| 1. Overall Requirements | 31.0 | 30.5 | 98% | ✅ Excellent |
-| 2. Authentication & Tokens | 2.75 | 2.75 | 100% | ✅ Perfect |
-| 3. Email Sync & Display | 1.5 | 1.5 | 100% | ✅ Perfect |
-| 4. Kanban Board Interface | 2.5 | 2.5 | 100% | ✅ Perfect |
-| 5. Snooze Mechanism | 1.0 | 1.0 | 100% | ✅ Perfect |
-| 6. AI Features | 2.25 | 1.75 | 78% | ✅ Good |
-| 7. Search Features | 4.0 | 4.0 | 100% | ✅ Perfect |
-| 8. Filtering & Sorting | 1.0 | 0.75 | 75% | ✅ Good |
-| 9. Email Actions | 1.75 | 1.4 | 80% | ✅ Good |
+| Category                   | Max Points | Score | %    | Status       |
+| -------------------------- | ---------- | ----- | ---- | ------------ |
+| 1. Overall Requirements    | 31.0       | 30.5  | 98%  | ✅ Excellent |
+| 2. Authentication & Tokens | 2.75       | 2.75  | 100% | ✅ Perfect   |
+| 3. Email Sync & Display    | 1.5        | 1.5   | 100% | ✅ Perfect   |
+| 4. Kanban Board Interface  | 2.5        | 2.5   | 100% | ✅ Perfect   |
+| 5. Snooze Mechanism        | 1.0        | 1.0   | 100% | ✅ Perfect   |
+| 6. AI Features             | 2.25       | 1.75  | 78%  | ✅ Good      |
+| 7. Search Features         | 4.0        | 4.0   | 100% | ✅ Perfect   |
+| 8. Filtering & Sorting     | 1.0        | 0.75  | 75%  | ✅ Good      |
+| 9. Email Actions           | 1.75       | 1.4   | 80%  | ✅ Good      |
 
 ### Bonus Features: +0.45 points
 
-| Feature | Points | Status |
-|---------|--------|--------|
-| Multi-tab logout sync | +0.25 | ✅ Implemented |
-| Keyboard navigation | +0.1 | ⚠️ Partial |
-| CI/CD | +0.1 | ⚠️ Partial |
+| Feature               | Points | Status         |
+| --------------------- | ------ | -------------- |
+| Multi-tab logout sync | +0.25  | ✅ Implemented |
+| Keyboard navigation   | +0.1   | ⚠️ Partial     |
+| CI/CD                 | +0.1   | ⚠️ Partial     |
 
 ### **TOTAL: 46.6 / 47.75 = 97.6%** 🌟
 
@@ -53,6 +54,7 @@
 ## 🏆 EXCEPTIONAL FEATURES
 
 ### 1. **Advanced AI Integration** ⭐⭐⭐⭐⭐
+
 - **Google Gemini API** for email summarization
 - **Text Embeddings** (768-dimensional vectors)
 - **pgvector** for similarity search
@@ -62,6 +64,7 @@
 **Impact:** Users can find emails by concept (e.g., "money" finds "invoice", "payment", "salary")
 
 ### 2. **Production-Grade Authentication** ⭐⭐⭐⭐⭐
+
 - OAuth2 Authorization Code flow (not implicit)
 - JWT with 15-minute expiration
 - HttpOnly refresh tokens (server-side only)
@@ -72,6 +75,7 @@
 **Impact:** Bank-level security for user data
 
 ### 3. **Dynamic Kanban Configuration** ⭐⭐⭐⭐⭐
+
 - User-customizable columns (create, rename, delete, reorder)
 - Gmail label mapping (bidirectional sync)
 - Drag-and-drop email management
@@ -81,6 +85,7 @@
 **Impact:** Personalized email workflow management
 
 ### 4. **Intelligent Search System** ⭐⭐⭐⭐⭐
+
 - **Fuzzy Search:** Typo tolerance + partial matching
 - **Semantic Search:** Conceptual relevance with AI embeddings
 - **Auto-Suggestions:** 4 data sources (history, contacts, keywords, semantic)
@@ -89,6 +94,7 @@
 **Impact:** Find emails even with typos or by meaning
 
 ### 5. **Clean Code Architecture** ⭐⭐⭐⭐⭐
+
 - Nx Monorepo structure
 - NestJS modular backend
 - React feature-based frontend
@@ -103,6 +109,7 @@
 ## 🛠️ TECHNOLOGY STACK
 
 ### Frontend
+
 - **Framework:** React 18 + Vite
 - **Language:** TypeScript (strict mode)
 - **State Management:** Zustand
@@ -112,6 +119,7 @@
 - **Drag-and-Drop:** @dnd-kit
 
 ### Backend
+
 - **Framework:** NestJS
 - **Language:** TypeScript
 - **Database:** PostgreSQL 14+
@@ -122,12 +130,14 @@
 - **Logging:** Pino
 
 ### AI & Search
+
 - **LLM:** Google Gemini API (gemini-1.5-flash)
 - **Embeddings:** Google text-embedding-004 (768-dim)
 - **Vector Database:** PostgreSQL + pgvector
 - **Fuzzy Search:** Custom Levenshtein algorithm
 
 ### DevOps
+
 - **Monorepo:** Nx
 - **Package Manager:** pnpm
 - **Linting:** ESLint + Prettier
@@ -183,11 +193,13 @@ inbox-mind/
 ## 🚀 DEPLOYMENT
 
 ### Production URLs
+
 - **Frontend:** https://inbox-mind-rosy.vercel.app/
 - **Backend:** (Render/Railway - configured in .env)
 - **Demo Video:** https://youtu.be/mvU-hdmmzw4
 
 ### Environment Setup
+
 ```bash
 # Clone repository
 git clone https://github.com/TQTuyen/Inbox-Mind.git
@@ -213,6 +225,7 @@ pnpm start  # Starts both frontend and backend
 ## ✅ QUALITY METRICS
 
 ### Code Quality
+
 - ✅ **Backend Lint:** 0 errors, 2 warnings
 - ✅ **Frontend Lint:** 0 errors, 0 warnings
 - ✅ **TypeScript:** Strict mode enabled
@@ -220,6 +233,7 @@ pnpm start  # Starts both frontend and backend
 - ✅ **Build:** Success (clean compilation)
 
 ### Architecture
+
 - ✅ **Separation of Concerns:** Clear module boundaries
 - ✅ **Dependency Injection:** NestJS IoC container
 - ✅ **Type Safety:** Full TypeScript coverage
@@ -227,6 +241,7 @@ pnpm start  # Starts both frontend and backend
 - ✅ **Logging:** Structured logging with Pino
 
 ### Security
+
 - ✅ **Authentication:** OAuth2 + JWT
 - ✅ **Token Storage:** HttpOnly cookies
 - ✅ **Encryption:** Token encryption at rest
@@ -234,6 +249,7 @@ pnpm start  # Starts both frontend and backend
 - ✅ **SQL Injection:** Protected (TypeORM parameterized queries)
 
 ### Performance
+
 - ✅ **Pagination:** Efficient email loading
 - ✅ **Caching:** React Query for data caching
 - ✅ **Virtual Scrolling:** Large email lists
@@ -260,6 +276,7 @@ Total Documentation: **6 comprehensive documents**
 ## 🔧 IMPROVEMENTS MADE DURING REVIEW
 
 ### Session 1: Backend Refactoring
+
 1. ✅ Consolidated migrations to single directory
 2. ✅ Removed unused boilerplate files
 3. ✅ Reorganized email-metadata module (entities/, services/, schedulers/)
@@ -267,12 +284,14 @@ Total Documentation: **6 comprehensive documents**
 5. ✅ Cleaned up duplicate code
 
 ### Session 2: Critical Bug Fixes
+
 1. ✅ Fixed search-suggestions type errors (Gmail header parsing)
 2. ✅ Fixed import paths after refactoring
 3. ✅ Fixed logger method signature errors
 4. ✅ All build errors resolved
 
 ### Session 3: Code Quality Improvements
+
 1. ✅ Removed unused variables
 2. ✅ Removed unused imports
 3. ✅ Added comprehensive API documentation
@@ -283,6 +302,7 @@ Total Documentation: **6 comprehensive documents**
 ## 💪 STRENGTHS
 
 ### Technical Excellence
+
 1. **Real Integration:** Actual Gmail API (not mocks)
 2. **Advanced AI:** Gemini embeddings + semantic search
 3. **Production Security:** OAuth2, JWT, encryption
@@ -290,6 +310,7 @@ Total Documentation: **6 comprehensive documents**
 5. **Modern Stack:** Latest React, NestJS, PostgreSQL
 
 ### Feature Completeness
+
 1. ✅ All core features implemented
 2. ✅ Advanced search (fuzzy + semantic)
 3. ✅ Dynamic Kanban configuration
@@ -297,6 +318,7 @@ Total Documentation: **6 comprehensive documents**
 5. ✅ Snooze mechanism with scheduler
 
 ### Code Quality
+
 1. ✅ TypeScript strict mode
 2. ✅ Comprehensive error handling
 3. ✅ Clean git history (65+ commits)
@@ -308,6 +330,7 @@ Total Documentation: **6 comprehensive documents**
 ## 🎓 LEARNING OUTCOMES DEMONSTRATED
 
 ### Backend Development
+
 - ✅ RESTful API design
 - ✅ OAuth2 authentication flow
 - ✅ JWT token management
@@ -316,6 +339,7 @@ Total Documentation: **6 comprehensive documents**
 - ✅ Integration with external APIs (Gmail, Gemini)
 
 ### Frontend Development
+
 - ✅ React hooks and state management
 - ✅ API integration with React Query
 - ✅ Responsive UI design
@@ -324,12 +348,14 @@ Total Documentation: **6 comprehensive documents**
 - ✅ Cross-tab synchronization
 
 ### AI & Machine Learning
+
 - ✅ Vector embeddings
 - ✅ Similarity search
 - ✅ LLM integration (Gemini)
 - ✅ Semantic search implementation
 
 ### DevOps & Tooling
+
 - ✅ Monorepo management (Nx)
 - ✅ Database migrations
 - ✅ Environment configuration
@@ -341,6 +367,7 @@ Total Documentation: **6 comprehensive documents**
 ## 🏅 CONCLUSION
 
 **Inbox Mind** is an exemplary full-stack project that exceeds expectations in:
+
 - ✅ Technical implementation
 - ✅ Feature completeness
 - ✅ Code quality
@@ -352,6 +379,7 @@ Total Documentation: **6 comprehensive documents**
 The project demonstrates professional-level software engineering skills and is **ready for production use**. With minor enhancements (Docker, comprehensive tests), it could easily reach 98-99%.
 
 ### Recommended for:
+
 - ✅ Portfolio showcase
 - ✅ Job interviews
 - ✅ Academic submission

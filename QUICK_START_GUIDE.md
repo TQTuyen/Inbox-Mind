@@ -9,17 +9,20 @@
 Before starting, make sure you have installed:
 
 1. **Node.js** (v18 or later)
+
    ```bash
    node --version  # Should be v18.x or higher
    ```
 
 2. **pnpm** (Package Manager)
+
    ```bash
    npm install -g pnpm
    pnpm --version  # Should be v8.x or higher
    ```
 
 3. **PostgreSQL** (v12 or later)
+
    ```bash
    psql --version  # Should be v12 or higher
    ```
@@ -54,6 +57,7 @@ pnpm install
 ```
 
 **Expected Output:**
+
 ```
 Progress: resolved 1500, reused 1450, downloaded 50
 ✓ Dependencies installed successfully
@@ -179,6 +183,7 @@ FRONTEND_URL=http://localhost:4200
 ```
 
 **Note:** To get Google Gemini API key:
+
 1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
 2. Click "Get API Key"
 3. Create new or use existing API key
@@ -196,6 +201,7 @@ echo VITE_USE_MOCK=false > apps\frontend\.env
 ```
 
 **Frontend .env content:**
+
 ```env
 # Use real backend API (not mock data)
 VITE_USE_MOCK=false
@@ -219,6 +225,7 @@ cd ../..
 ```
 
 **Expected Output:**
+
 ```
 query: CREATE TABLE "users" ...
 query: CREATE TABLE "email_metadata" ...
@@ -240,6 +247,7 @@ pnpm start
 ```
 
 **Expected Output:**
+
 ```
 ✓ Backend started at http://localhost:3000
 ✓ Frontend started at http://localhost:4200
@@ -250,12 +258,14 @@ Ready in 5s
 #### Option 2: Start Separately (for debugging)
 
 **Terminal 1 - Backend:**
+
 ```bash
 pnpm nx serve backend
 # Or: pnpm be:run
 ```
 
 **Terminal 2 - Frontend:**
+
 ```bash
 pnpm nx serve frontend
 # Or: pnpm fe:run
@@ -289,6 +299,7 @@ Open browser: http://localhost:4200
 ## 🎯 QUICK COMMANDS
 
 ### Development
+
 ```bash
 # Start both frontend and backend
 pnpm start
@@ -304,6 +315,7 @@ pnpm nx serve backend --watch
 ```
 
 ### Testing
+
 ```bash
 # Run all tests
 pnpm test
@@ -319,6 +331,7 @@ pnpm nx test backend --watch
 ```
 
 ### Linting & Formatting
+
 ```bash
 # Lint all code
 pnpm lint
@@ -335,6 +348,7 @@ pnpm nx lint frontend --fix
 ```
 
 ### Build
+
 ```bash
 # Build all apps
 pnpm build
@@ -347,6 +361,7 @@ pnpm nx build frontend
 ```
 
 ### Database
+
 ```bash
 # Run migrations
 pnpm nx run backend:migration:run
@@ -368,6 +383,7 @@ pnpm nx run backend:migration:show
 ### Issue 1: "Cannot find module '@google/generative-ai'"
 
 **Solution:**
+
 ```bash
 cd apps/backend
 pnpm add @google/generative-ai
@@ -377,6 +393,7 @@ cd ../..
 ### Issue 2: "Port 3000 is already in use"
 
 **Solution:**
+
 ```bash
 # Find process using port 3000
 # On Windows:
@@ -390,7 +407,9 @@ lsof -ti:3000 | xargs kill -9
 ### Issue 3: "Database connection failed"
 
 **Solution:**
+
 1. Check PostgreSQL is running:
+
    ```bash
    # Windows: Check Services for PostgreSQL
    # Mac: brew services list
@@ -406,6 +425,7 @@ lsof -ti:3000 | xargs kill -9
 ### Issue 4: "Migration failed"
 
 **Solution:**
+
 ```bash
 # Drop and recreate database
 psql -U postgres
@@ -422,6 +442,7 @@ pnpm nx run backend:migration:run
 ### Issue 5: "Google OAuth Error: redirect_uri_mismatch"
 
 **Solution:**
+
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Navigate to: Credentials > OAuth 2.0 Client IDs
 3. Add exact redirect URI:
@@ -433,6 +454,7 @@ pnpm nx run backend:migration:run
 ### Issue 6: "pnpm: command not found"
 
 **Solution:**
+
 ```bash
 npm install -g pnpm
 ```
@@ -440,6 +462,7 @@ npm install -g pnpm
 ### Issue 7: "pgvector extension not found"
 
 **Solution:**
+
 ```bash
 # Install pgvector
 # On Mac:
@@ -482,6 +505,7 @@ Before starting development, verify:
 After successful setup:
 
 1. **Explore Features:**
+
    - Login with Google
    - View your Gmail inbox
    - Try semantic search
@@ -490,6 +514,7 @@ After successful setup:
    - Snooze emails
 
 2. **Read Documentation:**
+
    - `API_DOCUMENTATION.md` - API endpoints
    - `WEEK4_TESTING_GUIDE.md` - Testing procedures
    - `README.md` - Project overview
@@ -505,6 +530,7 @@ After successful setup:
 ## 🚀 PRODUCTION DEPLOYMENT
 
 For production deployment, see:
+
 - **Frontend:** Vercel (automatic from GitHub)
 - **Backend:** Render, Railway, or Cloud Run
 - **Database:** Supabase, Neon, or managed PostgreSQL
@@ -518,17 +544,20 @@ For production deployment, see:
 If you encounter issues:
 
 1. **Check logs:**
+
    - Backend: Terminal running `pnpm be:run`
    - Frontend: Browser console (F12)
    - Database: `tail -f /var/log/postgresql/postgresql.log`
 
 2. **Common files to check:**
+
    - `apps/backend/.env` - Backend configuration
    - `apps/frontend/.env` - Frontend configuration
    - `apps/backend/src/main.ts` - Backend entry point
    - `apps/frontend/src/main.tsx` - Frontend entry point
 
 3. **Useful commands:**
+
    ```bash
    # Check backend is running
    curl http://localhost:3000/api/v1/

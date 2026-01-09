@@ -6,6 +6,7 @@
 ---
 
 ## Table of Contents
+
 1. [Authentication](#authentication)
 2. [Gmail & Email Operations](#gmail--email-operations)
 3. [Email Metadata & Kanban](#email-metadata--kanban)
@@ -17,6 +18,7 @@
 ## Authentication
 
 ### 1. Google OAuth Login
+
 Initiates Google OAuth2 authentication flow.
 
 ```http
@@ -28,6 +30,7 @@ GET /auth/google
 ---
 
 ### 2. Google OAuth Callback
+
 Handles OAuth2 callback and exchanges code for tokens.
 
 ```http
@@ -35,9 +38,11 @@ GET /auth/google/callback?code={authCode}
 ```
 
 **Parameters:**
+
 - `code` (query): Authorization code from Google
 
 **Response:**
+
 ```json
 {
   "accessToken": "eyJhbGciOiJIUzI1NiIs...",
@@ -55,6 +60,7 @@ GET /auth/google/callback?code={authCode}
 ---
 
 ### 3. Refresh Access Token
+
 Refreshes expired access token using refresh token cookie.
 
 ```http
@@ -62,9 +68,11 @@ POST /auth/refresh
 ```
 
 **Headers:**
+
 - `Cookie: refreshToken=...` (automatic)
 
 **Response:**
+
 ```json
 {
   "accessToken": "eyJhbGciOiJIUzI1NiIs..."
@@ -74,6 +82,7 @@ POST /auth/refresh
 ---
 
 ### 4. Logout
+
 Logs out user and clears all tokens.
 
 ```http
@@ -81,9 +90,11 @@ POST /auth/logout
 ```
 
 **Headers:**
+
 - `Authorization: Bearer {accessToken}`
 
 **Response:**
+
 ```json
 {
   "message": "Logged out successfully"
@@ -97,6 +108,7 @@ POST /auth/logout
 All endpoints require `Authorization: Bearer {accessToken}` header.
 
 ### 1. List Mailboxes/Labels
+
 Get all Gmail labels/folders for current user.
 
 ```http
@@ -104,6 +116,7 @@ GET /gmail/mailboxes
 ```
 
 **Response:**
+
 ```json
 {
   "mailboxes": [
@@ -126,6 +139,7 @@ GET /gmail/mailboxes
 ---
 
 ### 2. List Emails in Mailbox
+
 Get paginated list of emails from a specific mailbox.
 
 ```http
@@ -133,11 +147,13 @@ GET /gmail/mailboxes/:mailboxId/emails?maxResults=50&pageToken=...
 ```
 
 **Parameters:**
+
 - `mailboxId` (path): Gmail label ID (e.g., "INBOX", "SENT")
 - `maxResults` (query, optional): Number of emails per page (default: 50)
 - `pageToken` (query, optional): Token for pagination
 
 **Response:**
+
 ```json
 {
   "emails": [
@@ -149,10 +165,12 @@ GET /gmail/mailboxes/:mailboxId/emails?maxResults=50&pageToken=...
         "name": "John Doe",
         "email": "john@example.com"
       },
-      "to": [{
-        "name": "Jane Smith",
-        "email": "jane@example.com"
-      }],
+      "to": [
+        {
+          "name": "Jane Smith",
+          "email": "jane@example.com"
+        }
+      ],
       "preview": "Hi Jane, let's discuss the project...",
       "timestamp": "2024-12-24T10:30:00Z",
       "isRead": false,
@@ -171,6 +189,7 @@ GET /gmail/mailboxes/:mailboxId/emails?maxResults=50&pageToken=...
 ---
 
 ### 3. Get Email Detail
+
 Get full email content by ID.
 
 ```http
@@ -178,6 +197,7 @@ GET /gmail/emails/:emailId
 ```
 
 **Response:**
+
 ```json
 {
   "id": "18c1f2e3a4b5c6d7",
@@ -202,6 +222,7 @@ GET /gmail/emails/:emailId
 ---
 
 ### 4. Mark Email as Read/Unread
+
 Toggle email read status.
 
 ```http
@@ -209,6 +230,7 @@ POST /gmail/emails/:emailId/mark-read
 ```
 
 **Request Body:**
+
 ```json
 {
   "read": true
@@ -216,6 +238,7 @@ POST /gmail/emails/:emailId/mark-read
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -226,6 +249,7 @@ POST /gmail/emails/:emailId/mark-read
 ---
 
 ### 5. Delete Email
+
 Move email to trash.
 
 ```http
@@ -233,6 +257,7 @@ DELETE /gmail/emails/:emailId
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -243,6 +268,7 @@ DELETE /gmail/emails/:emailId
 ---
 
 ### 6. Send Email
+
 Compose and send a new email.
 
 ```http
@@ -250,6 +276,7 @@ POST /gmail/emails/send
 ```
 
 **Request Body:**
+
 ```json
 {
   "to": "recipient@example.com",
@@ -261,6 +288,7 @@ POST /gmail/emails/send
 ```
 
 **Response:**
+
 ```json
 {
   "id": "sent_email_id",
@@ -272,6 +300,7 @@ POST /gmail/emails/send
 ---
 
 ### 7. Reply to Email
+
 Reply to an existing email.
 
 ```http
@@ -279,6 +308,7 @@ POST /gmail/emails/:emailId/reply
 ```
 
 **Request Body:**
+
 ```json
 {
   "body": "Thank you for your email...",
@@ -289,6 +319,7 @@ POST /gmail/emails/:emailId/reply
 ---
 
 ### 8. Get Email Attachment
+
 Download email attachment.
 
 ```http
@@ -302,6 +333,7 @@ GET /gmail/emails/:emailId/attachments/:attachmentId
 ## Email Metadata & Kanban
 
 ### 1. Get Kanban Emails
+
 Get all emails with Kanban metadata.
 
 ```http
@@ -309,6 +341,7 @@ GET /email-metadata/kanban/emails
 ```
 
 **Response:**
+
 ```json
 {
   "emails": [
@@ -328,6 +361,7 @@ GET /email-metadata/kanban/emails
 ---
 
 ### 2. Update Kanban Status
+
 Move email to different Kanban column.
 
 ```http
@@ -335,6 +369,7 @@ PUT /email-metadata/:emailId/kanban-status
 ```
 
 **Request Body:**
+
 ```json
 {
   "kanbanStatus": "done"
@@ -342,6 +377,7 @@ PUT /email-metadata/:emailId/kanban-status
 ```
 
 **Response:**
+
 ```json
 {
   "id": "metadata_id",
@@ -354,6 +390,7 @@ PUT /email-metadata/:emailId/kanban-status
 ---
 
 ### 3. Snooze Email
+
 Temporarily hide email until specified time.
 
 ```http
@@ -361,6 +398,7 @@ POST /email-metadata/:emailId/snooze
 ```
 
 **Request Body:**
+
 ```json
 {
   "snoozeUntil": "2024-12-25T09:00:00Z"
@@ -368,6 +406,7 @@ POST /email-metadata/:emailId/snooze
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -378,6 +417,7 @@ POST /email-metadata/:emailId/snooze
 ---
 
 ### 4. Generate AI Summary
+
 Generate AI-powered summary for email.
 
 ```http
@@ -385,6 +425,7 @@ POST /email-metadata/:emailId/generate-summary
 ```
 
 **Response:**
+
 ```json
 {
   "summary": "Meeting scheduled for tomorrow at 2 PM to discuss project milestones and Q4 deliverables."
@@ -394,6 +435,7 @@ POST /email-metadata/:emailId/generate-summary
 ---
 
 ### 5. Get Kanban Configuration
+
 Get user's custom Kanban column configuration.
 
 ```http
@@ -401,6 +443,7 @@ GET /email-metadata/kanban/config
 ```
 
 **Response:**
+
 ```json
 {
   "columns": [
@@ -427,6 +470,7 @@ GET /email-metadata/kanban/config
 ---
 
 ### 6. Create Kanban Column
+
 Add new custom Kanban column.
 
 ```http
@@ -434,6 +478,7 @@ POST /email-metadata/kanban/columns
 ```
 
 **Request Body:**
+
 ```json
 {
   "name": "Urgent",
@@ -445,6 +490,7 @@ POST /email-metadata/kanban/columns
 ---
 
 ### 7. Update Kanban Column
+
 Modify existing column.
 
 ```http
@@ -452,6 +498,7 @@ PUT /email-metadata/kanban/columns/:columnId
 ```
 
 **Request Body:**
+
 ```json
 {
   "name": "High Priority",
@@ -462,6 +509,7 @@ PUT /email-metadata/kanban/columns/:columnId
 ---
 
 ### 8. Delete Kanban Column
+
 Remove custom column.
 
 ```http
@@ -471,6 +519,7 @@ DELETE /email-metadata/kanban/columns/:columnId
 ---
 
 ### 9. Reorder Kanban Columns
+
 Change column display order.
 
 ```http
@@ -478,6 +527,7 @@ PUT /email-metadata/kanban/reorder
 ```
 
 **Request Body:**
+
 ```json
 {
   "columnIds": ["col_1", "col_3", "col_2", "col_4"]
@@ -489,6 +539,7 @@ PUT /email-metadata/kanban/reorder
 ## Search Features
 
 ### 1. Fuzzy Search
+
 Search emails with typo tolerance and partial matching.
 
 ```http
@@ -496,6 +547,7 @@ POST /gmail/search/fuzzy
 ```
 
 **Request Body:**
+
 ```json
 {
   "query": "marketng report",
@@ -505,6 +557,7 @@ POST /gmail/search/fuzzy
 ```
 
 **Response:**
+
 ```json
 {
   "results": [
@@ -527,6 +580,7 @@ POST /gmail/search/fuzzy
 ---
 
 ### 2. Semantic Search
+
 Search emails by conceptual meaning using AI embeddings.
 
 ```http
@@ -534,6 +588,7 @@ POST /email-metadata/semantic-search
 ```
 
 **Request Body:**
+
 ```json
 {
   "query": "financial documents and invoices",
@@ -543,6 +598,7 @@ POST /email-metadata/semantic-search
 ```
 
 **Response:**
+
 ```json
 {
   "results": [
@@ -569,6 +625,7 @@ POST /email-metadata/semantic-search
 ---
 
 ### 3. Search Auto-Suggestions
+
 Get search suggestions from multiple sources while typing.
 
 ```http
@@ -576,10 +633,12 @@ GET /gmail/search/suggestions?query=john&limit=5
 ```
 
 **Parameters:**
+
 - `query` (query): Partial search query (min 2 chars)
 - `limit` (query, optional): Max suggestions (default: 5)
 
 **Response:**
+
 ```json
 {
   "suggestions": [
@@ -608,6 +667,7 @@ GET /gmail/search/suggestions?query=john&limit=5
 ```
 
 **Suggestion Types:**
+
 - `history`: From user's search history
 - `contact`: From recent email contacts
 - `keyword`: From email subject keywords
@@ -618,6 +678,7 @@ GET /gmail/search/suggestions?query=john&limit=5
 ## AI Features
 
 ### 1. Generate Email Embeddings
+
 Generate vector embeddings for emails (batch processing).
 
 ```http
@@ -625,6 +686,7 @@ POST /email-metadata/generate-embeddings
 ```
 
 **Request Body:**
+
 ```json
 {
   "emailIds": ["email_1", "email_2", "email_3"],
@@ -633,6 +695,7 @@ POST /email-metadata/generate-embeddings
 ```
 
 **Response:**
+
 ```json
 {
   "generated": 3,
@@ -655,6 +718,7 @@ POST /email-metadata/generate-embeddings
 All API endpoints may return the following error responses:
 
 ### 401 Unauthorized
+
 ```json
 {
   "statusCode": 401,
@@ -664,6 +728,7 @@ All API endpoints may return the following error responses:
 ```
 
 ### 400 Bad Request
+
 ```json
 {
   "statusCode": 400,
@@ -673,6 +738,7 @@ All API endpoints may return the following error responses:
 ```
 
 ### 404 Not Found
+
 ```json
 {
   "statusCode": 404,
@@ -682,6 +748,7 @@ All API endpoints may return the following error responses:
 ```
 
 ### 500 Internal Server Error
+
 ```json
 {
   "statusCode": 500,
@@ -702,6 +769,7 @@ All API endpoints may return the following error responses:
 ## Authentication Flow
 
 1. **Initial Login:**
+
    ```
    User → GET /auth/google → Google OAuth → Callback
    → Backend exchanges code for tokens
@@ -709,6 +777,7 @@ All API endpoints may return the following error responses:
    ```
 
 2. **Authenticated Requests:**
+
    ```
    Client → API Request with Bearer token
    → If 401: Refresh token
@@ -716,6 +785,7 @@ All API endpoints may return the following error responses:
    ```
 
 3. **Token Refresh:**
+
    ```
    Client → POST /auth/refresh (with cookie)
    → Backend validates refresh token
@@ -734,6 +804,7 @@ All API endpoints may return the following error responses:
 ## Database Schema
 
 ### Users Table
+
 ```sql
 users (
   id UUID PRIMARY KEY,
@@ -748,6 +819,7 @@ users (
 ```
 
 ### Email Metadata Table
+
 ```sql
 email_metadata (
   id UUID PRIMARY KEY,
@@ -764,6 +836,7 @@ email_metadata (
 ```
 
 ### Email Embeddings Table
+
 ```sql
 email_embeddings (
   id UUID PRIMARY KEY,
@@ -776,6 +849,7 @@ email_embeddings (
 ```
 
 ### Kanban Config Table
+
 ```sql
 kanban_config (
   id UUID PRIMARY KEY,
@@ -792,6 +866,7 @@ kanban_config (
 ```
 
 ### Search History Table
+
 ```sql
 search_history (
   id UUID PRIMARY KEY,
