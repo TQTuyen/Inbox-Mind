@@ -62,7 +62,7 @@ export function createPinoConfig(nodeEnv: string): Params {
     },
 
     // Custom properties injector for request context
-    customProps: (req: IncomingMessage, _: ServerResponse) => {
+    customProps: (req: IncomingMessage) => {
       const correlationId =
         (req as any).id ||
         req.headers['x-correlation-id'] ||

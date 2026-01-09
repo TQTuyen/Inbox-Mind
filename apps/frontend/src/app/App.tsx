@@ -6,6 +6,7 @@ import { MailboxPage } from '@fe/features/mailbox/pages/MailboxPage';
 import { PrivateRoute } from '@fe/guards/PrivateRoute';
 import { QueryProvider } from '@fe/providers/QueryProvider';
 import { ErrorBoundary } from '@fe/shared/components/ErrorBoundary';
+import { Toaster } from '@fe/shared/components/ui/toaster';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useThemeStore } from '../store/themeStore';
 
@@ -38,6 +39,7 @@ function App() {
           <Route path="/" element={<Navigate to="/inbox/INBOX" replace />} />
           <Route path="*" element={<Navigate to="/inbox/INBOX" replace />} />
         </Routes>
+        <Toaster />
       </ErrorBoundary>
     </QueryProvider>
   );

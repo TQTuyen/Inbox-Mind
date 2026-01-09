@@ -1,0 +1,284 @@
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { KanbanConfig } from '../entities/kanban-config.entity';
+import { GmailService } from '../../gmail/gmail.service';
+import {
+  CreateKanbanColumnDto,
+  UpdateKanbanColumnDto,
+  KanbanColumnDto,
+} from '../dto/kanban-config.dto';
+
+@Injectable()
+export class KanbanConfigService {
+  private readonly logger = new Logger(KanbanConfigService.name);
+
+  constructor(
+    @InjectRepository(KanbanConfig)
+    private readonly kanbanConfigRepository: Repository<KanbanConfig>,
+    private readonly gmailService: GmailService
+  ) {}
+
+  /**
+   * Get user's Kanban configuration (all columns ordered by position)
+   */
+  async getUserConfig(userId: string): Promise<KanbanColumnDto[]> {
+    const columns = await this.kanbanConfigRepository.find({
+      where: { userId },
+      order: { position: 'ASC' },
+    });
+
+    this.logger.log(`Retrieved ${columns.length} columns for user ${userId}`);
+
+    return columns.map((col) => this.toDto(col));
+  }
+
+  /**
+   * Create a new Kanban column
+   */
+  async createColumn(
+    userId: string,
+    dto: CreateKanbanColumnDto
+  ): Promise<KanbanColumnDto> {
+    this.logger.log(`Creating new column "${dto.title}" for user ${userId}`);
+
+    // Generate columnId if not provided
+    const columnId =
+      dto.columnId ||
+      `CUSTOM_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+
+    // Check for duplicate columnId
+    const existing = await this.kanbanConfigRepository.findOne({
+      where: { userId, columnId },
+    });
+
+    if (existing) {
+      throw new ConflictException(
+        `Column with ID "${columnId}" already exists`
+      );
+    }
+
+    // Create Gmail label if not provided
+    let gmailLabelId = dto.gmailLabelId;
+    if (!gmailLabelId) {
+      try {
+        const label = await this.gmailService.createLabel(userId, dto.title);
+        gmailLabelId = label.id;
+        this.logger.log(
+          `Created Gmail label "${dto.title}" with ID ${gmailLabelId}`
+        );
+      } catch (error) {
+        this.logger.error(`Failed to create Gmail label: ${error.message}`);
+        throw new BadRequestException(
+          `Failed to create Gmail label: ${error.message}`
+        );
+      }
+    }
+
+    // Get max position and add 1
+    const maxPosition = await this.kanbanConfigRepository
+      .createQueryBuilder('config')
+      .select('MAX(config.position)', 'maxPosition')
+      .where('config.userId = :userId', { userId })
+      .getRawOne();
+
+    const position = (maxPosition?.maxPosition ?? -1) + 1;
+
+    // Create column
+    const column = this.kanbanConfigRepository.create({
+      userId,
+      columnId,
+      title: dto.title,
+      gmailLabelId,
+      position,
+      color: dto.color,
+    });
+
+    const saved = await this.kanbanConfigRepository.save(column);
+
+    this.logger.log(
+      `Created column "${dto.title}" at position ${position} with Gmail label ${gmailLabelId}`
+    );
+
+    return this.toDto(saved);
+  }
+
+  /**
+   * Update an existing Kanban column
+   */
+  async updateColumn(
+    userId: string,
+    columnId: string,
+    dto: UpdateKanbanColumnDto
+  ): Promise<KanbanColumnDto> {
+    this.logger.log(`Updating column "${columnId}" for user ${userId}`);
+
+    const column = await this.kanbanConfigRepository.findOne({
+      where: { userId, columnId },
+    });
+
+    if (!column) {
+      throw new NotFoundException(
+        `Column "${columnId}" not found for user ${userId}`
+      );
+    }
+
+    // Update title
+    if (dto.title) {
+      column.title = dto.title;
+
+      // Optionally update Gmail label name
+      if (dto.updateGmailLabel) {
+        try {
+          await this.gmailService.updateLabel(
+            userId,
+            column.gmailLabelId,
+            dto.title
+          );
+          this.logger.log(
+            `Updated Gmail label ${column.gmailLabelId} to "${dto.title}"`
+          );
+        } catch (error) {
+          this.logger.error(`Failed to update Gmail label: ${error.message}`);
+          // Continue anyway - database update should succeed even if Gmail fails
+        }
+      }
+    }
+
+    // Update color
+    if (dto.color !== undefined) {
+      column.color = dto.color;
+    }
+
+    const saved = await this.kanbanConfigRepository.save(column);
+
+    this.logger.log(`Updated column "${columnId}"`);
+
+    return this.toDto(saved);
+  }
+
+  /**
+   * Delete a Kanban column
+   */
+  async deleteColumn(userId: string, columnId: string): Promise<void> {
+    this.logger.log(`Deleting column "${columnId}" for user ${userId}`);
+
+    // Prevent deletion of INBOX
+    if (columnId === 'INBOX') {
+      throw new BadRequestException('Cannot delete INBOX column');
+    }
+
+    const column = await this.kanbanConfigRepository.findOne({
+      where: { userId, columnId },
+    });
+
+    if (!column) {
+      throw new NotFoundException(
+        `Column "${columnId}" not found for user ${userId}`
+      );
+    }
+
+    // Delete the column
+    await this.kanbanConfigRepository.delete({ userId, columnId });
+
+    this.logger.log(`Deleted column "${columnId}"`);
+
+    // Reorder remaining columns to fill the gap
+    await this.reorderAfterDeletion(userId, column.position);
+  }
+
+  /**
+   * Reorder Kanban columns
+   */
+  async reorderColumns(
+    userId: string,
+    columnIds: string[]
+  ): Promise<KanbanColumnDto[]> {
+    this.logger.log(
+      `Reordering ${columnIds.length} columns for user ${userId}`
+    );
+
+    // Fetch all columns
+    const columns = await this.kanbanConfigRepository.find({
+      where: { userId },
+    });
+
+    // Create a map for quick lookup
+    const columnMap = new Map(columns.map((col) => [col.columnId, col]));
+
+    // Validate that all provided columnIds exist
+    for (const columnId of columnIds) {
+      if (!columnMap.has(columnId)) {
+        throw new NotFoundException(
+          `Column "${columnId}" not found for user ${userId}`
+        );
+      }
+    }
+
+    // Update positions
+    const updates: Promise<KanbanConfig>[] = [];
+    columnIds.forEach((columnId, index) => {
+      const column = columnMap.get(columnId);
+      if (column) {
+        column.position = index;
+        updates.push(this.kanbanConfigRepository.save(column));
+      }
+    });
+
+    await Promise.all(updates);
+
+    this.logger.log(`Reordered ${columnIds.length} columns`);
+
+    // Return updated configuration
+    return this.getUserConfig(userId);
+  }
+
+  /**
+   * Reorder columns after deletion to fill gaps
+   */
+  private async reorderAfterDeletion(
+    userId: string,
+    deletedPosition: number
+  ): Promise<void> {
+    const columns = await this.kanbanConfigRepository.find({
+      where: { userId },
+      order: { position: 'ASC' },
+    });
+
+    // Update positions for columns after the deleted one
+    const updates: Promise<KanbanConfig>[] = [];
+    columns.forEach((column, index) => {
+      if (column.position > deletedPosition) {
+        column.position = index;
+        updates.push(this.kanbanConfigRepository.save(column));
+      }
+    });
+
+    await Promise.all(updates);
+
+    this.logger.log(
+      `Reordered ${updates.length} columns after deletion at position ${deletedPosition}`
+    );
+  }
+
+  /**
+   * Convert entity to DTO
+   */
+  private toDto(entity: KanbanConfig): KanbanColumnDto {
+    return {
+      columnId: entity.columnId,
+      title: entity.title,
+      gmailLabelId: entity.gmailLabelId,
+      position: entity.position,
+      color: entity.color,
+      createdAt: entity.createdAt,
+      updatedAt: entity.updatedAt,
+    };
+  }
+}

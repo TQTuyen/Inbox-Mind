@@ -5,7 +5,7 @@ import { GmailFormat, GmailLabel } from '../../common/enums';
 import { GmailOperationException } from '../../common/exceptions/gmail.exception';
 import { AppLoggerService } from '../../common/logger/app-logger.service';
 import { GmailClientFactoryService } from '../../common/services/gmail-client-factory.service';
-import { EmailMetadataService } from '../email-metadata/email-metadata.service';
+import { EmailMetadataService } from '../email-metadata/services/email-metadata.service';
 import { EmailReplyBuilder } from './builders/email-reply.builder';
 import { EmailBuilder } from './builders/email.builder';
 import { MimeMultipartBuilder } from './builders/mime-multipart.builder';
@@ -872,6 +872,76 @@ export class GmailService {
         'Failed to reply with multipart files'
       );
       throw new GmailOperationException('reply with multipart files', error);
+    }
+  }
+
+  /**
+   * Create a new Gmail label
+   */
+  async createLabel(
+    userId: string,
+    name: string
+  ): Promise<{ id: string; name: string }> {
+    try {
+      const gmail = await this.getGmailClient(userId);
+
+      const response = await gmail.users.labels.create({
+        userId: GMAIL_CONFIG.USER_ID,
+        requestBody: {
+          name,
+          labelListVisibility: 'labelShow',
+          messageListVisibility: 'show',
+        },
+      });
+
+      this.logger.debug(
+        `Created Gmail label: ${name} (${response.data.id}) for user ${userId}`
+      );
+
+      return {
+        id: response.data.id || '',
+        name: response.data.name || name,
+      };
+    } catch (error) {
+      this.logger.error(
+        {
+          userId,
+          labelName: name,
+          error: error.message,
+        },
+        'Failed to create Gmail label'
+      );
+      throw new GmailOperationException('create label', error);
+    }
+  }
+
+  /**
+   * Update an existing Gmail label's name
+   */
+  async updateLabel(
+    userId: string,
+    labelId: string,
+    newName: string
+  ): Promise<void> {
+    try {
+      const gmail = await this.getGmailClient(userId);
+
+      await gmail.users.labels.update({
+        userId: GMAIL_CONFIG.USER_ID,
+        id: labelId,
+        requestBody: {
+          name: newName,
+        },
+      });
+
+      this.logger.debug(
+        `Updated Gmail label ${labelId} to "${newName}" for user ${userId}`
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to update Gmail label ${labelId} to "${newName}" for user ${userId}: ${error.message}`
+      );
+      throw new GmailOperationException('update label', error);
     }
   }
 }

@@ -4,6 +4,7 @@ import {
   EmailAttachment,
   EmailListResponse,
   FuzzySearchResponse,
+  SemanticSearchResponse,
   gmailApi,
   Mailbox,
   ModifyLabelsRequest,
@@ -44,6 +45,8 @@ export const gmailKeys = {
   search: () => [...gmailKeys.all, 'search'] as const,
   fuzzySearch: (query: string, mailboxId?: string) =>
     [...gmailKeys.search(), 'fuzzy', query, mailboxId] as const,
+  semanticSearch: (query: string, threshold?: number) =>
+    [...gmailKeys.search(), 'semantic', query, threshold] as const,
 };
 
 // ==================== Mailbox Hooks ====================
@@ -562,7 +565,7 @@ export function useReplyToEmailWithAttachments(
   });
 }
 
-// ==================== Fuzzy Search Hooks ====================
+// ==================== Search Hooks ====================
 
 /**
  * Fuzzy search emails with typo tolerance and partial matching
@@ -585,6 +588,31 @@ export function useFuzzySearch(
     queryFn: () => gmailApi.fuzzySearch({ query, mailboxId, limit }),
     enabled: query.length >= 2, // Only search if query has at least 2 characters
     staleTime: 30 * 1000, // 30 seconds - search results can change
+    ...options,
+  });
+}
+
+/**
+ * Semantic search using vector similarity (AI-powered)
+ */
+export function useSemanticSearch(
+  params: {
+    query: string;
+    limit?: number;
+    threshold?: number;
+  },
+  options?: Omit<
+    UseQueryOptions<SemanticSearchResponse, Error>,
+    'queryKey' | 'queryFn'
+  >
+) {
+  const { query, limit, threshold } = params;
+
+  return useQuery<SemanticSearchResponse, Error>({
+    queryKey: gmailKeys.semanticSearch(query, threshold),
+    queryFn: () => gmailApi.semanticSearch({ query, limit, threshold }),
+    enabled: query.length >= 2, // Only search if query has at least 2 characters
+    staleTime: 60 * 1000, // 1 minute - semantic results are more stable
     ...options,
   });
 }

@@ -16,6 +16,7 @@ import { useKanbanStore } from '../store/kanbanStore';
 import { FilterControls } from './FilterControls';
 import { KanbanCard } from './KanbanCard';
 import { KanbanColumn } from './KanbanColumn';
+import { KanbanSettings } from './KanbanSettings';
 import { SortControls } from './SortControls';
 
 interface KanbanBoardProps {
@@ -91,6 +92,9 @@ export function KanbanBoard({ onEmailClick }: KanbanBoardProps) {
         </Button>
         <SortControls />
         <FilterControls />
+        <div className="ml-auto">
+          <KanbanSettings />
+        </div>
       </div>
 
       {/* Kanban Columns */}

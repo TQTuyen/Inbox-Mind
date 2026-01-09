@@ -37,6 +37,7 @@ export interface Email {
   kanbanStatus?: 'inbox' | 'todo' | 'in_progress' | 'done' | 'snoozed';
   snoozeUntil?: string | null;
   summary?: string | null;
+  note?: string | null;
 }
 
 export interface Mailbox {
@@ -99,6 +100,62 @@ export interface FuzzySearchResponse {
   results: FuzzySearchResult[];
   total: number;
   query: string;
+}
+
+export interface SemanticSearchResult {
+  emailId: string;
+  similarity: number;
+  subject: string;
+  preview: string;
+  from: EmailAddress;
+  timestamp: string;
+  isRead: boolean;
+}
+
+export interface SemanticSearchResponse {
+  results: SemanticSearchResult[];
+  total: number;
+  query: string;
+}
+
+export type SuggestionType = 'contact' | 'keyword' | 'semantic' | 'history';
+
+export interface SearchSuggestion {
+  text: string;
+  type: SuggestionType;
+  metadata?: Record<string, unknown>;
+}
+
+export interface AutoSuggestionsResponse {
+  suggestions: SearchSuggestion[];
+  query: string;
+}
+
+export interface KanbanColumn {
+  columnId: string;
+  title: string;
+  gmailLabelId: string;
+  position: number;
+  color?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface KanbanConfigResponse {
+  columns: KanbanColumn[];
+}
+
+export interface CreateKanbanColumnRequest {
+  title: string;
+  columnId?: string;
+  gmailLabelId?: string;
+  color?: string;
+}
+
+export interface UpdateKanbanColumnRequest {
+  title?: string;
+  updateGmailLabel?: boolean;
+  color?: string;
 }
 
 export interface DownloadAttachmentResponse {
@@ -438,6 +495,110 @@ class GmailApiService {
     const response = await api.get<FuzzySearchResponse>(url);
 
     return response.data;
+  }
+
+  /**
+   * Semantic search using vector similarity
+   */
+  async semanticSearch(params: {
+    query: string;
+    limit?: number;
+    threshold?: number;
+  }): Promise<SemanticSearchResponse> {
+    const { query, limit = 10, threshold = 0.7 } = params;
+
+    const queryParams = new URLSearchParams();
+    queryParams.append('query', query);
+    queryParams.append('limit', limit.toString());
+    queryParams.append('threshold', threshold.toString());
+
+    const url = `/email-metadata/search/semantic?${queryParams.toString()}`;
+    const response = await api.get<SemanticSearchResponse>(url);
+
+    return response.data;
+  }
+
+  /**
+   * Get auto-suggestions for search queries
+   */
+  async getSearchSuggestions(params: {
+    query: string;
+    limit?: number;
+  }): Promise<AutoSuggestionsResponse> {
+    const { query, limit = 5 } = params;
+
+    const queryParams = new URLSearchParams();
+    queryParams.append('query', query);
+    queryParams.append('limit', limit.toString());
+
+    const url = `/search/suggestions?${queryParams.toString()}`;
+    const response = await api.get<AutoSuggestionsResponse>(url);
+
+    return response.data;
+  }
+
+  /**
+   * Save search query to history
+   */
+  async saveSearchHistory(query: string): Promise<void> {
+    await api.post('/search/history', { query });
+  }
+
+  // ==================== Kanban Configuration ====================
+
+  /**
+   * Get user's Kanban configuration
+   */
+  async getKanbanConfig(): Promise<KanbanConfigResponse> {
+    const response = await api.get<KanbanConfigResponse>(
+      '/email-metadata/kanban/config'
+    );
+    return response.data;
+  }
+
+  /**
+   * Create a new Kanban column
+   */
+  async createKanbanColumn(
+    request: CreateKanbanColumnRequest
+  ): Promise<KanbanColumn> {
+    const response = await api.post<{ success: boolean; data: KanbanColumn }>(
+      '/email-metadata/kanban/config/columns',
+      request
+    );
+    return response.data.data;
+  }
+
+  /**
+   * Update an existing Kanban column
+   */
+  async updateKanbanColumn(
+    columnId: string,
+    request: UpdateKanbanColumnRequest
+  ): Promise<KanbanColumn> {
+    const response = await api.put<{ success: boolean; data: KanbanColumn }>(
+      `/email-metadata/kanban/config/columns/${columnId}`,
+      request
+    );
+    return response.data.data;
+  }
+
+  /**
+   * Delete a Kanban column
+   */
+  async deleteKanbanColumn(columnId: string): Promise<void> {
+    await api.delete(`/email-metadata/kanban/config/columns/${columnId}`);
+  }
+
+  /**
+   * Reorder Kanban columns
+   */
+  async reorderKanbanColumns(columnIds: string[]): Promise<KanbanColumn[]> {
+    const response = await api.post<{
+      success: boolean;
+      data: { columns: KanbanColumn[] };
+    }>('/email-metadata/kanban/config/reorder', { columnIds });
+    return response.data.data.columns;
   }
 }
 

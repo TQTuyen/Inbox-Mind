@@ -15,10 +15,8 @@ import { GmailModule } from '../modules/gmail/gmail.module';
 import { EmailMetadataModule } from '../modules/email-metadata/email-metadata.module';
 import { AIModule } from '../modules/ai/ai.module';
 import { User } from '../modules/user/user.entity';
-import { EmailMetadata } from '../modules/email-metadata/email-metadata.entity';
+import { EmailMetadata } from '../modules/email-metadata/entities/email-metadata.entity';
 import { UserModule } from '../modules/user/user.module';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -50,9 +48,8 @@ import { AppService } from './app.service';
     EmailMetadataModule,
     AIModule,
   ],
-  controllers: [AppController],
+  controllers: [],
   providers: [
-    AppService,
     {
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,

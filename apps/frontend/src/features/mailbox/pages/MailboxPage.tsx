@@ -9,7 +9,11 @@ import {
   SheetContent,
   SheetTrigger,
 } from '@fe/shared/components/ui/sheet';
-import { useFuzzySearch } from '@fe/hooks/useGmailQuery';
+import {
+  useFuzzySearch,
+  useKanbanEmails,
+  useSemanticSearch,
+} from '@fe/hooks/useGmailQuery';
 import { motion } from 'framer-motion';
 import { Menu, LayoutList, LayoutGrid } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -23,10 +27,14 @@ import { MailboxBackground } from '../components/MailboxBackground';
 import { SearchBar } from '../components/SearchBar';
 import { SearchResultsView } from '../components/SearchResultsView';
 import { Sidebar } from '../components/Sidebar';
-import { KanbanBoard } from '../components/KanbanBoard';
+import { KanbanBoard as OldKanbanBoard } from '../components/KanbanBoard';
 import { useMailbox } from '../hooks/useMailbox';
 import { Email, useEmailStore, KanbanStatus } from '../store/emailStore';
 import { emailMetadataApi } from '../../../services/api/emailMetadataApi';
+import {
+  transformKanbanEmailsBatch,
+  transformSearchResultsBatch,
+} from '@fe/utils/emailTransformers';
 
 export function MailboxPage() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -48,19 +56,46 @@ export function MailboxPage() {
     viewMode,
     setViewMode,
     updateEmail,
+    setEmails,
   } = useEmailStore();
   const { handleEmailSelect, refreshEmails } = useMailbox();
 
-  // Fuzzy search state
+  // Fetch Kanban emails when in Kanban view
+  const {
+    data: kanbanEmailsData = [],
+    isLoading: isLoadingKanbanEmails,
+    refetch: refetchKanbanEmails,
+  } = useKanbanEmails({
+    enabled: viewMode === 'kanban', // Only fetch when in Kanban view
+  });
+
+  // Search state
   const [searchInput, setSearchInput] = useState('');
-  const { data: searchData, isLoading: isSearchLoading } = useFuzzySearch(
+  const [isSemanticMode, setIsSemanticMode] = useState(false);
+
+  // Fuzzy search
+  const { data: fuzzyData, isLoading: isFuzzyLoading } = useFuzzySearch(
     {
       query: searchQuery,
       mailboxId: mailboxId || 'INBOX',
       limit: 20,
     },
-    { enabled: searchQuery.length >= 2 }
+    { enabled: searchQuery.length >= 2 && !isSemanticMode }
   );
+
+  // Semantic search
+  const { data: semanticData, isLoading: isSemanticLoading } =
+    useSemanticSearch(
+      {
+        query: searchQuery,
+        limit: 20,
+        threshold: 0.7,
+      },
+      { enabled: searchQuery.length >= 2 && isSemanticMode }
+    );
+
+  const isSearchLoading = isFuzzyLoading || isSemanticLoading;
+  const searchData = isSemanticMode ? semanticData : fuzzyData;
 
   // Sync URL param to store on mount and when URL changes
   useEffect(() => {
@@ -72,40 +107,46 @@ export function MailboxPage() {
     }
   }, [mailboxId, setSelectedMailbox, navigate]);
 
-  // Update search results when fuzzy search data changes
+  // Update search results when search data changes
   useEffect(() => {
     if (searchData?.results) {
-      // Transform search results to Email format
-      const transformedResults: Email[] = searchData.results.map((result) => ({
-        id: result.id,
-        subject: result.subject,
-        from: result.from,
-        to: [], // Not provided in search results
-        preview: result.snippet,
-        body: result.snippet,
-        timestamp: result.timestamp,
-        isRead: result.isRead,
-        isStarred: false,
-        attachments: result.hasAttachments ? [] : undefined,
-        mailboxId: mailboxId || 'INBOX',
-      }));
+      // Transform search results to Email format using centralized utility
+      const transformedResults = transformSearchResultsBatch(
+        searchData.results,
+        mailboxId || 'INBOX'
+      );
       setSearchResults(transformedResults);
     }
-  }, [searchData, setSearchResults, mailboxId]);
+  }, [searchData, setSearchResults, mailboxId, isSemanticMode]);
 
-  // Refetch emails when switching to Kanban view to ensure latest kanbanStatus from database
+  // Sync Kanban emails to store when in Kanban view
+  useEffect(() => {
+    if (viewMode === 'kanban' && kanbanEmailsData.length > 0) {
+      console.log(
+        '🔄 [KANBAN] Syncing Kanban emails to store:',
+        kanbanEmailsData.length,
+        'emails'
+      );
+      // Transform API emails to store Email format using centralized utility
+      const transformedEmails = transformKanbanEmailsBatch(kanbanEmailsData);
+      setEmails(transformedEmails, 1);
+    }
+  }, [viewMode, kanbanEmailsData, setEmails]);
+
+  // Refetch Kanban emails when switching to Kanban view
   useEffect(() => {
     if (viewMode === 'kanban') {
       console.log(
-        '🔄 [KANBAN] Switching to Kanban view - refetching emails to get latest kanbanStatus from database'
+        '🔄 [KANBAN] Switching to Kanban view - refetching Kanban emails from all columns'
       );
-      refreshEmails();
+      refetchKanbanEmails();
     }
-  }, [viewMode, refreshEmails]);
+  }, [viewMode, refetchKanbanEmails]);
 
-  const handleFuzzySearch = (query: string) => {
+  const handleSearch = (query: string, isSemanticSearch = false) => {
     setSearchQuery(query);
     setSearchMode(true);
+    setIsSemanticMode(isSemanticSearch);
   };
 
   const handleClearSearch = () => {
@@ -153,6 +194,13 @@ export function MailboxPage() {
         status,
         data,
       });
+      // Refetch Kanban emails if in Kanban view to get latest data
+      if (viewMode === 'kanban') {
+        console.log(
+          '🔄 [MUTATION] Refetching Kanban emails after status update'
+        );
+        refetchKanbanEmails();
+      }
     },
     onError: (error, { emailId, status }) => {
       console.error('🔴 [MUTATION] onError - Failed to update email status:', {
@@ -259,7 +307,7 @@ export function MailboxPage() {
                 <div className="shrink-0 border-b border-gray-200 dark:border-slate-800">
                   <div className="p-4">
                     <SearchBar
-                      onSearch={handleFuzzySearch}
+                      onSearch={handleSearch}
                       isLoading={isSearchLoading}
                     />
                   </div>
@@ -324,7 +372,7 @@ export function MailboxPage() {
                     {/* Kanban View */}
                     {viewMode === 'kanban' && (
                       <div className="flex-1 min-h-0 overflow-hidden">
-                        <KanbanBoard
+                        <OldKanbanBoard
                           onEmailClick={handleEmailSelect}
                           onEmailStatusChange={handleEmailStatusChange}
                           onEmailSnooze={handleEmailSnooze}
@@ -389,7 +437,7 @@ export function MailboxPage() {
               </Sheet>
               <div className="flex-1 min-w-0 px-2">
                 <SearchBar
-                  onSearch={handleFuzzySearch}
+                  onSearch={handleSearch}
                   isLoading={isSearchLoading}
                 />
               </div>
