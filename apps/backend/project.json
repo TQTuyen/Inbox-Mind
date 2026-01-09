@@ -65,6 +65,34 @@
       "options": {
         "passWithNoTests": true
       }
+    },
+    "migration:generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "typeorm-ts-node-commonjs migration:generate -d typeorm.config.ts",
+        "cwd": "apps/backend"
+      }
+    },
+    "migration:run": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "typeorm-ts-node-commonjs migration:run -d typeorm.config.ts",
+        "cwd": "apps/backend"
+      }
+    },
+    "migration:revert": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "typeorm-ts-node-commonjs migration:revert -d typeorm.config.ts",
+        "cwd": "apps/backend"
+      }
+    },
+    "migration:create": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "typeorm-ts-node-commonjs migration:create",
+        "cwd": "apps/backend"
+      }
     }
   }
 }
