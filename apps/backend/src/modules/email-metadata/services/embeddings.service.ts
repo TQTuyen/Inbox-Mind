@@ -43,11 +43,30 @@ export class EmbeddingsService {
     // Fetch email from Gmail
     const email = await this.gmailService.getEmail(userId, emailId);
 
-    // Combine subject + body for embedding
+    // Extract subject from headers
+    const subjectHeader = email.payload?.headers?.find(
+      (h) => h.name?.toLowerCase() === 'subject'
+    );
+    const subject = subjectHeader?.value || '';
+
+    // Extract body from payload (simplified - gets text/plain or text/html)
+    let body = '';
+    if (email.payload?.body?.data) {
+      // Body is in the main payload
+      body = Buffer.from(email.payload.body.data, 'base64').toString('utf-8');
+    } else if (email.payload?.parts) {
+      // Body is in parts - find text/plain or text/html
+      const textPart = email.payload.parts.find(
+        (part) =>
+          part.mimeType === 'text/plain' || part.mimeType === 'text/html'
+      );
+      if (textPart?.body?.data) {
+        body = Buffer.from(textPart.body.data, 'base64').toString('utf-8');
+      }
+    }
+
     // Prioritize subject and first 5000 chars of body
-    const subject = email.subject || '';
-    const body = email.body?.substring(0, 5000) || '';
-    const embeddedText = `${subject}\n\n${body}`;
+    const embeddedText = `${subject}\n\n${body.substring(0, 5000)}`;
 
     // Skip if text is too short
     if (embeddedText.length < 10) {
@@ -124,9 +143,27 @@ export class EmbeddingsService {
     // Filter out failed fetches and prepare texts
     const validEmails = emails.filter((email) => email !== null);
     const texts = validEmails.map((email) => {
-      const subject = email.subject || '';
-      const body = email.body?.substring(0, 5000) || '';
-      return `${subject}\n\n${body}`;
+      // Extract subject from headers
+      const subjectHeader = email.payload?.headers?.find(
+        (h) => h.name?.toLowerCase() === 'subject'
+      );
+      const subject = subjectHeader?.value || '';
+
+      // Extract body from payload
+      let body = '';
+      if (email.payload?.body?.data) {
+        body = Buffer.from(email.payload.body.data, 'base64').toString('utf-8');
+      } else if (email.payload?.parts) {
+        const textPart = email.payload.parts.find(
+          (part) =>
+            part.mimeType === 'text/plain' || part.mimeType === 'text/html'
+        );
+        if (textPart?.body?.data) {
+          body = Buffer.from(textPart.body.data, 'base64').toString('utf-8');
+        }
+      }
+
+      return `${subject}\n\n${body.substring(0, 5000)}`;
     });
 
     if (texts.length === 0) {
