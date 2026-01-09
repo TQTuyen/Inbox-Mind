@@ -91,9 +91,25 @@ export class SearchSuggestionsService {
       const contacts = new Map<string, { name: string; email: string }>();
 
       for (const email of emails.emails) {
-        const key = email.from.email.toLowerCase();
-        if (!contacts.has(key)) {
-          contacts.set(key, email.from);
+        // Parse 'From' header from Gmail message payload
+        const fromHeader = email.payload?.headers?.find(
+          (h) => h.name?.toLowerCase() === 'from'
+        );
+
+        if (fromHeader?.value) {
+          // Parse email format: "Name <email@example.com>" or "email@example.com"
+          const fromValue = fromHeader.value;
+          const match = fromValue.match(/^(?:"?([^"<]*)"?\s*)?<?([^>]+)>?$/);
+
+          if (match) {
+            const name = match[1]?.trim() || match[2];
+            const emailAddress = match[2].trim();
+            const key = emailAddress.toLowerCase();
+
+            if (!contacts.has(key)) {
+              contacts.set(key, { name, email: emailAddress });
+            }
+          }
         }
       }
 

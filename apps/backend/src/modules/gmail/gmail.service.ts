@@ -5,7 +5,7 @@ import { GmailFormat, GmailLabel } from '../../common/enums';
 import { GmailOperationException } from '../../common/exceptions/gmail.exception';
 import { AppLoggerService } from '../../common/logger/app-logger.service';
 import { GmailClientFactoryService } from '../../common/services/gmail-client-factory.service';
-import { EmailMetadataService } from '../email-metadata/email-metadata.service';
+import { EmailMetadataService } from '../email-metadata/services/email-metadata.service';
 import { EmailReplyBuilder } from './builders/email-reply.builder';
 import { EmailBuilder } from './builders/email.builder';
 import { MimeMultipartBuilder } from './builders/mime-multipart.builder';
@@ -894,13 +894,8 @@ export class GmailService {
         },
       });
 
-      this.logger.log(
-        {
-          userId,
-          labelId: response.data.id,
-          labelName: name,
-        },
-        'Created Gmail label'
+      this.logger.debug(
+        `Created Gmail label: ${name} (${response.data.id}) for user ${userId}`
       );
 
       return {
@@ -939,23 +934,12 @@ export class GmailService {
         },
       });
 
-      this.logger.log(
-        {
-          userId,
-          labelId,
-          newName,
-        },
-        'Updated Gmail label'
+      this.logger.debug(
+        `Updated Gmail label ${labelId} to "${newName}" for user ${userId}`
       );
     } catch (error) {
       this.logger.error(
-        {
-          userId,
-          labelId,
-          newName,
-          error: error.message,
-        },
-        'Failed to update Gmail label'
+        `Failed to update Gmail label ${labelId} to "${newName}" for user ${userId}: ${error.message}`
       );
       throw new GmailOperationException('update label', error);
     }

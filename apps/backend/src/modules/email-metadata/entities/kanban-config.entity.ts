@@ -8,7 +8,7 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm';
-import { User } from '../user/user.entity';
+import { User } from '../../user/user.entity';
 
 @Entity('kanban_config')
 @Index(['userId', 'columnId'], { unique: true })

@@ -8,11 +8,19 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm';
-import { User } from '../user/user.entity';
+import { User } from '../../user/user.entity';
 
-@Entity('email_embeddings')
+export type KanbanStatus =
+  | 'inbox'
+  | 'todo'
+  | 'in_progress'
+  | 'done'
+  | 'snoozed';
+
+@Entity('email_metadata')
 @Index(['userId', 'emailId'], { unique: true })
-export class EmailEmbedding {
+@Index(['snoozeUntil'])
+export class EmailMetadata {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -23,13 +31,18 @@ export class EmailEmbedding {
   emailId: string;
 
   @Column({
-    type: 'vector',
-    length: 768,
+    type: 'varchar',
+    length: 50,
+    nullable: true,
+    default: 'inbox',
   })
-  embedding: number[];
+  kanbanStatus: KanbanStatus;
 
-  @Column({ type: 'text' })
-  embeddedText: string;
+  @Column({ type: 'timestamp', nullable: true })
+  snoozeUntil: Date | null;
+
+  @Column({ type: 'text', nullable: true })
+  summary: string | null;
 
   @CreateDateColumn()
   createdAt: Date;

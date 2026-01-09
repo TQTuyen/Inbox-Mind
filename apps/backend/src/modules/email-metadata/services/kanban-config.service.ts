@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { KanbanConfig } from '../kanban-config.entity';
+import { KanbanConfig } from '../entities/kanban-config.entity';
 import { GmailService } from '../../gmail/gmail.service';
 import {
   CreateKanbanColumnDto,

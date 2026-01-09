@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThanOrEqual } from 'typeorm';
-import { EmailMetadata, KanbanStatus } from './email-metadata.entity';
+import { EmailMetadata, KanbanStatus } from '../entities/email-metadata.entity';
 
 @Injectable()
 export class EmailMetadataService {

@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { EmailEmbedding } from '../email-embeddings.entity';
+import { EmailEmbedding } from '../entities/email-embeddings.entity';
 import { AIService } from '../../ai/ai.service';
 import { GmailService } from '../../gmail/gmail.service';
 

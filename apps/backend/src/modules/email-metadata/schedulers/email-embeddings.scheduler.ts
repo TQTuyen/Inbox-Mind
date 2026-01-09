@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from '../user/user.entity';
-import { EmbeddingsService } from './services/embeddings.service';
-import { GmailService } from '../gmail/gmail.service';
+import { User } from '../../user/user.entity';
+import { EmbeddingsService } from '../services/embeddings.service';
+import { GmailService } from '../../gmail/gmail.service';
 
 @Injectable()
 export class EmailEmbeddingsScheduler {

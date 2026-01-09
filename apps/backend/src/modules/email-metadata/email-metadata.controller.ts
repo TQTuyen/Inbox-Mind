@@ -18,7 +18,7 @@ import {
   CurrentUser,
   CurrentUserData,
 } from '../../common/decorators/current-user.decorator';
-import { EmailMetadataService } from './email-metadata.service';
+import { EmailMetadataService } from './services/email-metadata.service';
 import { AIService } from '../ai/ai.service';
 import { EmbeddingsService } from './services/embeddings.service';
 import { GmailService } from '../gmail/gmail.service';
