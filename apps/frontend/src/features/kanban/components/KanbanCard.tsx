@@ -28,7 +28,12 @@ export function KanbanCard({ email, onEmailClick }: KanbanCardProps) {
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} className="w-full max-w-full">
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      className="w-full max-w-full"
+    >
       <Card
         className={cn(
           'kanban-card p-3 mb-2 cursor-pointer hover:shadow-md transition-all bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 w-full max-w-full',
