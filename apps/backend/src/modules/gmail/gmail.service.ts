@@ -169,7 +169,12 @@ export class GmailService {
       // Log a sample of metadata to debug
       if (metadataList.length > 0) {
         this.logger.debug(
-          `Sample metadata: ${JSON.stringify(metadataList.slice(0, 3).map(m => ({ emailId: m.emailId, kanbanStatus: m.kanbanStatus })))}`
+          `Sample metadata: ${JSON.stringify(
+            metadataList.slice(0, 3).map((m) => ({
+              emailId: m.emailId,
+              kanbanStatus: m.kanbanStatus,
+            }))
+          )}`
         );
       }
 
@@ -191,7 +196,9 @@ export class GmailService {
         // Debug log for first few emails
         if (emails.indexOf(email) < 3) {
           this.logger.debug(
-            `Email ${email.id}: metadata=${metadata ? 'found' : 'not found'}, kanbanStatus=${kanbanStatus}`
+            `Email ${email.id}: metadata=${
+              metadata ? 'found' : 'not found'
+            }, kanbanStatus=${kanbanStatus}`
           );
         }
 

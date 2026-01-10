@@ -10,7 +10,9 @@ import { useKanbanStore } from '../store/kanbanStore';
 import { SORT_OPTIONS } from '../types';
 
 export function SortControls() {
-  const { sortBy, setSortBy } = useKanbanStore();
+  // Use selectors to prevent unnecessary re-renders
+  const sortBy = useKanbanStore((state) => state.sortBy);
+  const setSortBy = useKanbanStore((state) => state.setSortBy);
 
   return (
     <div className="flex items-center gap-2">

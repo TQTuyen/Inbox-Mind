@@ -24,7 +24,9 @@ interface KanbanBoardProps {
 }
 
 export function KanbanBoard({ onEmailClick }: KanbanBoardProps) {
-  const { columns, moveEmail } = useKanbanStore();
+  // Use selectors to prevent unnecessary re-renders
+  const columns = useKanbanStore((state) => state.columns);
+  const moveEmail = useKanbanStore((state) => state.moveEmail);
   const [activeEmail, setActiveEmail] = useState<Email | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const navigate = useNavigate();

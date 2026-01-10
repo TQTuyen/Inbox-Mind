@@ -71,7 +71,7 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
     // Debug: Log sample of emails to check kanbanStatus
     console.log('🔍 [KANBAN STORE] Initializing columns with emails:', {
       totalEmails: emails.length,
-      sampleEmails: emails.slice(0, 5).map(e => ({
+      sampleEmails: emails.slice(0, 5).map((e) => ({
         id: e.id.slice(0, 8),
         kanbanStatus: e.kanbanStatus,
         mailboxId: e.mailboxId,
@@ -106,7 +106,9 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
         );
       });
 
-      console.log(`🔍 [KANBAN STORE] Column ${columnDef.columnId} (${expectedStatus}): ${columnEmails.length} emails`);
+      console.log(
+        `🔍 [KANBAN STORE] Column ${columnDef.columnId} (${expectedStatus}): ${columnEmails.length} emails`
+      );
 
       // Apply sorting and filtering
       const processedEmails = get().getSortedAndFilteredEmails(columnEmails);

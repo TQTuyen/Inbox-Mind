@@ -318,7 +318,9 @@ export class KanbanConfigService {
         try {
           // Try to get existing label first
           const labels = await this.gmailService.listLabels(userId);
-          const existingLabel = labels.find((label) => label.name === def.title);
+          const existingLabel = labels.find(
+            (label) => label.name === def.title
+          );
 
           if (existingLabel) {
             gmailLabelId = existingLabel.id;

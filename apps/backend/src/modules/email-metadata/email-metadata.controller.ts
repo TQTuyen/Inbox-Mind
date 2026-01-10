@@ -310,9 +310,7 @@ export class EmailMetadataController {
     console.log('🔵 [BACKEND] getKanbanConfig called for user:', user.userId);
 
     try {
-      const columns = await this.kanbanConfigService.getUserConfig(
-        user.userId
-      );
+      const columns = await this.kanbanConfigService.getUserConfig(user.userId);
 
       console.log('✅ [BACKEND] Retrieved columns:', columns.length);
 

@@ -247,22 +247,26 @@ class GmailApiService {
       hasData: !!response.data,
       dataKeys: Object.keys(response.data || {}),
       emailsCount: response.data.emails?.length || 0,
-      sampleEmail: response.data.emails?.[0] ? {
-        id: response.data.emails[0].id?.slice(0, 8),
-        kanbanStatus: response.data.emails[0].kanbanStatus,
-        subject: response.data.emails[0].subject?.slice(0, 30),
-      } : null,
+      sampleEmail: response.data.emails?.[0]
+        ? {
+            id: response.data.emails[0].id?.slice(0, 8),
+            kanbanStatus: response.data.emails[0].kanbanStatus,
+            subject: response.data.emails[0].subject?.slice(0, 30),
+          }
+        : null,
     });
 
     const emails = response.data.emails?.map(transformGmailMessage) || [];
 
     console.log('🌐 [API] After transformation:', {
       transformedCount: emails.length,
-      sampleTransformed: emails[0] ? {
-        id: emails[0].id?.slice(0, 8),
-        kanbanStatus: emails[0].kanbanStatus,
-        subject: emails[0].subject?.slice(0, 30),
-      } : null,
+      sampleTransformed: emails[0]
+        ? {
+            id: emails[0].id?.slice(0, 8),
+            kanbanStatus: emails[0].kanbanStatus,
+            subject: emails[0].subject?.slice(0, 30),
+          }
+        : null,
     });
 
     return emails;

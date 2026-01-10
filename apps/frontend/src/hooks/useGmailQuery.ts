@@ -122,7 +122,7 @@ export function useKanbanEmails(
       const emails = await gmailApi.getKanbanEmails();
       console.log('⚛️ [REACT-QUERY] queryFn returned:', {
         emailsCount: emails.length,
-        sample: emails.slice(0, 3).map(e => ({
+        sample: emails.slice(0, 3).map((e) => ({
           id: e.id?.slice(0, 8),
           kanbanStatus: e.kanbanStatus,
         })),
@@ -137,7 +137,7 @@ export function useKanbanEmails(
     isLoading: result.isLoading,
     isError: result.isError,
     dataLength: result.data?.length || 0,
-    dataSample: result.data?.slice(0, 3).map(e => ({
+    dataSample: result.data?.slice(0, 3).map((e) => ({
       id: e.id?.slice(0, 8),
       kanbanStatus: e.kanbanStatus,
     })),
