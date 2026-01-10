@@ -162,6 +162,17 @@ export class GmailService {
         emailIds
       );
 
+      this.logger.debug(
+        `Found ${metadataList.length} metadata records for ${emailIds.length} emails`
+      );
+
+      // Log a sample of metadata to debug
+      if (metadataList.length > 0) {
+        this.logger.debug(
+          `Sample metadata: ${JSON.stringify(metadataList.slice(0, 3).map(m => ({ emailId: m.emailId, kanbanStatus: m.kanbanStatus })))}`
+        );
+      }
+
       const metadataMap = new Map(metadataList.map((m) => [m.emailId, m]));
 
       // Map kanbanStatus to appropriate mailboxId for compatibility
@@ -176,6 +187,14 @@ export class GmailService {
       const enrichedEmails = emails.map((email) => {
         const metadata = metadataMap.get(email.id);
         const kanbanStatus = metadata?.kanbanStatus || 'inbox';
+
+        // Debug log for first few emails
+        if (emails.indexOf(email) < 3) {
+          this.logger.debug(
+            `Email ${email.id}: metadata=${metadata ? 'found' : 'not found'}, kanbanStatus=${kanbanStatus}`
+          );
+        }
+
         return {
           ...email,
           kanbanStatus,
