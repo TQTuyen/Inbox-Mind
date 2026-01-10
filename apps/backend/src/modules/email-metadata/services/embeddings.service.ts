@@ -224,18 +224,19 @@ export class EmbeddingsService {
       // Perform vector similarity search using pgvector
       // Cosine similarity = 1 - cosine_distance
       // <=> is the cosine distance operator in pgvector
-      // CAST parameter to vector type for pgvector operator compatibility
+      // NOTE: This requires pgvector extension to be installed in the database
+      // If not installed, will fall back to empty results (see catch block below)
       const results = await this.embeddingsRepository
         .createQueryBuilder('embedding')
         .select('embedding.emailId', 'emailId')
         .addSelect('embedding.embeddedText', 'embeddedText')
         .addSelect(
-          `1 - (embedding.embedding <=> CAST(:vectorString AS vector))`,
+          `1 - (embedding.embedding <=> :vectorString)`,
           'similarity'
         )
         .where('embedding.userId = :userId', { userId })
         .andWhere(
-          `1 - (embedding.embedding <=> CAST(:vectorString AS vector)) > :threshold`,
+          `1 - (embedding.embedding <=> :vectorString) > :threshold`,
           { threshold }
         )
         .setParameter('vectorString', vectorString)
