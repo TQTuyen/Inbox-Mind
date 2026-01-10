@@ -115,12 +115,35 @@ export function useInfiniteEmails(
 export function useKanbanEmails(
   options?: Omit<UseQueryOptions<Email[], Error>, 'queryKey' | 'queryFn'>
 ) {
-  return useQuery<Email[], Error>({
+  const result = useQuery<Email[], Error>({
     queryKey: gmailKeys.kanbanEmails(),
-    queryFn: () => gmailApi.getKanbanEmails(),
+    queryFn: async () => {
+      console.log('⚛️ [REACT-QUERY] queryFn executing for kanban emails...');
+      const emails = await gmailApi.getKanbanEmails();
+      console.log('⚛️ [REACT-QUERY] queryFn returned:', {
+        emailsCount: emails.length,
+        sample: emails.slice(0, 3).map(e => ({
+          id: e.id?.slice(0, 8),
+          kanbanStatus: e.kanbanStatus,
+        })),
+      });
+      return emails;
+    },
     staleTime: 30 * 1000, // 30 seconds - Kanban data updates frequently
     ...options,
   });
+
+  console.log('⚛️ [REACT-QUERY] useKanbanEmails hook result:', {
+    isLoading: result.isLoading,
+    isError: result.isError,
+    dataLength: result.data?.length || 0,
+    dataSample: result.data?.slice(0, 3).map(e => ({
+      id: e.id?.slice(0, 8),
+      kanbanStatus: e.kanbanStatus,
+    })),
+  });
+
+  return result;
 }
 
 /**
