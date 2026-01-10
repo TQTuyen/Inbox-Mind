@@ -22,9 +22,10 @@ export class EmailEmbedding {
   @Column({ type: 'varchar', length: 255 })
   emailId: string;
 
+  // TODO: Install pgvector extension to use native vector type for better performance
+  // For now, using jsonb to store the embedding array
   @Column({
-    type: 'vector',
-    length: 768,
+    type: 'jsonb',
   })
   embedding: number[];
 
