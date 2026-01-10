@@ -76,18 +76,12 @@ export function KanbanCard({ email, onEmailClick }: KanbanCardProps) {
             </div>
 
             {/* Subject */}
-            <div
-              className="text-sm font-medium mb-1 line-clamp-1 text-gray-900 dark:text-gray-100 break-all overflow-hidden"
-              style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
-            >
+            <div className="text-sm font-medium mb-1 line-clamp-1 text-gray-900 dark:text-gray-100 break-words overflow-hidden">
               {email.subject || '(No Subject)'}
             </div>
 
             {/* Preview */}
-            <p
-              className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 mb-2 break-all overflow-hidden"
-              style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
-            >
+            <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 mb-2 break-words overflow-hidden">
               {email.preview}
             </p>
 

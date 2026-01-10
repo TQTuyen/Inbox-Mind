@@ -67,7 +67,7 @@ export function KanbanCard({
       <div className="flex items-start gap-0">
         {/* Drag Handle - always visible */}
         <div
-          className="cursor-grab active:cursor-grabbing p-3 text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 flex-shrink-0 self-stretch flex items-center"
+          className="cursor-grab active:cursor-grabbing p-2 text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 flex-shrink-0 self-stretch flex items-center"
           {...(isDragOverlay ? {} : listeners)}
         >
           <GripVertical className="h-4 w-4" />

@@ -311,7 +311,7 @@ export function KanbanBoard({
               onGenerateSummary={() => {
                 // DragOverlay card is not interactive
               }}
-              isDragOverlay={false}
+              isDragOverlay={true}
             />
           </div>
         ) : null}
