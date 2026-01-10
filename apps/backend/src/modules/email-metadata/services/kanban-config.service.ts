@@ -4,6 +4,8 @@ import {
   NotFoundException,
   BadRequestException,
   ConflictException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -22,6 +24,7 @@ export class KanbanConfigService {
   constructor(
     @InjectRepository(KanbanConfig)
     private readonly kanbanConfigRepository: Repository<KanbanConfig>,
+    @Inject(forwardRef(() => GmailService))
     private readonly gmailService: GmailService
   ) {}
 
