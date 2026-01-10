@@ -26,6 +26,7 @@ interface KanbanBoardProps {
 export function KanbanBoard({ onEmailClick }: KanbanBoardProps) {
   const { columns, moveEmail } = useKanbanStore();
   const [activeEmail, setActiveEmail] = useState<Email | null>(null);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const navigate = useNavigate();
 
   // Configure sensors for drag and drop
@@ -44,6 +45,18 @@ export function KanbanBoard({ onEmailClick }: KanbanBoardProps) {
       .flatMap((col) => col.emails)
       .find((e) => e.id === active.id);
     setActiveEmail(email || null);
+
+    // Calculate offset between cursor and card top-left corner
+    if (active.rect.current.initial) {
+      const rect = active.rect.current.initial;
+      const offsetX = event.activatorEvent
+        ? (event.activatorEvent as PointerEvent).clientX - rect.left
+        : 0;
+      const offsetY = event.activatorEvent
+        ? (event.activatorEvent as PointerEvent).clientY - rect.top
+        : 0;
+      setDragOffset({ x: offsetX, y: offsetY });
+    }
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -119,9 +132,19 @@ export function KanbanBoard({ onEmailClick }: KanbanBoardProps) {
           </div>
 
           {/* Drag Overlay */}
-          <DragOverlay>
+          <DragOverlay
+            dropAnimation={null}
+            style={{
+              cursor: 'grabbing',
+            }}
+          >
             {activeEmail ? (
-              <div className="w-[260px] opacity-90">
+              <div
+                className="w-[260px] opacity-90"
+                style={{
+                  transform: `translate(-${dragOffset.x}px, -${dragOffset.y}px)`,
+                }}
+              >
                 <KanbanCard
                   email={activeEmail}
                   onEmailClick={() => {
