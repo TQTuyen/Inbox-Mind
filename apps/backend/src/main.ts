@@ -5,10 +5,10 @@
 
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import cookieParser from 'cookie-parser';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app/app.module';
-import cookieParser from 'cookie-parser';
 import { NodeEnv } from './common/enums';
 
 async function bootstrap() {
@@ -28,6 +28,7 @@ async function bootstrap() {
   app.enableCors({
     origin: process.env.FRONTEND_URL || 'http://localhost:4200',
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   });
 
   const config = new DocumentBuilder()
