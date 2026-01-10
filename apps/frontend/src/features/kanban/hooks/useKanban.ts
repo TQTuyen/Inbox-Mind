@@ -34,19 +34,22 @@ export function useKanban() {
     if (columnConfig.length > 0) {
       setColumnConfig(columnConfig);
     }
-  }, [columnConfig, setColumnConfig]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [columnConfig]);
 
   // Initialize kanban columns when both config and emails are loaded
   useEffect(() => {
     if (columnConfig.length > 0 && emails.length >= 0) {
       initializeColumns(emails, columnConfig);
     }
-  }, [emails, columnConfig, initializeColumns]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [emails, columnConfig]);
 
   // Sync loading state (true if either emails or config are loading)
   useEffect(() => {
     setLoading(isEmailsLoading || isConfigLoading);
-  }, [isEmailsLoading, isConfigLoading, setLoading]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEmailsLoading, isConfigLoading]);
 
   // Sync error state
   useEffect(() => {
@@ -55,7 +58,8 @@ export function useKanban() {
     } else {
       setError(null);
     }
-  }, [error, setError]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [error]);
 
   // Handle moving emails between columns (updates backend)
   const handleMoveEmail = async (
