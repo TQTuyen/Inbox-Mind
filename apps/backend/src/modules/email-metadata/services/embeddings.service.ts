@@ -228,15 +228,11 @@ export class EmbeddingsService {
         .createQueryBuilder('embedding')
         .select('embedding.emailId', 'emailId')
         .addSelect('embedding.embeddedText', 'embeddedText')
-        .addSelect(
-          `1 - (embedding.embedding <=> :vectorString)`,
-          'similarity'
-        )
+        .addSelect(`1 - (embedding.embedding <=> :vectorString)`, 'similarity')
         .where('embedding.userId = :userId', { userId })
-        .andWhere(
-          `1 - (embedding.embedding <=> :vectorString) > :threshold`,
-          { threshold }
-        )
+        .andWhere(`1 - (embedding.embedding <=> :vectorString) > :threshold`, {
+          threshold,
+        })
         .setParameter('vectorString', vectorString)
         .orderBy('similarity', 'DESC')
         .limit(limit)
