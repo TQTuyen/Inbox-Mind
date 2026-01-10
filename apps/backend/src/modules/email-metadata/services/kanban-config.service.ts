@@ -33,22 +33,30 @@ export class KanbanConfigService {
    * Creates default columns if none exist
    */
   async getUserConfig(userId: string): Promise<KanbanColumnDto[]> {
-    let columns = await this.kanbanConfigRepository.find({
-      where: { userId },
-      order: { position: 'ASC' },
-    });
+    try {
+      let columns = await this.kanbanConfigRepository.find({
+        where: { userId },
+        order: { position: 'ASC' },
+      });
 
-    // Initialize default columns if none exist
-    if (columns.length === 0) {
-      this.logger.log(
-        `No columns found for user ${userId}, initializing defaults`
+      // Initialize default columns if none exist
+      if (columns.length === 0) {
+        this.logger.log(
+          `No columns found for user ${userId}, initializing defaults`
+        );
+        columns = await this.initializeDefaultColumns(userId);
+      }
+
+      this.logger.log(`Retrieved ${columns.length} columns for user ${userId}`);
+
+      return columns.map((col) => this.toDto(col));
+    } catch (error) {
+      this.logger.error(
+        `Failed to get user config for ${userId}: ${error.message}`,
+        error.stack
       );
-      columns = await this.initializeDefaultColumns(userId);
+      throw error;
     }
-
-    this.logger.log(`Retrieved ${columns.length} columns for user ${userId}`);
-
-    return columns.map((col) => this.toDto(col));
   }
 
   /**
@@ -299,33 +307,42 @@ export class KanbanConfigService {
     for (const def of defaultColumns) {
       // Get or create Gmail label
       let gmailLabelId: string;
-      try {
-        // Try to get existing label first
-        const labels = await this.gmailService.listLabels(userId);
-        const existingLabel = labels.find((label) => label.name === def.title);
 
-        if (existingLabel) {
-          gmailLabelId = existingLabel.id;
-          this.logger.log(
-            `Using existing Gmail label "${def.title}" (${gmailLabelId})`
-          );
-        } else {
-          // Create new label
-          const newLabel = await this.gmailService.createLabel(
-            userId,
-            def.title
-          );
-          gmailLabelId = newLabel.id;
-          this.logger.log(
-            `Created Gmail label "${def.title}" (${gmailLabelId})`
-          );
-        }
-      } catch (error) {
-        this.logger.error(
-          `Failed to get/create Gmail label for "${def.title}": ${error.message}`
+      // Check if gmailService is available (may be undefined during circular dependency resolution)
+      if (!this.gmailService) {
+        this.logger.warn(
+          `GmailService not available during initialization, using fallback for "${def.title}"`
         );
-        // Use columnId as fallback
         gmailLabelId = def.columnId;
+      } else {
+        try {
+          // Try to get existing label first
+          const labels = await this.gmailService.listLabels(userId);
+          const existingLabel = labels.find((label) => label.name === def.title);
+
+          if (existingLabel) {
+            gmailLabelId = existingLabel.id;
+            this.logger.log(
+              `Using existing Gmail label "${def.title}" (${gmailLabelId})`
+            );
+          } else {
+            // Create new label
+            const newLabel = await this.gmailService.createLabel(
+              userId,
+              def.title
+            );
+            gmailLabelId = newLabel.id;
+            this.logger.log(
+              `Created Gmail label "${def.title}" (${gmailLabelId})`
+            );
+          }
+        } catch (error) {
+          this.logger.error(
+            `Failed to get/create Gmail label for "${def.title}": ${error.message}`
+          );
+          // Use columnId as fallback
+          gmailLabelId = def.columnId;
+        }
       }
 
       // Create column in database
