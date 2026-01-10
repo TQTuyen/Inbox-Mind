@@ -120,9 +120,9 @@ export function KanbanBoard({ onEmailClick }: KanbanBoardProps) {
           onDragEnd={handleDragEnd}
           onDragCancel={handleDragCancel}
         >
-          <div className="flex gap-4 p-4 h-full min-w-max">
+          <div className="flex gap-4 p-4 h-full">
             {columns.map((column) => (
-              <div key={column.id} className="w-[260px] flex-shrink-0">
+              <div key={column.id} className="flex-1 min-w-[240px] max-w-[320px]">
                 <KanbanColumn
                   id={column.id}
                   title={column.title}
@@ -142,7 +142,7 @@ export function KanbanBoard({ onEmailClick }: KanbanBoardProps) {
           >
             {activeEmail ? (
               <div
-                className="w-[260px] opacity-90"
+                className="w-[280px] opacity-90"
                 style={{
                   transform: `translate(-${dragOffset.x}px, -${dragOffset.y}px)`,
                 }}
