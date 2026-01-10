@@ -78,10 +78,12 @@ export function Sidebar({
   const { logout, user } = useAuthStore();
 
   // Get user info with fallback
-  const userName = user?.fullName || user?.email || 'User';
+  const userName =
+    user?.fullName?.trim() || user?.email?.split('@')[0] || 'User';
   const userEmail = user?.email || '';
-  const userInitials = userName
-    .split(' ')
+  const userInitials = (user?.fullName?.trim() || user?.email || 'U')
+    .split(/[\s@]/)
+    .filter((n) => n.length > 0)
     .map((n) => n[0])
     .join('')
     .toUpperCase()
@@ -162,19 +164,14 @@ export function Sidebar({
 
           {/* User Info - Only when expanded */}
           {!isCollapsed && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="px-2 -mt-2"
-            >
+            <div className="px-2 -mt-2">
               <h1 className="text-sm font-medium leading-normal text-gray-900 dark:text-gray-100 text-center">
                 {userName}
               </h1>
               <p className="text-xs font-normal leading-normal text-gray-500 dark:text-slate-400 truncate text-center">
                 {userEmail}
               </p>
-            </motion.div>
+            </div>
           )}
 
           {/* New Email Button - Always Visible */}
@@ -201,7 +198,7 @@ export function Sidebar({
           </div>
 
           {/* View Switcher */}
-          <div className="flex justify-center">
+          <div className="flex justify-center gap-2">
             {isCollapsed ? (
               <Button
                 variant="outline"

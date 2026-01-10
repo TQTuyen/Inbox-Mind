@@ -62,21 +62,8 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
     const columnDefinitions = config || get().columnConfig;
 
     if (columnDefinitions.length === 0) {
-      console.warn(
-        'No column configuration available. Please load config first.'
-      );
       return;
     }
-
-    // Debug: Log sample of emails to check kanbanStatus
-    console.log('🔍 [KANBAN STORE] Initializing columns with emails:', {
-      totalEmails: emails.length,
-      sampleEmails: emails.slice(0, 5).map((e) => ({
-        id: e.id.slice(0, 8),
-        kanbanStatus: e.kanbanStatus,
-        mailboxId: e.mailboxId,
-      })),
-    });
 
     const columns = columnDefinitions.map((columnDef) => {
       // Map columnId to kanbanStatus (INBOX -> inbox, etc.)
@@ -105,10 +92,6 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
           email.mailboxId === columnDef.columnId
         );
       });
-
-      console.log(
-        `🔍 [KANBAN STORE] Column ${columnDef.columnId} (${expectedStatus}): ${columnEmails.length} emails`
-      );
 
       // Apply sorting and filtering
       const processedEmails = get().getSortedAndFilteredEmails(columnEmails);

@@ -38,15 +38,6 @@ export function useKanban() {
 
   // Initialize kanban columns when both config and emails are loaded
   useEffect(() => {
-    console.log('🔍 [useKanban] useEffect triggered:', {
-      configLength: columnConfig.length,
-      emailsLength: emails.length,
-      emailsSample: emails.slice(0, 3).map((e) => ({
-        id: e.id?.slice(0, 8),
-        kanbanStatus: e.kanbanStatus,
-      })),
-    });
-
     if (columnConfig.length > 0 && emails.length >= 0) {
       initializeColumns(emails, columnConfig);
     }

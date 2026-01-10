@@ -124,7 +124,7 @@ export function KanbanBoard({ onEmailClick }: KanbanBoardProps) {
             {columns.map((column) => (
               <div
                 key={column.id}
-                className="flex-1 min-w-[240px] max-w-[320px]"
+                className="flex-1 min-w-0 w-0 overflow-hidden"
               >
                 <KanbanColumn
                   id={column.id}

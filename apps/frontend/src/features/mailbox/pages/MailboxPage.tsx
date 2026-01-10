@@ -122,11 +122,6 @@ export function MailboxPage() {
   // Sync Kanban emails to store when in Kanban view
   useEffect(() => {
     if (viewMode === 'kanban' && kanbanEmailsData.length > 0) {
-      console.log(
-        '🔄 [KANBAN] Syncing Kanban emails to store:',
-        kanbanEmailsData.length,
-        'emails'
-      );
       // Transform API emails to store Email format using centralized utility
       const transformedEmails = transformKanbanEmailsBatch(kanbanEmailsData);
       setEmails(transformedEmails, 1);
@@ -136,9 +131,6 @@ export function MailboxPage() {
   // Refetch Kanban emails when switching to Kanban view
   useEffect(() => {
     if (viewMode === 'kanban') {
-      console.log(
-        '🔄 [KANBAN] Switching to Kanban view - refetching Kanban emails from all columns'
-      );
       refetchKanbanEmails();
     }
   }, [viewMode, refetchKanbanEmails]);
@@ -174,49 +166,22 @@ export function MailboxPage() {
       emailId: string;
       status: KanbanStatus;
     }) => {
-      console.log('🔵 [MUTATION] Starting updateKanbanStatus mutation:', {
-        emailId,
-        status,
-      });
       return emailMetadataApi.updateKanbanStatus(emailId, status);
     },
     onMutate: ({ emailId, status }) => {
-      console.log('🟡 [MUTATION] onMutate - Optimistic update:', {
-        emailId,
-        status,
-      });
       // Optimistic update
       updateEmail(emailId, { kanbanStatus: status });
     },
-    onSuccess: (data, { emailId, status }) => {
-      console.log('🟢 [MUTATION] onSuccess - Status updated successfully:', {
-        emailId,
-        status,
-        data,
-      });
+    onSuccess: () => {
       // Refetch Kanban emails if in Kanban view to get latest data
       if (viewMode === 'kanban') {
-        console.log(
-          '🔄 [MUTATION] Refetching Kanban emails after status update'
-        );
         refetchKanbanEmails();
       }
     },
-    onError: (error, { emailId, status }) => {
-      console.error('🔴 [MUTATION] onError - Failed to update email status:', {
-        emailId,
-        status,
-        error,
-      });
+    onError: (error) => {
+      console.error('Failed to update email status:', error);
       // Revert optimistic update by refetching
       refreshEmails();
-    },
-    onSettled: (data, error, { emailId, status }) => {
-      console.log('⚪ [MUTATION] onSettled - Mutation completed:', {
-        emailId,
-        status,
-        success: !error,
-      });
     },
   });
 
@@ -259,10 +224,6 @@ export function MailboxPage() {
     emailId: string,
     newStatus: KanbanStatus
   ) => {
-    console.log('🎯 [DRAG] handleEmailStatusChange called:', {
-      emailId,
-      newStatus,
-    });
     updateStatusMutation.mutate({ emailId, status: newStatus });
   };
 
