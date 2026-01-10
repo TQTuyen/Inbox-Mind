@@ -342,8 +342,13 @@ export class KanbanConfigService {
           this.logger.error(
             `Failed to get/create Gmail label for "${def.title}": ${error.message}`
           );
+          this.logger.warn(
+            `Using columnId "${def.columnId}" as fallback. Gmail labels will NOT be synchronized for this column until label creation succeeds.`
+          );
           // Use columnId as fallback
           gmailLabelId = def.columnId;
+          // TODO: Consider surfacing this error to the user through a notification system
+          // or returning partial success status so frontend can show warning
         }
       }
 

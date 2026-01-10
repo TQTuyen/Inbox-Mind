@@ -22,10 +22,12 @@ export class EmailEmbedding {
   @Column({ type: 'varchar', length: 255 })
   emailId: string;
 
-  // TODO: Install pgvector extension to use native vector type for better performance
-  // For now, using jsonb to store the embedding array
+  // Using pgvector extension for native vector type
+  // The migration creates this as vector(768) type
+  // TypeORM will serialize/deserialize number[] to/from PostgreSQL vector format
   @Column({
-    type: 'jsonb',
+    type: 'vector',
+    length: 768, // Match Gemini text-embedding-004 dimension
   })
   embedding: number[];
 

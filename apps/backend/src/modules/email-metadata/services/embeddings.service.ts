@@ -229,14 +229,15 @@ export class EmbeddingsService {
         .select('embedding.emailId', 'emailId')
         .addSelect('embedding.embeddedText', 'embeddedText')
         .addSelect(
-          `1 - (embedding.embedding <=> '${vectorString}')`,
+          `1 - (embedding.embedding <=> :vectorString)`,
           'similarity'
         )
         .where('embedding.userId = :userId', { userId })
         .andWhere(
-          `1 - (embedding.embedding <=> '${vectorString}') > :threshold`,
+          `1 - (embedding.embedding <=> :vectorString) > :threshold`,
           { threshold }
         )
+        .setParameter('vectorString', vectorString)
         .orderBy('similarity', 'DESC')
         .limit(limit)
         .getRawMany();

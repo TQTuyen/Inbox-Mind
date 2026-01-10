@@ -51,11 +51,17 @@ export function KanbanBoard({ onEmailClick }: KanbanBoardProps) {
     // Calculate offset between cursor and card top-left corner
     if (active.rect.current.initial) {
       const rect = active.rect.current.initial;
-      const offsetX = event.activatorEvent
-        ? (event.activatorEvent as PointerEvent).clientX - rect.left
+
+      // Type guard to ensure activatorEvent is a PointerEvent
+      const isPointerEvent = (event: Event | null): event is PointerEvent => {
+        return event !== null && 'clientX' in event && 'clientY' in event;
+      };
+
+      const offsetX = isPointerEvent(event.activatorEvent)
+        ? event.activatorEvent.clientX - rect.left
         : 0;
-      const offsetY = event.activatorEvent
-        ? (event.activatorEvent as PointerEvent).clientY - rect.top
+      const offsetY = isPointerEvent(event.activatorEvent)
+        ? event.activatorEvent.clientY - rect.top
         : 0;
       setDragOffset({ x: offsetX, y: offsetY });
     }
