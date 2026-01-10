@@ -303,11 +303,26 @@ export class EmailMetadataController {
   async getKanbanConfig(
     @CurrentUser() user: CurrentUserData
   ): Promise<KanbanConfigResponseDto> {
-    const columns = await this.kanbanConfigService.getUserConfig(user.userId);
+    if (!user || !user.userId) {
+      throw new BadRequestException('User information not available');
+    }
 
-    return {
-      columns,
-    };
+    console.log('🔵 [BACKEND] getKanbanConfig called for user:', user.userId);
+
+    try {
+      const columns = await this.kanbanConfigService.getUserConfig(
+        user.userId
+      );
+
+      console.log('✅ [BACKEND] Retrieved columns:', columns.length);
+
+      return {
+        columns,
+      };
+    } catch (error) {
+      console.error('❌ [BACKEND] Error in getKanbanConfig:', error);
+      throw error;
+    }
   }
 
   @Post('kanban/config/columns')

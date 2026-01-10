@@ -16,6 +16,9 @@ import { EmailMetadataModule } from '../modules/email-metadata/email-metadata.mo
 import { AIModule } from '../modules/ai/ai.module';
 import { User } from '../modules/user/user.entity';
 import { EmailMetadata } from '../modules/email-metadata/entities/email-metadata.entity';
+import { EmailEmbedding } from '../modules/email-metadata/entities/email-embeddings.entity';
+import { KanbanConfig } from '../modules/email-metadata/entities/kanban-config.entity';
+import { SearchHistory } from '../modules/gmail/entities/search-history.entity';
 import { UserModule } from '../modules/user/user.module';
 
 @Module({
@@ -36,7 +39,13 @@ import { UserModule } from '../modules/user/user.module';
         username: configService.get('DATABASE_USER'),
         password: configService.get('DATABASE_PASSWORD'),
         database: configService.get('DATABASE_NAME'),
-        entities: [User, EmailMetadata],
+        entities: [
+          User,
+          EmailMetadata,
+          EmailEmbedding,
+          KanbanConfig,
+          SearchHistory,
+        ],
         migrations: ['dist/migrations/*{.ts,.js}'],
         synchronize: configService.get('NODE_ENV') === NodeEnv.DEVELOPMENT,
         logging: configService.get('NODE_ENV') === NodeEnv.DEVELOPMENT,
