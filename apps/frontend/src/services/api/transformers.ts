@@ -71,6 +71,11 @@ export function transformGmailMessage(message: any): Email {
     labelIds: message.labelIds,
     snippet: message.snippet,
     internalDate: message.internalDate,
+    // Preserve metadata fields added by backend (kanbanStatus, mailboxId, etc.)
+    ...(message.kanbanStatus && { kanbanStatus: message.kanbanStatus }),
+    ...(message.mailboxId && { mailboxId: message.mailboxId }),
+    ...(message.snoozeUntil && { snoozeUntil: message.snoozeUntil }),
+    ...(message.summary && { summary: message.summary }),
   };
 }
 

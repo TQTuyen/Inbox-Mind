@@ -4,6 +4,8 @@ import {
   NotFoundException,
   BadRequestException,
   ConflictException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -22,21 +24,39 @@ export class KanbanConfigService {
   constructor(
     @InjectRepository(KanbanConfig)
     private readonly kanbanConfigRepository: Repository<KanbanConfig>,
+    @Inject(forwardRef(() => GmailService))
     private readonly gmailService: GmailService
   ) {}
 
   /**
    * Get user's Kanban configuration (all columns ordered by position)
+   * Creates default columns if none exist
    */
   async getUserConfig(userId: string): Promise<KanbanColumnDto[]> {
-    const columns = await this.kanbanConfigRepository.find({
-      where: { userId },
-      order: { position: 'ASC' },
-    });
+    try {
+      let columns = await this.kanbanConfigRepository.find({
+        where: { userId },
+        order: { position: 'ASC' },
+      });
 
-    this.logger.log(`Retrieved ${columns.length} columns for user ${userId}`);
+      // Initialize default columns if none exist
+      if (columns.length === 0) {
+        this.logger.log(
+          `No columns found for user ${userId}, initializing defaults`
+        );
+        columns = await this.initializeDefaultColumns(userId);
+      }
 
-    return columns.map((col) => this.toDto(col));
+      this.logger.log(`Retrieved ${columns.length} columns for user ${userId}`);
+
+      return columns.map((col) => this.toDto(col));
+    } catch (error) {
+      this.logger.error(
+        `Failed to get user config for ${userId}: ${error.message}`,
+        error.stack
+      );
+      throw error;
+    }
   }
 
   /**
@@ -265,6 +285,92 @@ export class KanbanConfigService {
     this.logger.log(
       `Reordered ${updates.length} columns after deletion at position ${deletedPosition}`
     );
+  }
+
+  /**
+   * Initialize default Kanban columns for a new user
+   */
+  private async initializeDefaultColumns(
+    userId: string
+  ): Promise<KanbanConfig[]> {
+    this.logger.log(`Initializing default Kanban columns for user ${userId}`);
+
+    const defaultColumns = [
+      { columnId: 'INBOX', title: 'Inbox', position: 0 },
+      { columnId: 'TODO', title: 'To Do', position: 1 },
+      { columnId: 'IN_PROGRESS', title: 'In Progress', position: 2 },
+      { columnId: 'DONE', title: 'Done', position: 3 },
+    ];
+
+    const createdColumns: KanbanConfig[] = [];
+
+    for (const def of defaultColumns) {
+      // Get or create Gmail label
+      let gmailLabelId: string;
+
+      // Check if gmailService is available (may be undefined during circular dependency resolution)
+      if (!this.gmailService) {
+        this.logger.warn(
+          `GmailService not available during initialization, using fallback for "${def.title}"`
+        );
+        gmailLabelId = def.columnId;
+      } else {
+        try {
+          // Try to get existing label first
+          const labels = await this.gmailService.listLabels(userId);
+          const existingLabel = labels.find(
+            (label) => label.name === def.title
+          );
+
+          if (existingLabel) {
+            gmailLabelId = existingLabel.id;
+            this.logger.log(
+              `Using existing Gmail label "${def.title}" (${gmailLabelId})`
+            );
+          } else {
+            // Create new label
+            const newLabel = await this.gmailService.createLabel(
+              userId,
+              def.title
+            );
+            gmailLabelId = newLabel.id;
+            this.logger.log(
+              `Created Gmail label "${def.title}" (${gmailLabelId})`
+            );
+          }
+        } catch (error) {
+          this.logger.error(
+            `Failed to get/create Gmail label for "${def.title}": ${error.message}`
+          );
+          this.logger.warn(
+            `Using columnId "${def.columnId}" as fallback. Gmail labels will NOT be synchronized for this column until label creation succeeds.`
+          );
+          // Use columnId as fallback
+          gmailLabelId = def.columnId;
+          // TODO: Consider surfacing this error to the user through a notification system
+          // or returning partial success status so frontend can show warning
+        }
+      }
+
+      // Create column in database
+      const column = this.kanbanConfigRepository.create({
+        userId,
+        columnId: def.columnId,
+        title: def.title,
+        gmailLabelId,
+        position: def.position,
+        color: null, // Default color
+      });
+
+      const saved = await this.kanbanConfigRepository.save(column);
+      createdColumns.push(saved);
+    }
+
+    this.logger.log(
+      `Initialized ${createdColumns.length} default columns for user ${userId}`
+    );
+
+    return createdColumns;
   }
 
   /**

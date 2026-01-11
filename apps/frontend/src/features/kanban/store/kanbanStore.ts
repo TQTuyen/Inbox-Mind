@@ -62,9 +62,6 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
     const columnDefinitions = config || get().columnConfig;
 
     if (columnDefinitions.length === 0) {
-      console.warn(
-        'No column configuration available. Please load config first.'
-      );
       return;
     }
 

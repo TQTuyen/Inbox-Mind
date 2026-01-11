@@ -22,9 +22,11 @@ export class EmailEmbedding {
   @Column({ type: 'varchar', length: 255 })
   emailId: string;
 
+  // TODO: Switch to pgvector 'vector' type after installing pgvector extension in production
+  // For now, using jsonb to store the embedding array for compatibility
+  // Migration has vector(768) but production DB doesn't have pgvector extension yet
   @Column({
-    type: 'vector',
-    length: 768,
+    type: 'jsonb',
   })
   embedding: number[];
 

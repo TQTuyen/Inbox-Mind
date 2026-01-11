@@ -240,7 +240,8 @@ class GmailApiService {
    */
   async getKanbanEmails(): Promise<Email[]> {
     const response = await api.get<any>('/kanban/emails');
-    return response.data.emails?.map(transformGmailMessage) || [];
+    const emails = response.data.emails?.map(transformGmailMessage) || [];
+    return emails;
   }
 
   /**

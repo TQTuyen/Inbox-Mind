@@ -11,7 +11,10 @@ import { useKanbanStore } from '../store/kanbanStore';
 import { FILTER_OPTIONS, FilterOption } from '../types';
 
 export function FilterControls() {
-  const { activeFilters, toggleFilter, clearFilters } = useKanbanStore();
+  // Use selectors to prevent unnecessary re-renders
+  const activeFilters = useKanbanStore((state) => state.activeFilters);
+  const toggleFilter = useKanbanStore((state) => state.toggleFilter);
+  const clearFilters = useKanbanStore((state) => state.clearFilters);
 
   const activeFilterCount = activeFilters.length;
 

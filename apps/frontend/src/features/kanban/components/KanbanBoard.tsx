@@ -24,8 +24,11 @@ interface KanbanBoardProps {
 }
 
 export function KanbanBoard({ onEmailClick }: KanbanBoardProps) {
-  const { columns, moveEmail } = useKanbanStore();
+  // Use selectors to prevent unnecessary re-renders
+  const columns = useKanbanStore((state) => state.columns);
+  const moveEmail = useKanbanStore((state) => state.moveEmail);
   const [activeEmail, setActiveEmail] = useState<Email | null>(null);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const navigate = useNavigate();
 
   // Configure sensors for drag and drop
@@ -44,6 +47,24 @@ export function KanbanBoard({ onEmailClick }: KanbanBoardProps) {
       .flatMap((col) => col.emails)
       .find((e) => e.id === active.id);
     setActiveEmail(email || null);
+
+    // Calculate offset between cursor and card top-left corner
+    if (active.rect.current.initial) {
+      const rect = active.rect.current.initial;
+
+      // Type guard to ensure activatorEvent is a PointerEvent
+      const isPointerEvent = (event: Event | null): event is PointerEvent => {
+        return event !== null && 'clientX' in event && 'clientY' in event;
+      };
+
+      const offsetX = isPointerEvent(event.activatorEvent)
+        ? event.activatorEvent.clientX - rect.left
+        : 0;
+      const offsetY = isPointerEvent(event.activatorEvent)
+        ? event.activatorEvent.clientY - rect.top
+        : 0;
+      setDragOffset({ x: offsetX, y: offsetY });
+    }
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -105,9 +126,12 @@ export function KanbanBoard({ onEmailClick }: KanbanBoardProps) {
           onDragEnd={handleDragEnd}
           onDragCancel={handleDragCancel}
         >
-          <div className="flex gap-4 p-4 h-full min-w-max">
+          <div className="flex gap-4 p-4 h-full">
             {columns.map((column) => (
-              <div key={column.id} className="w-[260px] flex-shrink-0">
+              <div
+                key={column.id}
+                className="flex-1 min-w-[260px] overflow-hidden"
+              >
                 <KanbanColumn
                   id={column.id}
                   title={column.title}
@@ -119,9 +143,19 @@ export function KanbanBoard({ onEmailClick }: KanbanBoardProps) {
           </div>
 
           {/* Drag Overlay */}
-          <DragOverlay>
+          <DragOverlay
+            dropAnimation={null}
+            style={{
+              cursor: 'grabbing',
+            }}
+          >
             {activeEmail ? (
-              <div className="w-[260px] opacity-90">
+              <div
+                className="w-[280px] opacity-90"
+                style={{
+                  transform: `translate(-${dragOffset.x}px, -${dragOffset.y}px)`,
+                }}
+              >
                 <KanbanCard
                   email={activeEmail}
                   onEmailClick={() => {

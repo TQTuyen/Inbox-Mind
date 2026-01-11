@@ -9,13 +9,12 @@ import { useKanbanStore } from '../store/kanbanStore';
  * Also loads dynamic column configuration from the backend
  */
 export function useKanban() {
-  const {
-    initializeColumns,
-    setLoading,
-    setError,
-    setColumnConfig,
-    moveEmail,
-  } = useKanbanStore();
+  // Use selectors to prevent unnecessary re-renders
+  const initializeColumns = useKanbanStore((state) => state.initializeColumns);
+  const setLoading = useKanbanStore((state) => state.setLoading);
+  const setError = useKanbanStore((state) => state.setError);
+  const setColumnConfig = useKanbanStore((state) => state.setColumnConfig);
+  const moveEmail = useKanbanStore((state) => state.moveEmail);
 
   // Fetch dynamic column configuration
   const { data: columnConfig = [], isLoading: isConfigLoading } =

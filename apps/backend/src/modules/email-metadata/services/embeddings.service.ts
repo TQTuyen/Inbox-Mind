@@ -198,6 +198,9 @@ export class EmbeddingsService {
   /**
    * Semantic search using vector similarity
    * Uses pgvector's cosine distance operator (<=>)
+   *
+   * TODO: This requires pgvector extension. Currently using jsonb for embeddings.
+   * Install pgvector to enable efficient vector similarity search.
    */
   async semanticSearch(
     userId: string,
@@ -214,38 +217,49 @@ export class EmbeddingsService {
     // Generate embedding for query
     const queryEmbedding = await this.aiService.generateEmbedding(queryText);
 
-    // Convert embedding array to PostgreSQL vector format
-    const vectorString = `[${queryEmbedding.join(',')}]`;
+    try {
+      // Convert embedding array to PostgreSQL vector format
+      const vectorString = `[${queryEmbedding.join(',')}]`;
 
-    // Perform vector similarity search using pgvector
-    // Cosine similarity = 1 - cosine_distance
-    // <=> is the cosine distance operator in pgvector
-    const results = await this.embeddingsRepository
-      .createQueryBuilder('embedding')
-      .select('embedding.emailId', 'emailId')
-      .addSelect('embedding.embeddedText', 'embeddedText')
-      .addSelect(
-        `1 - (embedding.embedding <=> '${vectorString}')`,
-        'similarity'
-      )
-      .where('embedding.userId = :userId', { userId })
-      .andWhere(
-        `1 - (embedding.embedding <=> '${vectorString}') > :threshold`,
-        { threshold }
-      )
-      .orderBy('similarity', 'DESC')
-      .limit(limit)
-      .getRawMany();
+      // Perform vector similarity search using pgvector
+      // Cosine similarity = 1 - cosine_distance
+      // <=> is the cosine distance operator in pgvector
+      // NOTE: This requires pgvector extension to be installed in the database
+      // If not installed, will fall back to empty results (see catch block below)
+      const results = await this.embeddingsRepository
+        .createQueryBuilder('embedding')
+        .select('embedding.emailId', 'emailId')
+        .addSelect('embedding.embeddedText', 'embeddedText')
+        .addSelect(`1 - (embedding.embedding <=> :vectorString)`, 'similarity')
+        .where('embedding.userId = :userId', { userId })
+        .andWhere(`1 - (embedding.embedding <=> :vectorString) > :threshold`, {
+          threshold,
+        })
+        .setParameter('vectorString', vectorString)
+        .orderBy('similarity', 'DESC')
+        .limit(limit)
+        .getRawMany();
 
-    this.logger.log(
-      `Found ${results.length} results with similarity > ${threshold}`
-    );
+      this.logger.log(
+        `Found ${results.length} results with similarity > ${threshold}`
+      );
 
-    return results.map((row) => ({
-      emailId: row.emailId,
-      similarity: parseFloat(row.similarity),
-      embeddedText: row.embeddedText,
-    }));
+      return results.map((row) => ({
+        emailId: row.emailId,
+        similarity: parseFloat(row.similarity),
+        embeddedText: row.embeddedText,
+      }));
+    } catch (error) {
+      // If pgvector is not installed, fall back to basic text search
+      this.logger.warn(
+        'pgvector not available, semantic search is disabled. Install pgvector extension for vector similarity search.'
+      );
+      this.logger.warn(`Error: ${error.message}`);
+
+      // Return empty results for now
+      // TODO: Implement fallback text search using pg_trgm or full-text search
+      return [];
+    }
   }
 
   /**

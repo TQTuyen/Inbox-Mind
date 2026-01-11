@@ -14,6 +14,9 @@ import { AIModule } from '../modules/ai/ai.module';
 import { AuthModule } from '../modules/auth/auth.module';
 import { EmailMetadataModule } from '../modules/email-metadata/email-metadata.module';
 import { EmailMetadata } from '../modules/email-metadata/entities/email-metadata.entity';
+import { EmailEmbedding } from '../modules/email-metadata/entities/email-embeddings.entity';
+import { KanbanConfig } from '../modules/email-metadata/entities/kanban-config.entity';
+import { SearchHistory } from '../modules/gmail/entities/search-history.entity';
 import { GmailModule } from '../modules/gmail/gmail.module';
 import { User } from '../modules/user/user.entity';
 import { UserModule } from '../modules/user/user.module';
@@ -41,7 +44,13 @@ import { UserModule } from '../modules/user/user.module';
           database: configService.get('DATABASE_NAME'),
           ssl,
           extra: ssl ? { ssl: { rejectUnauthorized: false } } : undefined,
-          entities: [User, EmailMetadata],
+          entities: [
+            User,
+            EmailMetadata,
+            EmailEmbedding,
+            KanbanConfig,
+            SearchHistory,
+          ],
           migrations: ['dist/migrations/*{.ts,.js}'],
           synchronize: configService.get('NODE_ENV') === NodeEnv.DEVELOPMENT,
           logging: configService.get('NODE_ENV') === NodeEnv.DEVELOPMENT,

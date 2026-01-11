@@ -99,6 +99,7 @@ export function KanbanBoard({
 }: KanbanBoardProps) {
   const { emails } = useEmailStore();
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [generatingSummaryFor, setGeneratingSummaryFor] = useState<
     string | null
   >(null);
@@ -119,7 +120,6 @@ export function KanbanBoard({
       done: [],
       snoozed: [],
     };
-    console.log('Grouping emails for Kanban board', emails);
 
     emails.forEach((email) => {
       const status = email.kanbanStatus || 'inbox';
@@ -135,6 +135,19 @@ export function KanbanBoard({
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
+
+    // Calculate offset between cursor and drag handle position
+    // The drag handle is on the left side with 12px (p-3) from the card edge
+    if (event.active.rect.current.initial) {
+      const rect = event.active.rect.current.initial;
+      const offsetX = event.activatorEvent
+        ? (event.activatorEvent as PointerEvent).clientX - rect.left
+        : 0;
+      const offsetY = event.activatorEvent
+        ? (event.activatorEvent as PointerEvent).clientY - rect.top
+        : 0;
+      setDragOffset({ x: offsetX, y: offsetY });
+    }
   };
 
   const handleDragOver = (event: DragOverEvent) => {
@@ -274,21 +287,33 @@ export function KanbanBoard({
         </div>
       </div>
 
-      <DragOverlay dropAnimation={dropAnimation}>
+      <DragOverlay
+        dropAnimation={dropAnimation}
+        style={{
+          cursor: 'grabbing',
+        }}
+      >
         {activeEmail ? (
-          <KanbanCard
-            email={activeEmail}
-            onClick={() => {
-              // DragOverlay card is not interactive
+          <div
+            className="w-80 opacity-90 pointer-events-none"
+            style={{
+              transform: `translate(-${dragOffset.x}px, -${dragOffset.y}px)`,
             }}
-            onSnooze={() => {
-              // DragOverlay card is not interactive
-            }}
-            onGenerateSummary={() => {
-              // DragOverlay card is not interactive
-            }}
-            isDragOverlay={true}
-          />
+          >
+            <KanbanCard
+              email={activeEmail}
+              onClick={() => {
+                // DragOverlay card is not interactive
+              }}
+              onSnooze={() => {
+                // DragOverlay card is not interactive
+              }}
+              onGenerateSummary={() => {
+                // DragOverlay card is not interactive
+              }}
+              isDragOverlay={true}
+            />
+          </div>
         ) : null}
       </DragOverlay>
     </DndContext>

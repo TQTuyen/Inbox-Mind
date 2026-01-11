@@ -144,70 +144,68 @@ export class GmailService {
   async listKanbanEmails(userId: string) {
     try {
       const gmail = await this.getGmailClient(userId);
-      const kanbanLabels = ['INBOX', 'TODO', 'IN_PROGRESS', 'DONE'];
 
-      // Fetch emails from all kanban labels in parallel
-      const emailsPromises = kanbanLabels.map(async (labelId) => {
-        try {
-          const response = await gmail.users.messages.list({
-            userId: GMAIL_CONFIG.USER_ID,
-            labelIds: [labelId],
-            maxResults: 100, // Get up to 100 emails per label
-          });
-
-          const messages = response.data.messages || [];
-          const emails = await this.fetchEmailsMetadata(gmail, messages);
-
-          // Set the correct mailboxId for each email
-          return emails.map((email) => ({
-            ...email,
-            mailboxId: labelId,
-          }));
-        } catch (error) {
-          this.logger.error(
-            { labelId, error: error.message },
-            `Failed to fetch emails for label ${labelId}`
-          );
-          return [];
-        }
+      // Fetch all emails from INBOX (up to 400 recent emails)
+      const response = await gmail.users.messages.list({
+        userId: GMAIL_CONFIG.USER_ID,
+        labelIds: ['INBOX'],
+        maxResults: 400,
       });
 
-      const allEmailsArrays = await Promise.all(emailsPromises);
-      const allEmails = allEmailsArrays.flat();
+      const messages = response.data.messages || [];
+      const emails = await this.fetchEmailsMetadata(gmail, messages);
 
-      // Remove duplicates (emails with multiple labels will appear multiple times)
-      // Keep the email with the most specific label (DONE > IN_PROGRESS > TODO > INBOX)
-      const labelPriority = { DONE: 4, IN_PROGRESS: 3, TODO: 2, INBOX: 1 };
-      const emailMap = new Map();
-
-      allEmails.forEach((email) => {
-        const existing = emailMap.get(email.id);
-        const currentPriority = labelPriority[email.mailboxId] || 0;
-        const existingPriority = existing
-          ? labelPriority[existing.mailboxId] || 0
-          : 0;
-
-        if (!existing || currentPriority > existingPriority) {
-          emailMap.set(email.id, email);
-        }
-      });
-
-      const uniqueEmails = Array.from(emailMap.values());
-
-      // Enrich with metadata
-      const emailIds = uniqueEmails.map((email) => email.id);
+      // Enrich with metadata from database
+      const emailIds = emails.map((email) => email.id);
       const metadataList = await this.emailMetadataService.getMetadataForEmails(
         userId,
         emailIds
       );
 
+      this.logger.debug(
+        `Found ${metadataList.length} metadata records for ${emailIds.length} emails`
+      );
+
+      // Log a sample of metadata to debug
+      if (metadataList.length > 0) {
+        this.logger.debug(
+          `Sample metadata: ${JSON.stringify(
+            metadataList.slice(0, 3).map((m) => ({
+              emailId: m.emailId,
+              kanbanStatus: m.kanbanStatus,
+            }))
+          )}`
+        );
+      }
+
       const metadataMap = new Map(metadataList.map((m) => [m.emailId, m]));
 
-      const enrichedEmails = uniqueEmails.map((email) => {
+      // Map kanbanStatus to appropriate mailboxId for compatibility
+      const statusToMailboxId = {
+        inbox: 'INBOX',
+        todo: 'TODO',
+        in_progress: 'IN_PROGRESS',
+        done: 'DONE',
+        snoozed: 'SNOOZED',
+      };
+
+      const enrichedEmails = emails.map((email) => {
         const metadata = metadataMap.get(email.id);
+        const kanbanStatus = metadata?.kanbanStatus || 'inbox';
+
+        // Debug log for first few emails
+        if (emails.indexOf(email) < 3) {
+          this.logger.debug(
+            `Email ${email.id}: metadata=${
+              metadata ? 'found' : 'not found'
+            }, kanbanStatus=${kanbanStatus}`
+          );
+        }
+
         return {
           ...email,
-          kanbanStatus: metadata?.kanbanStatus || 'inbox',
+          kanbanStatus,
+          mailboxId: statusToMailboxId[kanbanStatus] || 'INBOX',
           snoozeUntil: metadata?.snoozeUntil || null,
           summary: metadata?.summary || null,
         };
