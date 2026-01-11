@@ -217,8 +217,18 @@ export class EmbeddingsService {
     // Generate embedding for query
     const queryEmbedding = await this.aiService.generateEmbedding(queryText);
 
+    // Validate embedding is an array of numbers for security
+    if (
+      !Array.isArray(queryEmbedding) ||
+      !queryEmbedding.every((v) => typeof v === 'number' && !isNaN(v))
+    ) {
+      this.logger.error('Invalid embedding format received from AI service');
+      return [];
+    }
+
     try {
       // Convert embedding array to PostgreSQL vector format
+      // Safe because we validated queryEmbedding contains only numbers
       const vectorString = `[${queryEmbedding.join(',')}]`;
 
       // Perform vector similarity search using pgvector
