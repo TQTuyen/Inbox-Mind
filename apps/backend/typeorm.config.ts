@@ -22,6 +22,7 @@ export default new DataSource({
     process.env.DATABASE_SSL === 'true'
       ? { ssl: { rejectUnauthorized: false } }
       : undefined,
+  entities: ['src/modules/**/*.entity.ts'],
   migrations: ['src/migrations/*.ts'],
   synchronize: false,
   logging: process.env.NODE_ENV === 'development',

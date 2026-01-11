@@ -41,8 +41,8 @@ import { UserModule } from '../modules/user/user.module';
           database: configService.get('DATABASE_NAME'),
           ssl,
           extra: ssl ? { ssl: { rejectUnauthorized: false } } : undefined,
-          entities: [resolve(__dirname, '../**/*.entity{.ts,.js}')],
-          migrations: [resolve(__dirname, '../migrations/*{.ts,.js}')],
+          entities: [resolve(__dirname, '../modules/**/*.entity.js')],
+          migrations: [resolve(__dirname, '../migrations/*.js')],
           synchronize: configService.get('NODE_ENV') === NodeEnv.DEVELOPMENT,
           logging: configService.get('NODE_ENV') === NodeEnv.DEVELOPMENT,
         };
