@@ -204,10 +204,23 @@ export class KanbanConfigService {
       );
     }
 
-    // Delete the column
+    // Delete the column from database
     await this.kanbanConfigRepository.delete({ userId, columnId });
 
     this.logger.log(`Deleted column "${columnId}"`);
+
+    // Delete the associated Gmail label
+    try {
+      await this.gmailService.deleteLabel(userId, column.gmailLabelId);
+      this.logger.log(
+        `Deleted Gmail label ${column.gmailLabelId} for column "${columnId}"`
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to delete Gmail label ${column.gmailLabelId} for column "${columnId}": ${error.message}`
+      );
+      // Continue anyway - column is already deleted from database
+    }
 
     // Reorder remaining columns to fill the gap
     await this.reorderAfterDeletion(userId, column.position);

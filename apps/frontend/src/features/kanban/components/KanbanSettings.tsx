@@ -1,12 +1,11 @@
-import { useState } from 'react';
 import {
-  DndContext,
   closestCenter,
+  DndContext,
+  DragEndEvent,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
-  DragEndEvent,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -17,15 +16,13 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@fe/shared/components/ui/sheet';
-import { Button } from '@fe/shared/components/ui/button';
-import { Input } from '@fe/shared/components/ui/input';
+  useCreateKanbanColumn,
+  useDeleteKanbanColumn,
+  useKanbanConfig,
+  useReorderKanbanColumns,
+  useUpdateKanbanColumn,
+} from '@fe/hooks/useKanbanConfig';
+import type { KanbanColumn } from '@fe/services/api/gmailApi';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,24 +33,27 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@fe/shared/components/ui/alert-dialog';
+import { Button } from '@fe/shared/components/ui/button';
+import { Input } from '@fe/shared/components/ui/input';
 import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@fe/shared/components/ui/sheet';
+import { useToast } from '@fe/shared/components/ui/use-toast';
+import {
+  Check,
   GripVertical,
+  Loader2,
   Plus,
   Settings,
   Trash2,
-  Loader2,
-  Check,
   X,
 } from 'lucide-react';
-import {
-  useKanbanConfig,
-  useCreateKanbanColumn,
-  useUpdateKanbanColumn,
-  useDeleteKanbanColumn,
-  useReorderKanbanColumns,
-} from '@fe/hooks/useKanbanConfig';
-import type { KanbanColumn } from '@fe/services/api/gmailApi';
-import { useToast } from '@fe/shared/components/ui/use-toast';
+import { useState } from 'react';
 
 interface SortableColumnItemProps {
   column: KanbanColumn;

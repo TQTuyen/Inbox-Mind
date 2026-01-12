@@ -942,4 +942,32 @@ export class GmailService {
       throw new GmailOperationException('update label', error);
     }
   }
+
+  /**
+   * Delete a Gmail label
+   */
+  async deleteLabel(userId: string, labelId: string): Promise<void> {
+    try {
+      const gmail = await this.getGmailClient(userId);
+
+      await gmail.users.labels.delete({
+        userId: GMAIL_CONFIG.USER_ID,
+        id: labelId,
+      });
+
+      this.logger.debug(
+        `Deleted Gmail label ${labelId} for user ${userId}`
+      );
+    } catch (error) {
+      this.logger.error(
+        {
+          userId,
+          labelId,
+          error: error.message,
+        },
+        'Failed to delete Gmail label'
+      );
+      throw new GmailOperationException('delete label', error);
+    }
+  }
 }
