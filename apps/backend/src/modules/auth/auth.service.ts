@@ -55,13 +55,14 @@ export class AuthService {
 
     // Only encrypt and save if we have a refresh token
     // Google only returns refresh token on first approval or when explicitly re-approved
-    const tokenData = refreshToken
-      ? {
-          googleRefreshToken:
-            this.encryptionService.encrypt(refreshToken).encrypted,
-          googleRefreshTokenIV: this.encryptionService.encrypt(refreshToken).iv,
-        }
-      : {};
+    let tokenData = {};
+    if (refreshToken) {
+      const { encrypted, iv } = this.encryptionService.encrypt(refreshToken);
+      tokenData = {
+        googleRefreshToken: encrypted,
+        googleRefreshTokenIV: iv,
+      };
+    }
 
     if (user) {
       // Only update tokens if we received a new refresh token
