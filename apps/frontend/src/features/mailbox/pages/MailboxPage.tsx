@@ -1,3 +1,8 @@
+import {
+  useFuzzySearch,
+  useKanbanEmails,
+  useSemanticSearch,
+} from '@fe/hooks/useGmailQuery';
 import { Button } from '@fe/shared/components/ui/button';
 import {
   ResizableHandle,
@@ -10,31 +15,26 @@ import {
   SheetTrigger,
 } from '@fe/shared/components/ui/sheet';
 import {
-  useFuzzySearch,
-  useKanbanEmails,
-  useSemanticSearch,
-} from '@fe/hooks/useGmailQuery';
+  transformKanbanEmailsBatch,
+  transformSearchResultsBatch,
+} from '@fe/utils/emailTransformers';
+import { useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Menu, LayoutList, LayoutGrid } from 'lucide-react';
+import { LayoutGrid, LayoutList, Menu } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useMutation } from '@tanstack/react-query';
 import { ThemeToggle } from '../../../components/ThemeToggle';
+import { emailMetadataApi } from '../../../services/api/emailMetadataApi';
 import { EmailDetail } from '../components/EmailDetail';
 import { EmailList } from '../components/EmailList';
 import { FilterChips } from '../components/FilterChips';
+import { KanbanBoard as OldKanbanBoard } from '../components/KanbanBoard';
 import { MailboxBackground } from '../components/MailboxBackground';
 import { SearchBar } from '../components/SearchBar';
 import { SearchResultsView } from '../components/SearchResultsView';
 import { Sidebar } from '../components/Sidebar';
-import { KanbanBoard as OldKanbanBoard } from '../components/KanbanBoard';
 import { useMailbox } from '../hooks/useMailbox';
-import { Email, useEmailStore, KanbanStatus } from '../store/emailStore';
-import { emailMetadataApi } from '../../../services/api/emailMetadataApi';
-import {
-  transformKanbanEmailsBatch,
-  transformSearchResultsBatch,
-} from '@fe/utils/emailTransformers';
+import { Email, KanbanStatus, useEmailStore } from '../store/emailStore';
 
 export function MailboxPage() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -239,25 +239,65 @@ export function MailboxPage() {
     <div className="relative h-screen w-full overflow-hidden bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100 dark:from-slate-950 dark:via-blue-950/20 dark:to-slate-950">
       {/* Animated Background */}
       <MailboxBackground />
-
       {/* Theme Toggle - Fixed position */}
       <div className="fixed top-4 right-4 z-50">
         <ThemeToggle />
       </div>
-
       {/* Desktop: Full 3-column layout */}
       <div className="relative z-10 hidden h-screen w-full lg:flex">
-        {/* Sidebar */}
-        <Sidebar
-          isCollapsed={isSidebarCollapsed}
-          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-        />
+        {/* Sidebar - No gap */}
+        <div className="h-full relative">
+          <Sidebar
+            isCollapsed={isSidebarCollapsed}
+            onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          />
+
+          {/* Collapse Toggle Button - Positioned at the border */}
+          <button
+            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            className="absolute top-1/2 -right-4 -translate-y-1/2 z-10 h-10 w-10 rounded-full border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-md hover:bg-gray-100 dark:hover:bg-slate-800/70 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-slate-400 focus:ring-offset-2 cursor-pointer flex items-center justify-center"
+          >
+            {isSidebarCollapsed ? (
+              <svg
+                className="h-5 w-5 text-gray-600 dark:text-slate-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            ) : (
+              <svg
+                className="h-5 w-5 text-gray-600 dark:text-slate-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            )}
+          </button>
+        </div>
 
         {/* Main Content Area */}
         <div className="flex flex-1 h-screen overflow-hidden">
           <ResizablePanelGroup direction="horizontal" className="h-full">
             {/* Email List Panel */}
-            <ResizablePanel defaultSize={35} minSize={25} maxSize={50}>
+            <ResizablePanel
+              defaultSize={viewMode === 'kanban' ? 70 : 25}
+              minSize={viewMode === 'kanban' ? 50 : 25}
+              maxSize={viewMode === 'kanban' ? 80 : 50}
+            >
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -352,7 +392,11 @@ export function MailboxPage() {
             />
 
             {/* Email Detail Panel */}
-            <ResizablePanel defaultSize={65} minSize={50}>
+            <ResizablePanel
+              defaultSize={viewMode === 'kanban' ? 30 : 65}
+              minSize={viewMode === 'kanban' ? 20 : 50}
+              maxSize={viewMode === 'kanban' ? 50 : 75}
+            >
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -365,7 +409,6 @@ export function MailboxPage() {
           </ResizablePanelGroup>
         </div>
       </div>
-
       {/* Mobile & Tablet: Show either list or detail */}
       <div className="relative z-10 flex h-screen w-full lg:hidden">
         {!showMobileDetail || !selectedEmail ? (

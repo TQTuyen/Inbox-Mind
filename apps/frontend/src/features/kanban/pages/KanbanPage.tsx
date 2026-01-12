@@ -97,7 +97,6 @@ export function KanbanPage() {
           </ResizablePanelGroup>
         </div>
       </div>
-
       {/* Mobile Layout */}
       <div className="md:hidden flex-1 flex flex-col">
         <KanbanBoard onEmailClick={handleEmailClick} />
