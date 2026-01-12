@@ -34,11 +34,16 @@ export class GmailClientFactoryService implements IGmailClientFactory {
     const oauth2Client = this.createOAuth2Client();
     oauth2Client.setCredentials({ refresh_token: refreshToken });
 
-    // Set up token refresh error handler
-    oauth2Client.on('tokens', (tokens) => {
+    // Set up token refresh handler
+    oauth2Client.on('tokens', async (tokens) => {
       if (tokens.refresh_token) {
-        // If we get a new refresh token, we should update it in the database
-        // This is a future enhancement
+        const { encrypted, iv } = this.encryptionService.encrypt(
+          tokens.refresh_token
+        );
+        await this.userService.update(userId, {
+          googleRefreshToken: encrypted,
+          googleRefreshTokenIV: iv,
+        });
       }
     });
 
