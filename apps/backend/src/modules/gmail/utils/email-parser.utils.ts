@@ -33,7 +33,11 @@ export class EmailParserUtils {
         return this.decodeBase64Url(part.body.data);
       }
 
-      if (part.mimeType === 'text/html' && part.body?.data && !preferPlainText) {
+      if (
+        part.mimeType === 'text/html' &&
+        part.body?.data &&
+        !preferPlainText
+      ) {
         return this.decodeBase64Url(part.body.data);
       }
 
