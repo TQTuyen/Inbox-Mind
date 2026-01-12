@@ -26,6 +26,13 @@ export class GmailClientFactoryService implements IGmailClientFactory {
       throw new UnauthorizedException('User not found');
     }
 
+    // Check if user has valid Google tokens
+    if (!user.googleRefreshToken || !user.googleRefreshTokenIV) {
+      throw new UnauthorizedException(
+        'Google authentication required. Please log in again.'
+      );
+    }
+
     const refreshToken = this.encryptionService.decrypt(
       user.googleRefreshToken,
       user.googleRefreshTokenIV

@@ -23,11 +23,11 @@ export class User {
   @Column()
   name: string;
 
-  @Column({ type: 'text' })
-  googleRefreshToken: string;
+  @Column({ type: 'text', nullable: true })
+  googleRefreshToken: string | null;
 
-  @Column()
-  googleRefreshTokenIV: string;
+  @Column({ nullable: true })
+  googleRefreshTokenIV: string | null;
 
   @CreateDateColumn()
   createdAt: Date;

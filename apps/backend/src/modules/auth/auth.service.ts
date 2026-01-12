@@ -53,22 +53,35 @@ export class AuthService {
 
     let user = await this.userService.findByGoogleId(googleId);
 
-    const { encrypted, iv } = this.encryptionService.encrypt(refreshToken);
+    // Only encrypt and save if we have a refresh token
+    // Google only returns refresh token on first approval or when explicitly re-approved
+    const tokenData = refreshToken
+      ? {
+          googleRefreshToken: this.encryptionService.encrypt(refreshToken)
+            .encrypted,
+          googleRefreshTokenIV: this.encryptionService.encrypt(refreshToken).iv,
+        }
+      : {};
 
     if (user) {
+      // Only update tokens if we received a new refresh token
       user = await this.userService.update(user.id, {
         email,
         name,
-        googleRefreshToken: encrypted,
-        googleRefreshTokenIV: iv,
+        ...(refreshToken ? tokenData : {}),
       });
     } else {
+      // For new users, we must have a refresh token
+      if (!refreshToken) {
+        throw new UnauthorizedException(
+          'Refresh token required for new user registration'
+        );
+      }
       user = await this.userService.create({
         googleId,
         email,
         name,
-        googleRefreshToken: encrypted,
-        googleRefreshTokenIV: iv,
+        ...tokenData,
       });
     }
 

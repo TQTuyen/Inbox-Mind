@@ -33,11 +33,7 @@ export class GoogleTokenRevokerService implements IGoogleTokenRevoker {
         user.googleRefreshTokenIV
       );
 
-      // const oauth2Client = this.createOAuth2Client();
-      // oauth2Client.setCredentials({ refresh_token: refreshToken });
-
-      // await oauth2Client.revokeCredentials();
-
+      // Revoke tokens at Google
       await axios.post('https://oauth2.googleapis.com/revoke', null, {
         params: {
           token: refreshToken,
@@ -46,6 +42,12 @@ export class GoogleTokenRevokerService implements IGoogleTokenRevoker {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         timeout: 5000, // 5 second timeout
+      });
+
+      // Clear tokens from database to prevent using revoked tokens
+      await this.userService.update(userId, {
+        googleRefreshToken: null,
+        googleRefreshTokenIV: null,
       });
     } catch (error) {
       console.error('Error revoking Google tokens:', error);
