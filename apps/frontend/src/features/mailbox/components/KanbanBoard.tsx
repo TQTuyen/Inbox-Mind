@@ -242,7 +242,10 @@ export function KanbanBoard({
       <div className="h-full overflow-x-auto">
         <div className="flex gap-4 p-4 min-w-max h-full">
           {KANBAN_COLUMNS.map((column) => (
-            <div key={column.id} className="flex flex-col w-80 max-w-[320px] flex-shrink-0">
+            <div
+              key={column.id}
+              className="flex flex-col w-80 max-w-[320px] flex-shrink-0"
+            >
               <div
                 className={cn(
                   'flex items-center gap-2 px-4 py-3 rounded-t-lg border-2 border-b-0',

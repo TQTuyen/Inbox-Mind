@@ -43,8 +43,17 @@ export class GmailClientFactoryService implements IGmailClientFactory {
 
     // Force refresh access token immediately to ensure we have a valid token
     try {
-      await oauth2Client.getAccessToken();
+      const { token } = await oauth2Client.getAccessToken();
+      if (!token) {
+        throw new Error('No access token received');
+      }
+      console.log('✓ Access token refreshed successfully for user:', userId);
     } catch (error) {
+      console.error('Failed to refresh access token:', {
+        userId,
+        error: error.message,
+        errorDetails: error,
+      });
       throw new UnauthorizedException(
         'Failed to refresh Google access token. Please log in again.'
       );
