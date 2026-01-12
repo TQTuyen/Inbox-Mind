@@ -312,14 +312,27 @@ export class GmailController {
     @Param() params: EmailIdParamDto,
     @Body() modifyLabelsDto: ModifyLabelsDto
   ) {
-    const gmail = await this.gmailClientFactory.createClient(user.userId);
-    const strategy = this.labelStrategyFactory.getStrategy(
-      modifyLabelsDto.action
-    );
+    try {
+      const gmail = await this.gmailClientFactory.createClient(user.userId);
+      const strategy = this.labelStrategyFactory.getStrategy(
+        modifyLabelsDto.action
+      );
 
-    await strategy.execute(gmail, params.id, modifyLabelsDto.labelIds);
+      await strategy.execute(gmail, params.id, modifyLabelsDto.labelIds);
 
-    return { message: SUCCESS_MESSAGES.LABELS_UPDATED };
+      return { message: SUCCESS_MESSAGES.LABELS_UPDATED };
+    } catch (error) {
+      // Log detailed error for debugging
+      console.error('Failed to modify labels:', {
+        userId: user.userId,
+        emailId: params.id,
+        action: modifyLabelsDto.action,
+        labelIds: modifyLabelsDto.labelIds,
+        error: error.message,
+        errorData: error.response?.data || error.response || error,
+      });
+      throw error;
+    }
   }
 
   @Delete('emails/:id')

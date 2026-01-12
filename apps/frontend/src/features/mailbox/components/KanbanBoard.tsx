@@ -8,7 +8,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  closestCorners,
+  rectIntersection,
   useDroppable,
   defaultDropAnimationSideEffects,
   type DropAnimation,
@@ -234,7 +234,7 @@ export function KanbanBoard({
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCorners}
+      collisionDetection={rectIntersection}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
@@ -242,7 +242,7 @@ export function KanbanBoard({
       <div className="h-full overflow-x-auto">
         <div className="flex gap-4 p-4 min-w-max h-full">
           {KANBAN_COLUMNS.map((column) => (
-            <div key={column.id} className="flex flex-col w-80 flex-shrink-0">
+            <div key={column.id} className="flex flex-col w-80 max-w-[320px] flex-shrink-0">
               <div
                 className={cn(
                   'flex items-center gap-2 px-4 py-3 rounded-t-lg border-2 border-b-0',
@@ -300,7 +300,7 @@ export function KanbanBoard({
       >
         {activeEmail ? (
           <div
-            className="w-80 opacity-90 pointer-events-none"
+            className="w-80 max-w-[320px] opacity-90 pointer-events-none"
             style={{
               transform: `translate(-${dragOffset.x}px, -${dragOffset.y}px)`,
             }}
