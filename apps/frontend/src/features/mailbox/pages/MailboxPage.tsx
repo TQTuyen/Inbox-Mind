@@ -291,10 +291,14 @@ export function MailboxPage() {
 
         {/* Main Content Area */}
         <div className="flex flex-1 h-screen overflow-hidden">
-          <ResizablePanelGroup direction="horizontal" className="h-full">
+          <ResizablePanelGroup
+            key={viewMode}
+            direction="horizontal"
+            className="h-full"
+          >
             {/* Email List Panel */}
             <ResizablePanel
-              defaultSize={viewMode === 'kanban' ? 70 : 25}
+              defaultSize={viewMode === 'kanban' ? 70 : 35}
               minSize={viewMode === 'kanban' ? 50 : 25}
               maxSize={viewMode === 'kanban' ? 80 : 50}
             >

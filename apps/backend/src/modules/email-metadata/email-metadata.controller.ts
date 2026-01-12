@@ -20,6 +20,7 @@ import {
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { AIService } from '../ai/ai.service';
 import { GmailService } from '../gmail/gmail.service';
+import { EmailParserUtils } from '../gmail/utils/email-parser.utils';
 import { GenerateSummaryDto } from './dto/generate-summary.dto';
 import {
   CreateKanbanColumnDto,
@@ -123,8 +124,7 @@ export class EmailMetadataController {
   @HttpCode(HttpStatus.OK)
   async generateSummary(
     @CurrentUser() user: CurrentUserData,
-    @Param('emailId') emailId: string,
-    @Body() dto: GenerateSummaryDto
+    @Param('emailId') emailId: string
   ) {
     if (!this.aiService.isAvailable()) {
       throw new BadRequestException(
@@ -132,15 +132,23 @@ export class EmailMetadataController {
       );
     }
 
-    if (!dto.emailBody) {
-      throw new BadRequestException('Email body is required');
+    // Fetch email from Gmail
+    const message = await this.gmailService.getEmail(user.userId, emailId);
+
+    if (!message) {
+      throw new BadRequestException('Email not found');
     }
 
-    // Generate summary using provided email body and subject
-    const summary = await this.aiService.summarizeEmail(
-      dto.emailBody,
-      dto.subject || 'No Subject'
-    );
+    // Extract body and subject using utility functions
+    const emailBody = EmailParserUtils.extractEmailBody(message);
+    const subject = EmailParserUtils.extractEmailSubject(message);
+
+    if (!emailBody) {
+      throw new BadRequestException('Email has no content to summarize');
+    }
+
+    // Generate summary using fetched email content
+    const summary = await this.aiService.summarizeEmail(emailBody, subject);
 
     // Save summary to database
     const metadata = await this.emailMetadataService.updateSummary(
