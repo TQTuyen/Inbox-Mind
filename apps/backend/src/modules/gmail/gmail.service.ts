@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { gmail_v1 } from 'googleapis';
 import { GMAIL_CONFIG } from '../../common/constants/gmail.constants';
 import { GmailFormat, GmailLabel } from '../../common/enums';
@@ -6,6 +6,7 @@ import { GmailOperationException } from '../../common/exceptions/gmail.exception
 import { AppLoggerService } from '../../common/logger/app-logger.service';
 import { GmailClientFactoryService } from '../../common/services/gmail-client-factory.service';
 import { EmailMetadataService } from '../email-metadata/services/email-metadata.service';
+import { KanbanConfigService } from '../email-metadata/services/kanban-config.service';
 import { EmailReplyBuilder } from './builders/email-reply.builder';
 import { EmailBuilder } from './builders/email.builder';
 import { MimeMultipartBuilder } from './builders/mime-multipart.builder';
@@ -59,7 +60,9 @@ export class GmailService {
     private readonly attachmentService: AttachmentService,
     private readonly threadingService: EmailThreadingService,
     private readonly fileUploadService: FileUploadService,
-    private readonly emailMetadataService: EmailMetadataService
+    private readonly emailMetadataService: EmailMetadataService,
+    @Inject(forwardRef(() => KanbanConfigService))
+    private readonly kanbanConfigService: KanbanConfigService
   ) {
     this.logger.setContext('GmailService');
   }
@@ -145,14 +148,51 @@ export class GmailService {
     try {
       const gmail = await this.getGmailClient(userId);
 
-      // Fetch all emails from INBOX (up to 400 recent emails)
-      const response = await gmail.users.messages.list({
-        userId: GMAIL_CONFIG.USER_ID,
-        labelIds: ['INBOX'],
-        maxResults: 400,
-      });
+      // Get user's Kanban column configuration
+      const columnConfig = await this.kanbanConfigService.getUserConfig(userId);
 
-      const messages = response.data.messages || [];
+      // Extract Gmail label IDs from all columns
+      const labelIds = columnConfig.map((col) => col.gmailLabelId);
+
+      this.logger.debug(
+        `Fetching emails from ${labelIds.length} Kanban labels: ${labelIds.join(
+          ', '
+        )}`
+      );
+
+      // Fetch emails from each label and merge results
+      // Use a Map to deduplicate emails (an email can have multiple labels)
+      const emailMap = new Map<string, any>();
+
+      for (const labelId of labelIds) {
+        try {
+          const response = await gmail.users.messages.list({
+            userId: GMAIL_CONFIG.USER_ID,
+            labelIds: [labelId],
+            maxResults: 100, // Fetch up to 100 per label
+          });
+
+          const messages = response.data.messages || [];
+
+          // Add to map (deduplicate by email ID)
+          messages.forEach((msg) => {
+            if (msg.id && !emailMap.has(msg.id)) {
+              emailMap.set(msg.id, msg);
+            }
+          });
+        } catch (labelError) {
+          this.logger.warn(
+            `Failed to fetch emails for label ${labelId}: ${labelError.message}`
+          );
+          // Continue with other labels
+        }
+      }
+
+      const messages = Array.from(emailMap.values());
+      this.logger.debug(
+        `Found ${messages.length} unique emails across all Kanban labels`
+      );
+
       const emails = await this.fetchEmailsMetadata(gmail, messages);
 
       // Enrich with metadata from database
@@ -165,18 +205,6 @@ export class GmailService {
       this.logger.debug(
         `Found ${metadataList.length} metadata records for ${emailIds.length} emails`
       );
-
-      // Log a sample of metadata to debug
-      if (metadataList.length > 0) {
-        this.logger.debug(
-          `Sample metadata: ${JSON.stringify(
-            metadataList.slice(0, 3).map((m) => ({
-              emailId: m.emailId,
-              kanbanStatus: m.kanbanStatus,
-            }))
-          )}`
-        );
-      }
 
       const metadataMap = new Map(metadataList.map((m) => [m.emailId, m]));
 
@@ -192,15 +220,6 @@ export class GmailService {
       const enrichedEmails = emails.map((email) => {
         const metadata = metadataMap.get(email.id);
         const kanbanStatus = metadata?.kanbanStatus || 'inbox';
-
-        // Debug log for first few emails
-        if (emails.indexOf(email) < 3) {
-          this.logger.debug(
-            `Email ${email.id}: metadata=${
-              metadata ? 'found' : 'not found'
-            }, kanbanStatus=${kanbanStatus}`
-          );
-        }
 
         return {
           ...email,
@@ -955,9 +974,7 @@ export class GmailService {
         id: labelId,
       });
 
-      this.logger.debug(
-        `Deleted Gmail label ${labelId} for user ${userId}`
-      );
+      this.logger.debug(`Deleted Gmail label ${labelId} for user ${userId}`);
     } catch (error) {
       this.logger.error(
         {

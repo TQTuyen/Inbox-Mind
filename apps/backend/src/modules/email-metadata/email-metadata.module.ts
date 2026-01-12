@@ -34,6 +34,6 @@ import { KanbanConfigService } from './services/kanban-config.service';
     KanbanConfigService,
     EmailEmbeddingsScheduler,
   ],
-  exports: [EmailMetadataService, EmbeddingsService],
+  exports: [EmailMetadataService, EmbeddingsService, KanbanConfigService],
 })
 export class EmailMetadataModule {}

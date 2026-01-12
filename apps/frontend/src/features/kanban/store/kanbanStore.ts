@@ -1,15 +1,15 @@
-import { create } from 'zustand';
 import {
   gmailApi,
   KanbanColumn as KanbanColumnConfig,
 } from '@fe/services/api/gmailApi';
+import { create } from 'zustand';
 import { Email } from '../../mailbox/store/emailStore';
 import {
-  KanbanColumn,
-  SortOption,
-  FilterOption,
-  SORT_OPTIONS,
   FILTER_OPTIONS,
+  FilterOption,
+  KanbanColumn,
+  SORT_OPTIONS,
+  SortOption,
 } from '../types';
 
 interface KanbanState {

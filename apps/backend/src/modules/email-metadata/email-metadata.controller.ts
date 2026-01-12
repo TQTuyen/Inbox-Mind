@@ -1,41 +1,41 @@
 import {
-  Controller,
-  Post,
-  Put,
-  Get,
-  Delete,
-  Param,
+  BadRequestException,
   Body,
-  Query,
-  UseGuards,
+  Controller,
+  Delete,
+  Get,
   HttpCode,
   HttpStatus,
-  BadRequestException,
+  Param,
+  Post,
+  Put,
+  Query,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   CurrentUser,
   CurrentUserData,
 } from '../../common/decorators/current-user.decorator';
-import { EmailMetadataService } from './services/email-metadata.service';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { AIService } from '../ai/ai.service';
-import { EmbeddingsService } from './services/embeddings.service';
 import { GmailService } from '../gmail/gmail.service';
-import { UpdateKanbanStatusDto } from './dto/update-kanban-status.dto';
-import { SnoozeEmailDto } from './dto/snooze-email.dto';
 import { GenerateSummaryDto } from './dto/generate-summary.dto';
 import {
+  CreateKanbanColumnDto,
+  KanbanConfigResponseDto,
+  ReorderKanbanColumnsDto,
+  UpdateKanbanColumnDto,
+} from './dto/kanban-config.dto';
+import {
+  GenerateEmbeddingsDto,
   SemanticSearchQueryDto,
   SemanticSearchResponseDto,
-  GenerateEmbeddingsDto,
 } from './dto/semantic-search.dto';
-import {
-  CreateKanbanColumnDto,
-  UpdateKanbanColumnDto,
-  ReorderKanbanColumnsDto,
-  KanbanConfigResponseDto,
-} from './dto/kanban-config.dto';
+import { SnoozeEmailDto } from './dto/snooze-email.dto';
+import { UpdateKanbanStatusDto } from './dto/update-kanban-status.dto';
+import { EmailMetadataService } from './services/email-metadata.service';
+import { EmbeddingsService } from './services/embeddings.service';
 import { KanbanConfigService } from './services/kanban-config.service';
 
 @ApiTags('email-metadata')
