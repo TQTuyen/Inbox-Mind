@@ -57,8 +57,8 @@ export class AuthService {
     // Google only returns refresh token on first approval or when explicitly re-approved
     const tokenData = refreshToken
       ? {
-          googleRefreshToken: this.encryptionService.encrypt(refreshToken)
-            .encrypted,
+          googleRefreshToken:
+            this.encryptionService.encrypt(refreshToken).encrypted,
           googleRefreshTokenIV: this.encryptionService.encrypt(refreshToken).iv,
         }
       : {};

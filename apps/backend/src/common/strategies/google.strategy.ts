@@ -23,9 +23,16 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       callbackURL: configService.get<string>('GOOGLE_CALLBACK_URL'),
       scope: [...GOOGLE_SCOPES],
       userProfileURL: GOOGLE_PROFILE_URL,
-      accessType: 'offline', // Request refresh token
-      prompt: 'consent', // Force consent screen to always get refresh token
     });
+  }
+
+  // Override authorizationParams to add access_type=offline and prompt=consent
+  // This forces Google to always show consent screen and return refresh token
+  authorizationParams(): { [key: string]: string } {
+    return {
+      access_type: 'offline',
+      prompt: 'consent',
+    };
   }
 
   async validate(
