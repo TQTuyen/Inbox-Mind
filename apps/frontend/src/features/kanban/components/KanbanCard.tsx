@@ -25,6 +25,8 @@ export function KanbanCard({ email, onEmailClick }: KanbanCardProps) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    maxWidth: '100%',
+    width: '100%',
   };
 
   return (
@@ -32,7 +34,7 @@ export function KanbanCard({ email, onEmailClick }: KanbanCardProps) {
       ref={setNodeRef}
       style={style}
       {...attributes}
-      className="w-full max-w-full overflow-hidden"
+      className="overflow-hidden"
     >
       <Card
         className={cn(
@@ -43,7 +45,7 @@ export function KanbanCard({ email, onEmailClick }: KanbanCardProps) {
         )}
         onClick={() => onEmailClick(email)}
       >
-        <div className="flex items-start gap-2 w-full max-w-full overflow-hidden">
+        <div className="flex items-start gap-2 w-full max-w-full">
           {/* Drag Handle */}
           <button
             className="cursor-grab active:cursor-grabbing mt-1 text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200 flex-shrink-0"
@@ -53,16 +55,15 @@ export function KanbanCard({ email, onEmailClick }: KanbanCardProps) {
           </button>
 
           {/* Email Content */}
-          <div className="flex-1 min-w-0 overflow-hidden">
+          <div className="flex-1 min-w-0 max-w-full overflow-hidden">
             {/* Header: Sender and Time */}
-            <div className="flex items-start justify-between gap-2 mb-1 max-w-full overflow-hidden">
-              <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
+            <div className="flex items-start justify-between gap-2 mb-1 w-full max-w-full overflow-hidden">
+              <div className="flex items-center gap-2 min-w-0 flex-1 max-w-full overflow-hidden">
                 <span
                   className={cn(
-                    'text-sm font-medium truncate text-gray-900 dark:text-gray-100 block',
+                    'text-sm font-medium truncate text-gray-900 dark:text-gray-100 block flex-1 min-w-0',
                     !email.isRead && 'font-semibold'
                   )}
-                  style={{ maxWidth: '100%' }}
                 >
                   {email.from.name || email.from.email}
                 </span>
@@ -76,12 +77,32 @@ export function KanbanCard({ email, onEmailClick }: KanbanCardProps) {
             </div>
 
             {/* Subject */}
-            <div className="text-sm font-medium mb-1 line-clamp-1 text-gray-900 dark:text-gray-100 break-words overflow-hidden">
+            <h4
+              className="text-sm font-medium mb-1 text-gray-900 dark:text-gray-100 w-full"
+              style={{
+                display: '-webkit-box',
+                WebkitLineClamp: 1,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
+              }}
+            >
               {email.subject || '(No Subject)'}
-            </div>
+            </h4>
 
             {/* Preview */}
-            <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 mb-2 break-words overflow-hidden">
+            <p
+              className="text-xs text-gray-600 dark:text-gray-400 mb-2 w-full"
+              style={{
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
+              }}
+            >
               {email.preview}
             </p>
 

@@ -54,7 +54,11 @@ export function KanbanCard({
   return (
     <div
       ref={isDragOverlay ? undefined : setNodeRef}
-      style={style}
+      style={{
+        ...style,
+        maxWidth: '100%',
+        width: '100%',
+      }}
       {...(isDragOverlay ? {} : attributes)}
       className={cn(
         'group relative rounded-lg border bg-white dark:bg-slate-800 shadow-sm transition-all hover:shadow-md overflow-hidden',
@@ -64,7 +68,7 @@ export function KanbanCard({
           'border-l-4 border-l-blue-500 bg-blue-50/30 dark:bg-blue-900/20'
       )}
     >
-      <div className="flex items-start gap-0">
+      <div className="flex items-start gap-0 w-full max-w-full">
         {/* Drag Handle - always visible */}
         <div
           className="cursor-grab active:cursor-grabbing p-2 text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 flex-shrink-0 self-stretch flex items-center"
@@ -74,27 +78,35 @@ export function KanbanCard({
         </div>
 
         {/* Card Content */}
-        <div className="flex-1 min-w-0 p-4 pl-0">
-          <div className="flex items-start justify-between gap-2 mb-2">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
+        <div className="flex-1 min-w-0 max-w-full p-4 pl-0 overflow-hidden">
+          <div className="flex items-start justify-between gap-2 mb-2 w-full max-w-full overflow-hidden">
+            <div className="flex-1 min-w-0 max-w-full overflow-hidden">
+              <div className="flex items-center gap-2 mb-1 w-full max-w-full overflow-hidden">
                 {email.isRead ? (
                   <MailOpen className="h-4 w-4 text-gray-400 dark:text-slate-500 flex-shrink-0" />
                 ) : (
                   <Mail className="h-4 w-4 text-blue-500 flex-shrink-0" />
                 )}
-                <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+                <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate block flex-1 min-w-0">
                   {email.from.name || email.from.email}
                 </span>
               </div>
               <h3
                 className={cn(
-                  'text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-2 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400',
+                  'text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 w-full',
                   !email.isRead && 'font-semibold'
                 )}
                 onClick={(e) => {
                   e.stopPropagation();
                   onClick();
+                }}
+                style={{
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
                 }}
               >
                 {email.subject || '(No Subject)'}
@@ -108,17 +120,39 @@ export function KanbanCard({
           </div>
 
           {email.summary ? (
-            <div className="mb-3 p-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded text-xs text-gray-700 dark:text-gray-300">
-              <div className="flex items-start gap-1.5">
+            <div className="mb-3 p-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded text-xs text-gray-700 dark:text-gray-300 w-full max-w-full overflow-hidden">
+              <div className="flex items-start gap-1.5 w-full max-w-full overflow-hidden">
                 <span className="text-purple-600 dark:text-purple-400 font-semibold flex-shrink-0">
                   AI:
                 </span>
-                <p className="line-clamp-3">{email.summary}</p>
+                <p
+                  className="flex-1 min-w-0"
+                  style={{
+                    display: '-webkit-box',
+                    WebkitLineClamp: 3,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                    wordBreak: 'break-word',
+                    overflowWrap: 'break-word',
+                  }}
+                >
+                  {email.summary}
+                </p>
               </div>
             </div>
           ) : (
-            <div className="mb-3">
-              <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
+            <div className="mb-3 w-full max-w-full overflow-hidden">
+              <p
+                className="text-xs text-gray-600 dark:text-gray-400 w-full"
+                style={{
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                }}
+              >
                 {email.preview}
               </p>
               <button

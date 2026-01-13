@@ -228,6 +228,12 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
       const labelsToRemove = [fromColumn.labelId];
       const labelsToAdd = [toColumnConfig.gmailLabelId];
 
+      console.log('Moving email - Label IDs:', {
+        from: { columnId: fromColumnId, labelId: fromColumn.labelId },
+        to: { columnId: toColumnId, labelId: toColumnConfig.gmailLabelId },
+        columnConfig: toColumnConfig,
+      });
+
       // Remove old label(s)
       if (labelsToRemove.length > 0 && labelsToRemove[0]) {
         await gmailApi.modifyLabels(emailId, {
