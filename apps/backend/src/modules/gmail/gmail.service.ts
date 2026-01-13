@@ -76,6 +76,28 @@ export class GmailService {
     try {
       return await this.gmailClientFactory.createClient(userId);
     } catch (error) {
+      this.logger.error(
+        {
+          userId,
+          error: error.message,
+        },
+        'Failed to create Gmail client'
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Wrapper to execute Gmail API calls with error handling for invalid tokens
+   */
+  private async executeGmailApiCall<T>(
+    userId: string,
+    apiCall: (gmail: gmail_v1.Gmail) => Promise<T>
+  ): Promise<T> {
+    try {
+      const gmail = await this.getGmailClient(userId);
+      return await apiCall(gmail);
+    } catch (error) {
       // Check if this is an invalid_grant error (expired/revoked refresh token)
       if (
         error.message?.includes('invalid_grant') ||
@@ -94,24 +116,18 @@ export class GmailService {
         );
       }
 
-      this.logger.error(
-        {
-          userId,
-          error: error.message,
-        },
-        'Failed to create Gmail client'
-      );
       throw error;
     }
   }
 
   async listLabels(userId: string) {
     try {
-      const gmail = await this.getGmailClient(userId);
-      const response = await gmail.users.labels.list({
-        userId: GMAIL_CONFIG.USER_ID,
+      return await this.executeGmailApiCall(userId, async (gmail) => {
+        const response = await gmail.users.labels.list({
+          userId: GMAIL_CONFIG.USER_ID,
+        });
+        return response.data.labels || [];
       });
-      return response.data.labels || [];
     } catch (error) {
       throw new GmailOperationException('fetch labels', error);
     }
@@ -119,49 +135,50 @@ export class GmailService {
 
   async listEmails(userId: string, params: EmailListParams = {}) {
     try {
-      const gmail = await this.getGmailClient(userId);
-      const {
-        labelId = GmailLabel.INBOX,
-        pageToken,
-        maxResults = GMAIL_CONFIG.DEFAULT_PAGE_SIZE,
-      } = params;
+      return await this.executeGmailApiCall(userId, async (gmail) => {
+        const {
+          labelId = GmailLabel.INBOX,
+          pageToken,
+          maxResults = GMAIL_CONFIG.DEFAULT_PAGE_SIZE,
+        } = params;
 
-      const response = await gmail.users.messages.list({
-        userId: GMAIL_CONFIG.USER_ID,
-        labelIds: [labelId],
-        maxResults,
-        pageToken,
-      });
+        const response = await gmail.users.messages.list({
+          userId: GMAIL_CONFIG.USER_ID,
+          labelIds: [labelId],
+          maxResults,
+          pageToken,
+        });
 
-      const messages = response.data.messages || [];
-      const emails = await this.fetchEmailsMetadata(gmail, messages);
+        const messages = response.data.messages || [];
+        const emails = await this.fetchEmailsMetadata(gmail, messages);
 
-      // Enrich emails with metadata from database (kanbanStatus, snoozeUntil, summary)
-      // Use batch query to avoid N+1 problem
-      const emailIds = emails.map((email) => email.id);
-      const metadataList = await this.emailMetadataService.getMetadataForEmails(
-        userId,
-        emailIds
-      );
+        // Enrich emails with metadata from database (kanbanStatus, snoozeUntil, summary)
+        // Use batch query to avoid N+1 problem
+        const emailIds = emails.map((email) => email.id);
+        const metadataList = await this.emailMetadataService.getMetadataForEmails(
+          userId,
+          emailIds
+        );
 
-      // Create a map for quick lookup
-      const metadataMap = new Map(metadataList.map((m) => [m.emailId, m]));
+        // Create a map for quick lookup
+        const metadataMap = new Map(metadataList.map((m) => [m.emailId, m]));
 
-      // Enrich emails with their metadata
-      const enrichedEmails = emails.map((email) => {
-        const metadata = metadataMap.get(email.id);
+        // Enrich emails with their metadata
+        const enrichedEmails = emails.map((email) => {
+          const metadata = metadataMap.get(email.id);
+          return {
+            ...email,
+            kanbanStatus: metadata?.kanbanStatus || 'inbox',
+            snoozeUntil: metadata?.snoozeUntil || null,
+            summary: metadata?.summary || null,
+          };
+        });
+
         return {
-          ...email,
-          kanbanStatus: metadata?.kanbanStatus || 'inbox',
-          snoozeUntil: metadata?.snoozeUntil || null,
-          summary: metadata?.summary || null,
+          emails: enrichedEmails,
+          nextPageToken: response.data.nextPageToken,
         };
       });
-
-      return {
-        emails: enrichedEmails,
-        nextPageToken: response.data.nextPageToken,
-      };
     } catch (error) {
       throw new GmailOperationException('fetch emails', error);
     }
@@ -169,91 +186,92 @@ export class GmailService {
 
   async listKanbanEmails(userId: string) {
     try {
-      const gmail = await this.getGmailClient(userId);
-
       // Get user's Kanban column configuration
       const columnConfig = await this.kanbanConfigService.getUserConfig(userId);
 
-      // Extract Gmail label IDs from all columns
-      const labelIds = columnConfig.map((col) => col.gmailLabelId);
+      return await this.executeGmailApiCall(userId, async (gmail) => {
 
-      this.logger.debug(
-        `Fetching emails from ${labelIds.length} Kanban labels: ${labelIds.join(
-          ', '
-        )}`
-      );
+        // Extract Gmail label IDs from all columns
+        const labelIds = columnConfig.map((col) => col.gmailLabelId);
 
-      // Fetch emails from each label and merge results
-      // Use a Map to deduplicate emails (an email can have multiple labels)
-      const emailMap = new Map<string, any>();
+        this.logger.debug(
+          `Fetching emails from ${labelIds.length} Kanban labels: ${labelIds.join(
+            ', '
+          )}`
+        );
 
-      for (const labelId of labelIds) {
-        try {
-          const response = await gmail.users.messages.list({
-            userId: GMAIL_CONFIG.USER_ID,
-            labelIds: [labelId],
-            maxResults: 100, // Fetch up to 100 per label
-          });
+        // Fetch emails from each label and merge results
+        // Use a Map to deduplicate emails (an email can have multiple labels)
+        const emailMap = new Map<string, any>();
 
-          const messages = response.data.messages || [];
+        for (const labelId of labelIds) {
+          try {
+            const response = await gmail.users.messages.list({
+              userId: GMAIL_CONFIG.USER_ID,
+              labelIds: [labelId],
+              maxResults: 100, // Fetch up to 100 per label
+            });
 
-          // Add to map (deduplicate by email ID)
-          messages.forEach((msg) => {
-            if (msg.id && !emailMap.has(msg.id)) {
-              emailMap.set(msg.id, msg);
-            }
-          });
-        } catch (labelError) {
-          this.logger.warn(
-            `Failed to fetch emails for label ${labelId}: ${labelError.message}`
-          );
-          // Continue with other labels
+            const messages = response.data.messages || [];
+
+            // Add to map (deduplicate by email ID)
+            messages.forEach((msg) => {
+              if (msg.id && !emailMap.has(msg.id)) {
+                emailMap.set(msg.id, msg);
+              }
+            });
+          } catch (labelError) {
+            this.logger.warn(
+              `Failed to fetch emails for label ${labelId}: ${labelError.message}`
+            );
+            // Continue with other labels
+          }
         }
-      }
 
-      const messages = Array.from(emailMap.values());
-      this.logger.debug(
-        `Found ${messages.length} unique emails across all Kanban labels`
-      );
+        const messages = Array.from(emailMap.values());
+        this.logger.debug(
+          `Found ${messages.length} unique emails across all Kanban labels`
+        );
 
-      const emails = await this.fetchEmailsMetadata(gmail, messages);
+        const emails = await this.fetchEmailsMetadata(gmail, messages);
 
-      // Enrich with metadata from database
-      const emailIds = emails.map((email) => email.id);
-      const metadataList = await this.emailMetadataService.getMetadataForEmails(
-        userId,
-        emailIds
-      );
+        // Enrich with metadata from database
+        const emailIds = emails.map((email) => email.id);
+        const metadataList = await this.emailMetadataService.getMetadataForEmails(
+          userId,
+          emailIds
+        );
 
-      this.logger.debug(
-        `Found ${metadataList.length} metadata records for ${emailIds.length} emails`
-      );
+        this.logger.debug(
+          `Found ${metadataList.length} metadata records for ${emailIds.length} emails`
+        );
 
-      const metadataMap = new Map(metadataList.map((m) => [m.emailId, m]));
+        const metadataMap = new Map(metadataList.map((m) => [m.emailId, m]));
 
-      // Map kanbanStatus to appropriate mailboxId for compatibility
-      const statusToMailboxId = {
-        inbox: 'INBOX',
-        todo: 'TODO',
-        in_progress: 'IN_PROGRESS',
-        done: 'DONE',
-        snoozed: 'SNOOZED',
-      };
-
-      const enrichedEmails = emails.map((email) => {
-        const metadata = metadataMap.get(email.id);
-        const kanbanStatus = metadata?.kanbanStatus || 'inbox';
-
-        return {
-          ...email,
-          kanbanStatus,
-          mailboxId: statusToMailboxId[kanbanStatus] || 'INBOX',
-          snoozeUntil: metadata?.snoozeUntil || null,
-          summary: metadata?.summary || null,
+        // Map kanbanStatus to appropriate mailboxId for compatibility
+        const statusToMailboxId = {
+          inbox: 'INBOX',
+          todo: 'TODO',
+          in_progress: 'IN_PROGRESS',
+          done: 'DONE',
+          snoozed: 'SNOOZED',
         };
-      });
 
-      return { emails: enrichedEmails };
+        const enrichedEmails = emails.map((email) => {
+          const metadata = metadataMap.get(email.id);
+          const kanbanStatus = metadata?.kanbanStatus || 'inbox';
+
+          return {
+            ...email,
+            kanbanStatus,
+            mailboxId: statusToMailboxId[kanbanStatus] || 'INBOX',
+            snoozeUntil: metadata?.snoozeUntil || null,
+            summary: metadata?.summary || null,
+          };
+        });
+
+        return { emails: enrichedEmails };
+      });
     } catch (error) {
       throw new GmailOperationException('fetch kanban emails', error);
     }
