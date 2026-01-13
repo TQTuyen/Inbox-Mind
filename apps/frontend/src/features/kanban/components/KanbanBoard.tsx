@@ -6,6 +6,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  Modifier,
 } from '@dnd-kit/core';
 import { Button } from '@fe/shared/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -19,6 +20,32 @@ import { KanbanColumn } from './KanbanColumn';
 import { KanbanSettings } from './KanbanSettings';
 import { SortControls } from './SortControls';
 
+// Modifier to snap the top-left of the original element to the cursor
+const snapToCursor: Modifier = ({
+  transform,
+  activatorEvent,
+  draggingNodeRect,
+}) => {
+  if (
+    draggingNodeRect &&
+    activatorEvent &&
+    'clientX' in activatorEvent &&
+    'clientY' in activatorEvent
+  ) {
+    const event = activatorEvent as PointerEvent;
+    const offsetX = event.clientX - draggingNodeRect.left;
+    const offsetY = event.clientY - draggingNodeRect.top;
+
+    return {
+      ...transform,
+      x: transform.x + offsetX,
+      y: transform.y + offsetY,
+    };
+  }
+
+  return transform;
+};
+
 interface KanbanBoardProps {
   onEmailClick: (email: Email) => void;
 }
@@ -28,7 +55,6 @@ export function KanbanBoard({ onEmailClick }: KanbanBoardProps) {
   const columns = useKanbanStore((state) => state.columns);
   const moveEmail = useKanbanStore((state) => state.moveEmail);
   const [activeEmail, setActiveEmail] = useState<Email | null>(null);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const navigate = useNavigate();
 
   // Configure sensors for drag and drop
@@ -47,24 +73,6 @@ export function KanbanBoard({ onEmailClick }: KanbanBoardProps) {
       .flatMap((col) => col.emails)
       .find((e) => e.id === active.id);
     setActiveEmail(email || null);
-
-    // Calculate offset between cursor and card top-left corner
-    if (active.rect.current.initial) {
-      const rect = active.rect.current.initial;
-
-      // Type guard to ensure activatorEvent is a PointerEvent
-      const isPointerEvent = (event: Event | null): event is PointerEvent => {
-        return event !== null && 'clientX' in event && 'clientY' in event;
-      };
-
-      const offsetX = isPointerEvent(event.activatorEvent)
-        ? event.activatorEvent.clientX - rect.left
-        : 0;
-      const offsetY = isPointerEvent(event.activatorEvent)
-        ? event.activatorEvent.clientY - rect.top
-        : 0;
-      setDragOffset({ x: offsetX, y: offsetY });
-    }
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -125,6 +133,8 @@ export function KanbanBoard({ onEmailClick }: KanbanBoardProps) {
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
           onDragCancel={handleDragCancel}
+          modifiers={[snapToCursor]}
+          autoScroll={false}
         >
           <div className="flex gap-4 p-4 h-full">
             {columns.map((column) => (
@@ -150,12 +160,7 @@ export function KanbanBoard({ onEmailClick }: KanbanBoardProps) {
             }}
           >
             {activeEmail ? (
-              <div
-                className="w-[280px] opacity-90"
-                style={{
-                  transform: `translate(-${dragOffset.x}px, -${dragOffset.y}px)`,
-                }}
-              >
+              <div className="w-[260px] opacity-90">
                 <KanbanCard
                   email={activeEmail}
                   onEmailClick={() => {

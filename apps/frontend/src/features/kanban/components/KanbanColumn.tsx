@@ -30,18 +30,18 @@ export function KanbanColumn({
     <div className="kanban-column flex flex-col h-full w-full max-w-full bg-gray-50 dark:bg-slate-900/50 rounded-lg border border-gray-200 dark:border-slate-700 overflow-hidden">
       {/* Column Header */}
       <div className="p-4 border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 w-full max-w-full overflow-hidden">
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate flex-1 min-w-0">
             {title}
           </h3>
-          <Badge variant="secondary" className="ml-2 flex-shrink-0">
+          <Badge variant="secondary" className="flex-shrink-0">
             {emails.length}
           </Badge>
         </div>
       </div>
 
       {/* Droppable Area */}
-      <ScrollArea className="flex-1 rounded-b-lg w-full overflow-x-hidden">
+      <ScrollArea className="flex-1 rounded-b-lg w-full overflow-x-hidden [&_[data-radix-scroll-area-viewport]]:!overflow-x-hidden">
         <div
           ref={setNodeRef}
           className={cn(
