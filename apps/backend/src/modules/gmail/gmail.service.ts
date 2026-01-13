@@ -1,4 +1,9 @@
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  UnauthorizedException,
+  forwardRef,
+} from '@nestjs/common';
 import { gmail_v1 } from 'googleapis';
 import { GMAIL_CONFIG } from '../../common/constants/gmail.constants';
 import { GmailFormat, GmailLabel } from '../../common/enums';
@@ -71,6 +76,24 @@ export class GmailService {
     try {
       return await this.gmailClientFactory.createClient(userId);
     } catch (error) {
+      // Check if this is an invalid_grant error (expired/revoked refresh token)
+      if (
+        error.message?.includes('invalid_grant') ||
+        error.response?.data?.error === 'invalid_grant'
+      ) {
+        this.logger.error(
+          {
+            userId,
+            error: 'invalid_grant',
+          },
+          'Google refresh token invalid. Clearing tokens.'
+        );
+        await this.gmailClientFactory.clearInvalidTokens(userId);
+        throw new UnauthorizedException(
+          'Your Google authentication has expired. Please reconnect your Google account.'
+        );
+      }
+
       this.logger.error(
         {
           userId,
