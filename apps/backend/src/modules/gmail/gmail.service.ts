@@ -155,10 +155,11 @@ export class GmailService {
         // Enrich emails with metadata from database (kanbanStatus, snoozeUntil, summary)
         // Use batch query to avoid N+1 problem
         const emailIds = emails.map((email) => email.id);
-        const metadataList = await this.emailMetadataService.getMetadataForEmails(
-          userId,
-          emailIds
-        );
+        const metadataList =
+          await this.emailMetadataService.getMetadataForEmails(
+            userId,
+            emailIds
+          );
 
         // Create a map for quick lookup
         const metadataMap = new Map(metadataList.map((m) => [m.emailId, m]));
@@ -190,14 +191,13 @@ export class GmailService {
       const columnConfig = await this.kanbanConfigService.getUserConfig(userId);
 
       return await this.executeGmailApiCall(userId, async (gmail) => {
-
         // Extract Gmail label IDs from all columns
         const labelIds = columnConfig.map((col) => col.gmailLabelId);
 
         this.logger.debug(
-          `Fetching emails from ${labelIds.length} Kanban labels: ${labelIds.join(
-            ', '
-          )}`
+          `Fetching emails from ${
+            labelIds.length
+          } Kanban labels: ${labelIds.join(', ')}`
         );
 
         // Fetch emails from each label and merge results
@@ -237,10 +237,11 @@ export class GmailService {
 
         // Enrich with metadata from database
         const emailIds = emails.map((email) => email.id);
-        const metadataList = await this.emailMetadataService.getMetadataForEmails(
-          userId,
-          emailIds
-        );
+        const metadataList =
+          await this.emailMetadataService.getMetadataForEmails(
+            userId,
+            emailIds
+          );
 
         this.logger.debug(
           `Found ${metadataList.length} metadata records for ${emailIds.length} emails`
