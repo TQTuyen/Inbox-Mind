@@ -1,3 +1,6 @@
+// Get base URL from environment variable or default to localhost
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+
 interface GoogleSignInButtonProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSuccess?: (credentialResponse: any) => void;
@@ -10,8 +13,7 @@ export const GoogleSignInButton = ({
 }: GoogleSignInButtonProps) => {
   const handleGoogleSignIn = () => {
     // Redirect to backend OAuth endpoint
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
-    const redirectUrl = `${apiUrl}/api/auth/google`;
+    const redirectUrl = `${API_BASE_URL}/api/auth/google`;
     window.location.href = redirectUrl;
   };
 
