@@ -12,6 +12,7 @@ import {
   useDroppable,
   defaultDropAnimationSideEffects,
   type DropAnimation,
+  Modifier,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -21,6 +22,32 @@ import { Email, KanbanStatus, useEmailStore } from '../store/emailStore';
 import { KanbanCard } from './KanbanCard';
 import { Inbox, ListTodo, PlayCircle, CheckCircle2, Clock } from 'lucide-react';
 import { cn } from '../../../lib/utils';
+
+// Modifier to snap the top-left of the original element to the cursor
+const snapToCursor: Modifier = ({
+  transform,
+  activatorEvent,
+  draggingNodeRect,
+}) => {
+  if (
+    draggingNodeRect &&
+    activatorEvent &&
+    'clientX' in activatorEvent &&
+    'clientY' in activatorEvent
+  ) {
+    const event = activatorEvent as PointerEvent;
+    const offsetX = event.clientX - draggingNodeRect.left;
+    const offsetY = event.clientY - draggingNodeRect.top;
+
+    return {
+      ...transform,
+      x: transform.x + offsetX,
+      y: transform.y + offsetY,
+    };
+  }
+
+  return transform;
+};
 
 function DroppableColumn({
   id,
@@ -99,7 +126,6 @@ export function KanbanBoard({
 }: KanbanBoardProps) {
   const { emails } = useEmailStore();
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [generatingSummaryFor, setGeneratingSummaryFor] = useState<
     string | null
   >(null);
@@ -135,19 +161,6 @@ export function KanbanBoard({
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
-
-    // Calculate offset between cursor and drag handle position
-    // The drag handle is on the left side with 12px (p-3) from the card edge
-    if (event.active.rect.current.initial) {
-      const rect = event.active.rect.current.initial;
-      const offsetX = event.activatorEvent
-        ? (event.activatorEvent as PointerEvent).clientX - rect.left
-        : 0;
-      const offsetY = event.activatorEvent
-        ? (event.activatorEvent as PointerEvent).clientY - rect.top
-        : 0;
-      setDragOffset({ x: offsetX, y: offsetY });
-    }
   };
 
   const handleDragOver = (event: DragOverEvent) => {
@@ -233,6 +246,7 @@ export function KanbanBoard({
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
+      modifiers={[snapToCursor]}
     >
       <div className="h-full overflow-x-auto">
         <div className="flex gap-4 p-4 min-w-max h-full">
@@ -294,12 +308,7 @@ export function KanbanBoard({
         }}
       >
         {activeEmail ? (
-          <div
-            className="w-80 opacity-90 pointer-events-none"
-            style={{
-              transform: `translate(-${dragOffset.x}px, -${dragOffset.y}px)`,
-            }}
-          >
+          <div className="w-80 opacity-90 pointer-events-none">
             <KanbanCard
               email={activeEmail}
               onClick={() => {
