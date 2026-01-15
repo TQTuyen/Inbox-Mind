@@ -27,9 +27,9 @@ export function KanbanColumn({
   });
 
   return (
-    <div className="kanban-column flex flex-col h-full w-full max-w-full bg-gray-50 dark:bg-slate-900/50 rounded-lg border border-gray-200 dark:border-slate-700 overflow-hidden">
+    <div className="kanban-column flex flex-col h-full w-full bg-gray-50 dark:bg-slate-900/50 rounded-lg border border-gray-200 dark:border-slate-700 overflow-hidden">
       {/* Column Header */}
-      <div className="p-4 border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 w-full max-w-full overflow-hidden">
+      <div className="p-4 border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 w-full">
         <div className="flex items-center justify-between gap-2">
           <h3 className="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate flex-1 min-w-0">
             {title}
@@ -45,7 +45,7 @@ export function KanbanColumn({
         <div
           ref={setNodeRef}
           className={cn(
-            'p-3 min-h-[200px] transition-colors w-full max-w-full overflow-x-hidden',
+            'p-3 min-h-[200px] transition-colors w-full',
             isOver &&
               'bg-blue-50 dark:bg-blue-950/20 ring-2 ring-blue-500/20 ring-inset'
           )}
