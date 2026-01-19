@@ -209,7 +209,9 @@ export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
                       onMouseEnter={() => setSelectedIndex(index)}
                     >
                       <Icon className="h-4 w-4 flex-shrink-0 text-gray-500 dark:text-gray-400" />
-                      <span className="flex-1 truncate text-gray-900 dark:text-gray-100">{suggestion.text}</span>
+                      <span className="flex-1 truncate text-gray-900 dark:text-gray-100">
+                        {suggestion.text}
+                      </span>
                       <span className="text-xs text-gray-500 dark:text-gray-400 capitalize">
                         {suggestion.type}
                       </span>

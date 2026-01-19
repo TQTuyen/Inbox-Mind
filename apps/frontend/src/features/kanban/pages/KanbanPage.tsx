@@ -18,11 +18,15 @@ import { useKanbanStore } from '../store/kanbanStore';
 export function KanbanPage() {
   const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [generatingSummaryId, setGeneratingSummaryId] = useState<string | null>(null);
+  const [generatingSummaryId, setGeneratingSummaryId] = useState<string | null>(
+    null
+  );
   const navigate = useNavigate();
 
   const { selectedEmail, setSelectedEmail } = useEmailStore();
-  const updateEmailInColumn = useKanbanStore((state) => state.updateEmailInColumn);
+  const updateEmailInColumn = useKanbanStore(
+    (state) => state.updateEmailInColumn
+  );
 
   // Initialize kanban hook
   useKanban();

@@ -4,7 +4,14 @@ import { cn } from '@fe/lib/utils';
 import { Badge } from '@fe/shared/components/ui/badge';
 import { Card } from '@fe/shared/components/ui/card';
 import { format } from 'date-fns';
-import { GripVertical, Loader2, Mail, Paperclip, Sparkles, Star } from 'lucide-react';
+import {
+  GripVertical,
+  Loader2,
+  Mail,
+  Paperclip,
+  Sparkles,
+  Star,
+} from 'lucide-react';
 import { Email } from '../../mailbox/store/emailStore';
 
 interface KanbanCardProps {
@@ -51,7 +58,10 @@ export function KanbanCard({
         style={{ maxWidth: '100%', overflow: 'hidden' }}
         onClick={() => onEmailClick(email)}
       >
-        <div className="flex items-start gap-2" style={{ maxWidth: '100%', overflow: 'hidden' }}>
+        <div
+          className="flex items-start gap-2"
+          style={{ maxWidth: '100%', overflow: 'hidden' }}
+        >
           {/* Drag Handle */}
           <button
             className="cursor-grab active:cursor-grabbing mt-1 text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200 flex-shrink-0"
@@ -70,7 +80,13 @@ export function KanbanCard({
                     'text-sm font-medium text-gray-900 dark:text-gray-100 truncate',
                     !email.isRead && 'font-semibold'
                   )}
-                  style={{ display: 'block', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                  style={{
+                    display: 'block',
+                    maxWidth: '180px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
                 >
                   {email.from.name || email.from.email}
                 </span>
@@ -91,7 +107,7 @@ export function KanbanCard({
                 maxWidth: '100%',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
               }}
             >
               {email.subject || '(No Subject)'}
@@ -99,7 +115,10 @@ export function KanbanCard({
 
             {/* AI Summary or Preview */}
             {email.summary ? (
-              <div className="mb-2 p-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded text-xs text-gray-700 dark:text-gray-300" style={{ overflow: 'hidden' }}>
+              <div
+                className="mb-2 p-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded text-xs text-gray-700 dark:text-gray-300"
+                style={{ overflow: 'hidden' }}
+              >
                 <div className="flex items-start gap-1.5">
                   <span className="text-purple-600 dark:text-purple-400 font-semibold flex-shrink-0">
                     AI:
@@ -110,7 +129,7 @@ export function KanbanCard({
                       WebkitLineClamp: 2,
                       WebkitBoxOrient: 'vertical',
                       overflow: 'hidden',
-                      wordBreak: 'break-word'
+                      wordBreak: 'break-word',
                     }}
                   >
                     {email.summary}
@@ -126,7 +145,7 @@ export function KanbanCard({
                     WebkitLineClamp: 2,
                     WebkitBoxOrient: 'vertical',
                     overflow: 'hidden',
-                    wordBreak: 'break-word'
+                    wordBreak: 'break-word',
                   }}
                 >
                   {email.preview}

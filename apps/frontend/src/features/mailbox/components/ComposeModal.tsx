@@ -202,7 +202,10 @@ export const ComposeModal = ({
 
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="to" className="text-sm font-medium text-gray-700 dark:text-gray-200">
+            <Label
+              htmlFor="to"
+              className="text-sm font-medium text-gray-700 dark:text-gray-200"
+            >
               To
             </Label>
             <Input
@@ -215,7 +218,10 @@ export const ComposeModal = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="cc" className="text-sm font-medium text-gray-700 dark:text-gray-200">
+            <Label
+              htmlFor="cc"
+              className="text-sm font-medium text-gray-700 dark:text-gray-200"
+            >
               Cc
             </Label>
             <Input
@@ -228,7 +234,10 @@ export const ComposeModal = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="subject" className="text-sm font-medium text-gray-700 dark:text-gray-200">
+            <Label
+              htmlFor="subject"
+              className="text-sm font-medium text-gray-700 dark:text-gray-200"
+            >
               Subject
             </Label>
             <Input
@@ -241,7 +250,10 @@ export const ComposeModal = ({
           </div>
 
           <div className="space-y-2 flex-1">
-            <Label htmlFor="body" className="text-sm font-medium text-gray-700 dark:text-gray-200">
+            <Label
+              htmlFor="body"
+              className="text-sm font-medium text-gray-700 dark:text-gray-200"
+            >
               Message
             </Label>
             <textarea
@@ -255,7 +267,12 @@ export const ComposeModal = ({
         </div>
 
         <div className="px-6 py-4 border-t border-gray-200 dark:border-slate-700 flex justify-end gap-2">
-          <Button variant="outline" onClick={onClose} disabled={isSending} className="text-gray-700 dark:text-gray-200">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={isSending}
+            className="text-gray-700 dark:text-gray-200"
+          >
             Cancel
           </Button>
           <Button onClick={handleSend} disabled={isSending}>
