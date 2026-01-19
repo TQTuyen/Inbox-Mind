@@ -1,6 +1,8 @@
 import { useEmailStore } from '@fe/features/mailbox/store/emailStore';
 import { cn } from '@fe/lib/utils';
+import { gmailApi } from '@fe/services/api/gmailApi';
 import { emailService } from '@fe/services/emailService';
+import { EmailAttachment } from '@fe/types/email.types';
 import {
   Avatar,
   AvatarFallback,
@@ -55,6 +57,7 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
   const [showNoteInput, setShowNoteInput] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [composeMode, setComposeMode] = useState<ComposeMode | null>(null);
+  const [downloadingAttachment, setDownloadingAttachment] = useState<string | null>(null);
 
   // Mock task info - in real app this would come from the email data
   const taskInfo: TaskInfo = {
@@ -211,6 +214,33 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
     } catch (error) {
       console.error('Failed to send email:', error);
       throw error;
+    }
+  };
+
+  const handleDownloadAttachment = async (attachment: EmailAttachment) => {
+    if (!selectedEmail || downloadingAttachment) return;
+
+    const partId = attachment.partId || attachment.id;
+    setDownloadingAttachment(partId);
+
+    try {
+      const response = await gmailApi.downloadAttachment(selectedEmail.id, partId);
+
+      // Create a blob URL and trigger download
+      const blob = new Blob([response.data], { type: response.mimeType });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = response.filename || attachment.name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to download attachment:', error);
+      alert('Failed to download attachment. Please try again.');
+    } finally {
+      setDownloadingAttachment(null);
     }
   };
 
@@ -499,8 +529,14 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
                     variant="ghost"
                     size="icon"
                     className="shrink-0 text-gray-700 dark:text-slate-300"
+                    onClick={() => handleDownloadAttachment(attachment)}
+                    disabled={downloadingAttachment === (attachment.partId || attachment.id)}
                   >
-                    <Download className="h-4 w-4" />
+                    {downloadingAttachment === (attachment.partId || attachment.id) ? (
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />
+                    ) : (
+                      <Download className="h-4 w-4" />
+                    )}
                   </Button>
                 </motion.div>
               ))}
