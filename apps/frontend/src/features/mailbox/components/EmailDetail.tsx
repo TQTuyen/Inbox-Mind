@@ -24,6 +24,7 @@ import {
   Clock,
   Download,
   Edit,
+  ExternalLink,
   FileText,
   Forward,
   MailOpen,
@@ -34,6 +35,7 @@ import {
   Trash,
 } from 'lucide-react';
 import { useState } from 'react';
+import { ComposeModal, ComposeMode, ComposeData } from './ComposeModal';
 
 interface EmailDetailProps {
   isMobile?: boolean;
@@ -52,6 +54,7 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
   const [note, setNote] = useState('');
   const [showNoteInput, setShowNoteInput] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [composeMode, setComposeMode] = useState<ComposeMode | null>(null);
 
   // Mock task info - in real app this would come from the email data
   const taskInfo: TaskInfo = {
@@ -181,6 +184,36 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
+  const handleOpenInGmail = () => {
+    if (selectedEmail) {
+      const gmailUrl = `https://mail.google.com/mail/u/0/#inbox/${selectedEmail.id}`;
+      window.open(gmailUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const handleReply = () => setComposeMode('reply');
+  const handleReplyAll = () => setComposeMode('replyAll');
+  const handleForward = () => setComposeMode('forward');
+
+  const handleSendEmail = async (data: ComposeData) => {
+    // In a real implementation, this would call the email service
+    // For now, we'll use the existing emailService if available
+    console.log('Sending email:', data);
+    try {
+      await emailService.sendEmail({
+        to: data.to,
+        cc: data.cc,
+        subject: data.subject,
+        body: data.body,
+        inReplyTo: data.inReplyTo,
+        threadId: data.threadId,
+      });
+    } catch (error) {
+      console.error('Failed to send email:', error);
+      throw error;
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -196,11 +229,12 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
               <ArrowLeft className="h-5 w-5 cursor-pointer" />
             </Button>
           )}
-          {/* Reply, Reply All, Forward buttons can remain if space allows or also go into dropdown */}
+          {/* Reply, Reply All, Forward buttons */}
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Button
               variant="ghost"
               size="sm"
+              onClick={handleReply}
               className="text-gray-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-slate-800 cursor-pointer"
             >
               <Reply className="h-4 w-4" />
@@ -211,6 +245,7 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
             <Button
               variant="ghost"
               size="sm"
+              onClick={handleReplyAll}
               className="text-gray-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-slate-800 cursor-pointer"
             >
               <ReplyAll className="h-4 w-4 cursor-pointer" />
@@ -221,6 +256,7 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
             <Button
               variant="ghost"
               size="sm"
+              onClick={handleForward}
               className="text-gray-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-slate-800 cursor-pointer"
             >
               <Forward className="h-4 w-4" />
@@ -281,6 +317,13 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
               >
                 <Archive className="mr-2 h-4 w-4" />
                 Archive
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleOpenInGmail}
+                className="hover:bg-gray-100 dark:hover:bg-slate-800 cursor-pointer"
+              >
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Open in Gmail
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-gray-200 dark:bg-slate-700" />
               <DropdownMenuItem
@@ -521,6 +564,15 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
           </motion.div>
         )}
       </ScrollArea>
+
+      {/* Compose Modal */}
+      <ComposeModal
+        isOpen={composeMode !== null}
+        onClose={() => setComposeMode(null)}
+        mode={composeMode || 'compose'}
+        originalEmail={selectedEmail}
+        onSend={handleSendEmail}
+      />
     </motion.div>
   );
 };

@@ -111,6 +111,30 @@ export const emailService = {
     // For now, this is a placeholder
     console.warn('addNote not yet implemented in Gmail API');
   },
+
+  async sendEmail(params: {
+    to: string;
+    cc?: string;
+    subject: string;
+    body: string;
+    inReplyTo?: string;
+    threadId?: string;
+  }): Promise<{ id: string }> {
+    // If this is a reply, use replyToEmail
+    if (params.inReplyTo) {
+      return gmailApi.replyToEmail(params.inReplyTo, {
+        body: params.body,
+        cc: params.cc,
+      });
+    }
+    // Otherwise send a new email
+    return gmailApi.sendEmail({
+      to: params.to,
+      cc: params.cc,
+      subject: params.subject,
+      body: params.body,
+    });
+  },
 };
 
 /**
