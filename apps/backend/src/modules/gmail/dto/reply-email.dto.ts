@@ -1,13 +1,22 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsEmail, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsEmail,
+  IsOptional,
+  IsString,
+  ValidateIf,
+} from 'class-validator';
 
 export class ReplyEmailDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: 'recipient@example.com',
-    description: 'Reply recipient email address',
+    description:
+      'Reply recipient email address (optional - auto-extracted from original email if not provided)',
   })
+  @IsOptional()
+  @ValidateIf((o) => o.to !== '')
   @IsEmail()
-  to: string;
+  to?: string;
 
   @ApiProperty({
     example: 'Thank you for your message',

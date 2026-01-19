@@ -127,7 +127,7 @@ export function KanbanCard({
                   onGenerateSummary(email.id);
                 }}
                 disabled={isGeneratingSummary}
-                className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 text-xs font-medium disabled:opacity-50"
+                className="mt-2 flex items-center gap-1 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 text-xs font-medium disabled:opacity-50"
                 title="Generate AI Summary"
               >
                 {isGeneratingSummary ? (

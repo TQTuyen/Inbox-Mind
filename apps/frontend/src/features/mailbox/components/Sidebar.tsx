@@ -35,7 +35,10 @@ import {
   User,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { ComposeModal } from './ComposeModal';
 import { useEmailStore } from '../store/emailStore';
+import { useSendEmail } from '@fe/hooks/useGmailQuery';
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -76,6 +79,7 @@ export function Sidebar({
   const navigate = useNavigate();
   const { selectedMailboxId, mailboxes } = useEmailStore();
   const { logout, user } = useAuthStore();
+  const sendEmailMutation = useSendEmail();
 
   // Get user info with fallback
   const userName =
@@ -97,12 +101,19 @@ export function Sidebar({
     unreadCount: mailbox.unreadCount || 0,
   }));
 
+  const [showCompose, setShowCompose] = useState(false);
+
   const handleLogout = () => {
     logout();
   };
 
   const handleMailboxClick = (mailboxId: string) => {
     navigate(`/inbox/${mailboxId}`);
+  };
+
+  // Handler for New Email button
+  const handleNewEmail = () => {
+    setShowCompose(true);
   };
 
   return (
@@ -182,6 +193,7 @@ export function Sidebar({
                 shadow-lg shadow-blue-500/30 cursor-pointer"
                 size="icon"
                 title="New Email"
+                onClick={handleNewEmail}
               >
                 <PenSquare className="h-5 w-5" />
               </Button>
@@ -190,12 +202,29 @@ export function Sidebar({
                 className="h-8 w-full bg-blue-500 hover:bg-blue-600 text-white
                 shadow-lg shadow-blue-500/30 cursor-pointer"
                 size="default"
+                onClick={handleNewEmail}
               >
                 <PenSquare className="mr-2 h-4 w-4" />
                 New Email
               </Button>
             )}
           </div>
+
+          {/* Compose Modal for New Email */}
+          <ComposeModal
+            isOpen={showCompose}
+            onClose={() => setShowCompose(false)}
+            mode="compose"
+            originalEmail={undefined}
+            onSend={async (data) => {
+              await sendEmailMutation.mutateAsync({
+                to: data.to,
+                subject: data.subject,
+                body: data.body,
+                cc: data.cc || undefined,
+              });
+            }}
+          />
 
           {/* View Switcher */}
           <div className="flex justify-center gap-2">

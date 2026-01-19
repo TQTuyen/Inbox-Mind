@@ -1,4 +1,4 @@
-import { IsString, IsEmail, IsOptional } from 'class-validator';
+import { IsString, IsEmail, IsOptional, ValidateIf } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class SendEmailDto {
@@ -24,15 +24,17 @@ export class SendEmailDto {
     example: 'cc@example.com',
     description: 'CC recipient',
   })
-  @IsEmail()
   @IsOptional()
+  @ValidateIf((o) => o.cc !== '')
+  @IsEmail()
   cc?: string;
 
   @ApiPropertyOptional({
     example: 'bcc@example.com',
     description: 'BCC recipient',
   })
-  @IsEmail()
   @IsOptional()
+  @ValidateIf((o) => o.bcc !== '')
+  @IsEmail()
   bcc?: string;
 }

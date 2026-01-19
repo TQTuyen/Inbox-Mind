@@ -198,7 +198,7 @@ export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
                     <button
                       key={`${suggestion.type}-${suggestion.text}-${index}`}
                       type="button"
-                      className={`w-full flex items-center gap-3 px-3 py-2 text-sm text-left transition-colors ${
+                      className={`w-full flex items-center gap-3 px-3 py-2 text-sm text-left transition-colors text-gray-900 dark:text-gray-100 ${
                         isSelected
                           ? 'bg-accent text-accent-foreground'
                           : 'hover:bg-accent/50'
@@ -208,9 +208,9 @@ export function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
                       }
                       onMouseEnter={() => setSelectedIndex(index)}
                     >
-                      <Icon className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-                      <span className="flex-1 truncate">{suggestion.text}</span>
-                      <span className="text-xs text-muted-foreground capitalize">
+                      <Icon className="h-4 w-4 flex-shrink-0 text-gray-500 dark:text-gray-400" />
+                      <span className="flex-1 truncate text-gray-900 dark:text-gray-100">{suggestion.text}</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 capitalize">
                         {suggestion.type}
                       </span>
                     </button>

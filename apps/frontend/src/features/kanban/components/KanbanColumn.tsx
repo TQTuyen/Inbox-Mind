@@ -14,6 +14,8 @@ interface KanbanColumnProps {
   title: string;
   emails: Email[];
   onEmailClick: (email: Email) => void;
+  onGenerateSummary?: (emailId: string) => void;
+  generatingSummaryId?: string | null;
 }
 
 export function KanbanColumn({
@@ -21,6 +23,8 @@ export function KanbanColumn({
   title,
   emails,
   onEmailClick,
+  onGenerateSummary,
+  generatingSummaryId,
 }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id,
@@ -41,14 +45,15 @@ export function KanbanColumn({
       </div>
 
       {/* Droppable Area */}
-      <ScrollArea className="flex-1 rounded-b-lg w-full overflow-x-hidden [&_[data-radix-scroll-area-viewport]]:!overflow-x-hidden">
+      <ScrollArea className="flex-1 rounded-b-lg w-full [&_[data-radix-scroll-area-viewport]]:!overflow-x-hidden">
         <div
           ref={setNodeRef}
           className={cn(
-            'p-3 min-h-[200px] transition-colors w-full max-w-full overflow-x-hidden',
+            'p-3 min-h-[200px] transition-colors',
             isOver &&
               'bg-blue-50 dark:bg-blue-950/20 ring-2 ring-blue-500/20 ring-inset'
           )}
+          style={{ width: '100%', maxWidth: '100%', overflow: 'hidden' }}
         >
           <SortableContext
             items={emails.map((e) => e.id)}
@@ -64,6 +69,8 @@ export function KanbanColumn({
                   key={email.id}
                   email={email}
                   onEmailClick={onEmailClick}
+                  onGenerateSummary={onGenerateSummary}
+                  isGeneratingSummary={generatingSummaryId === email.id}
                 />
               ))
             )}

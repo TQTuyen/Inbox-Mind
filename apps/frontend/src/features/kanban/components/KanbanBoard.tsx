@@ -48,9 +48,15 @@ const snapToCursor: Modifier = ({
 
 interface KanbanBoardProps {
   onEmailClick: (email: Email) => void;
+  onGenerateSummary?: (emailId: string) => void;
+  generatingSummaryId?: string | null;
 }
 
-export function KanbanBoard({ onEmailClick }: KanbanBoardProps) {
+export function KanbanBoard({
+  onEmailClick,
+  onGenerateSummary,
+  generatingSummaryId,
+}: KanbanBoardProps) {
   // Use selectors to prevent unnecessary re-renders
   const columns = useKanbanStore((state) => state.columns);
   const moveEmail = useKanbanStore((state) => state.moveEmail);
@@ -140,13 +146,15 @@ export function KanbanBoard({ onEmailClick }: KanbanBoardProps) {
             {columns.map((column) => (
               <div
                 key={column.id}
-                className="flex-1 min-w-[260px] overflow-hidden"
+                className="flex-shrink-0 w-[280px] max-w-[280px] overflow-hidden"
               >
                 <KanbanColumn
                   id={column.id}
                   title={column.title}
                   emails={column.emails}
                   onEmailClick={onEmailClick}
+                  onGenerateSummary={onGenerateSummary}
+                  generatingSummaryId={generatingSummaryId}
                 />
               </div>
             ))}

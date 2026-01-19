@@ -57,7 +57,9 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
   const [showNoteInput, setShowNoteInput] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [composeMode, setComposeMode] = useState<ComposeMode | null>(null);
-  const [downloadingAttachment, setDownloadingAttachment] = useState<string | null>(null);
+  const [downloadingAttachment, setDownloadingAttachment] = useState<
+    string | null
+  >(null);
 
   // Mock task info - in real app this would come from the email data
   const taskInfo: TaskInfo = {
@@ -224,7 +226,10 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
     setDownloadingAttachment(partId);
 
     try {
-      const response = await gmailApi.downloadAttachment(selectedEmail.id, partId);
+      const response = await gmailApi.downloadAttachment(
+        selectedEmail.id,
+        partId
+      );
 
       // Create a blob URL and trigger download
       const blob = new Blob([response.data], { type: response.mimeType });
@@ -530,9 +535,13 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
                     size="icon"
                     className="shrink-0 text-gray-700 dark:text-slate-300"
                     onClick={() => handleDownloadAttachment(attachment)}
-                    disabled={downloadingAttachment === (attachment.partId || attachment.id)}
+                    disabled={
+                      downloadingAttachment ===
+                      (attachment.partId || attachment.id)
+                    }
                   >
-                    {downloadingAttachment === (attachment.partId || attachment.id) ? (
+                    {downloadingAttachment ===
+                    (attachment.partId || attachment.id) ? (
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />
                     ) : (
                       <Download className="h-4 w-4" />

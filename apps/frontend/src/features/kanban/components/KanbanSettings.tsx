@@ -157,7 +157,7 @@ function SortableColumnItem({
       ) : (
         <button
           type="button"
-          className="flex-1 text-left font-medium hover:text-primary"
+          className="flex-1 text-left font-medium text-gray-900 dark:text-gray-100 hover:text-primary"
           onClick={() => !isInbox && setIsEditing(true)}
           disabled={isInbox}
         >
@@ -338,7 +338,7 @@ export function KanbanSettings() {
           <div className="mt-6 space-y-6">
             {/* Create New Column Section */}
             <div className="space-y-2">
-              <h3 className="text-sm font-semibold">Create New Column</h3>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Create New Column</h3>
               <div className="flex gap-2">
                 <Input
                   placeholder="Enter column name..."
@@ -368,7 +368,7 @@ export function KanbanSettings() {
 
             {/* Existing Columns Section */}
             <div className="space-y-2">
-              <h3 className="text-sm font-semibold">Existing Columns</h3>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Existing Columns</h3>
 
               {isLoading ? (
                 <div className="flex items-center justify-center py-8 text-muted-foreground">
@@ -405,9 +405,9 @@ export function KanbanSettings() {
             </div>
 
             {/* Info Note */}
-            <div className="text-xs text-muted-foreground bg-muted p-3 rounded-lg">
-              <p className="font-medium mb-1">Note:</p>
-              <ul className="list-disc list-inside space-y-1">
+            <div className="text-xs bg-gray-100 dark:bg-slate-800 p-3 rounded-lg">
+              <p className="font-medium mb-1 text-gray-700 dark:text-gray-300">Note:</p>
+              <ul className="list-disc list-inside space-y-1 text-gray-600 dark:text-gray-400">
                 <li>The Inbox column cannot be renamed or deleted</li>
                 <li>Drag columns to change their order on the board</li>
                 <li>Click a column name to rename it</li>

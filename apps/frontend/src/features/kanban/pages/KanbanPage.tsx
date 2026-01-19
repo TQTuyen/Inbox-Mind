@@ -7,20 +7,49 @@ import {
   ResizablePanelGroup,
 } from '@fe/shared/components/ui/resizable';
 import { Sheet, SheetContent } from '@fe/shared/components/ui/sheet';
+import { emailMetadataApi } from '@fe/services/api/emailMetadataApi';
+import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { KanbanBoard } from '../components/KanbanBoard';
 import { useKanban } from '../hooks/useKanban';
+import { useKanbanStore } from '../store/kanbanStore';
 
 export function KanbanPage() {
   const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [generatingSummaryId, setGeneratingSummaryId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const { selectedEmail, setSelectedEmail } = useEmailStore();
+  const updateEmailInColumn = useKanbanStore((state) => state.updateEmailInColumn);
 
   // Initialize kanban hook
   useKanban();
+
+  // AI Summary mutation
+  const generateSummaryMutation = useMutation({
+    mutationFn: (emailId: string) => emailMetadataApi.generateSummary(emailId),
+    onMutate: (emailId) => {
+      setGeneratingSummaryId(emailId);
+    },
+    onSuccess: (response, emailId) => {
+      // Update email with the generated summary in kanban store
+      updateEmailInColumn(emailId, { summary: response.data.summary });
+      setGeneratingSummaryId(null);
+    },
+    onError: (error) => {
+      console.error('Failed to generate summary:', error);
+      alert(
+        'Failed to generate summary. Please make sure GEMINI_API_KEY is configured on the backend.'
+      );
+      setGeneratingSummaryId(null);
+    },
+  });
+
+  const handleGenerateSummary = (emailId: string) => {
+    generateSummaryMutation.mutate(emailId);
+  };
 
   const handleEmailClick = (email: Email) => {
     setSelectedEmail(email);
@@ -80,7 +109,11 @@ export function KanbanPage() {
           <ResizablePanelGroup direction="horizontal">
             {/* Kanban Board */}
             <ResizablePanel defaultSize={selectedEmail ? 70 : 100} minSize={50}>
-              <KanbanBoard onEmailClick={handleEmailClick} />
+              <KanbanBoard
+                onEmailClick={handleEmailClick}
+                onGenerateSummary={handleGenerateSummary}
+                generatingSummaryId={generatingSummaryId}
+              />
             </ResizablePanel>
 
             {/* Email Detail */}
@@ -99,7 +132,11 @@ export function KanbanPage() {
       </div>
       {/* Mobile Layout */}
       <div className="md:hidden flex-1 flex flex-col">
-        <KanbanBoard onEmailClick={handleEmailClick} />
+        <KanbanBoard
+          onEmailClick={handleEmailClick}
+          onGenerateSummary={handleGenerateSummary}
+          generatingSummaryId={generatingSummaryId}
+        />
 
         {/* Mobile Email Detail Sheet */}
         <Sheet open={isMobileDetailOpen} onOpenChange={setIsMobileDetailOpen}>
