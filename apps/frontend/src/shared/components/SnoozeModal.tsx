@@ -41,14 +41,20 @@ const getSnoozeOptions = (): SnoozeOption[] => {
     {
       id: 'tomorrow',
       label: 'Tomorrow',
-      description: format(setHours(setMinutes(startOfTomorrow(), 0), 9), 'EEE, MMM d, h:mm a'),
+      description: format(
+        setHours(setMinutes(startOfTomorrow(), 0), 9),
+        'EEE, MMM d, h:mm a'
+      ),
       icon: <Sun className="h-4 w-4" />,
       getDate: () => setHours(setMinutes(startOfTomorrow(), 0), 9),
     },
     {
       id: 'next-week',
       label: 'Next week',
-      description: format(setHours(setMinutes(nextMonday(now), 0), 9), 'EEE, MMM d, h:mm a'),
+      description: format(
+        setHours(setMinutes(nextMonday(now), 0), 9),
+        'EEE, MMM d, h:mm a'
+      ),
       icon: <CalendarDays className="h-4 w-4" />,
       getDate: () => setHours(setMinutes(nextMonday(now), 0), 9),
     },

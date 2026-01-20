@@ -276,7 +276,12 @@ export const ComposeModal = ({
           >
             Cancel
           </Button>
-          <Button onClick={handleSend} disabled={isSending} size="sm" className="text-sm sm:text-base">
+          <Button
+            onClick={handleSend}
+            disabled={isSending}
+            size="sm"
+            className="text-sm sm:text-base"
+          >
             {isSending ? (
               <>
                 <Loader2 className="h-4 w-4 mr-1 sm:mr-2 animate-spin" />

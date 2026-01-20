@@ -260,7 +260,12 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
       <div className="shrink-0 flex items-center justify-between gap-1 sm:gap-2 border-b border-gray-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/80 px-2 sm:px-4 py-2 sm:py-3">
         <div className="flex items-center gap-0.5 sm:gap-1">
           {isMobile && onBack && (
-            <Button variant="ghost" size="icon" onClick={onBack} className="h-8 w-8 sm:h-9 sm:w-9">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onBack}
+              className="h-8 w-8 sm:h-9 sm:w-9"
+            >
               <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 cursor-pointer" />
             </Button>
           )}

@@ -40,7 +40,10 @@ export function useKanban() {
 
   // Store column config in zustand - only when config actually changes
   useEffect(() => {
-    if (columnConfig.length > 0 && columnConfig.length !== prevConfigLength.current) {
+    if (
+      columnConfig.length > 0 &&
+      columnConfig.length !== prevConfigLength.current
+    ) {
       prevConfigLength.current = columnConfig.length;
       setColumnConfig(columnConfig);
     }

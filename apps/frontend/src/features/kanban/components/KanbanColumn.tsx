@@ -31,7 +31,7 @@ export function KanbanColumn({
   const { setNodeRef, isOver } = useDroppable({
     id,
   });
-    const handleGenerateSummary = useCallback(
+  const handleGenerateSummary = useCallback(
     (emailId: string) => {
       onGenerateSummary?.(emailId);
     },

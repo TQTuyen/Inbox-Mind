@@ -30,7 +30,10 @@ export function FilterControls() {
             <Filter className="h-4 w-4" />
             <span className="hidden sm:inline">Filters</span>
             {activeFilterCount > 0 && (
-              <Badge variant="secondary" className="ml-0.5 sm:ml-1 px-1 sm:px-1.5 py-0.5 text-xs">
+              <Badge
+                variant="secondary"
+                className="ml-0.5 sm:ml-1 px-1 sm:px-1.5 py-0.5 text-xs"
+              >
                 {activeFilterCount}
               </Badge>
             )}
