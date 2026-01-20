@@ -15,18 +15,18 @@ export function SortControls() {
   const setSortBy = useKanbanStore((state) => state.setSortBy);
 
   return (
-    <div className="flex items-center gap-2">
-      <ArrowUpDown className="h-4 w-4 text-gray-500 dark:text-slate-400" />
+    <div className="flex items-center gap-1 sm:gap-2">
+      <ArrowUpDown className="h-4 w-4 text-gray-500 dark:text-slate-400 hidden sm:block" />
       <Select value={sortBy} onValueChange={setSortBy}>
-        <SelectTrigger className="w-[180px] bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-300">
-          <SelectValue placeholder="Sort by..." />
+        <SelectTrigger className="w-[120px] sm:w-[180px] bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-300 text-xs sm:text-sm">
+          <SelectValue placeholder="Sort..." />
         </SelectTrigger>
         <SelectContent className="bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-700">
           {SORT_OPTIONS.map((option) => (
             <SelectItem
               key={option.id}
               value={option.id}
-              className="text-gray-700 dark:text-slate-300"
+              className="text-gray-700 dark:text-slate-300 text-xs sm:text-sm"
             >
               {option.label}
             </SelectItem>

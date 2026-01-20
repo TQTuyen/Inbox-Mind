@@ -54,3 +54,6 @@ vitest.config.*.timestamp*
 # Environment files
 .env
 .env.local
+
+# report folder
+reports/

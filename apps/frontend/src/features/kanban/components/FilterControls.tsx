@@ -19,18 +19,21 @@ export function FilterControls() {
   const activeFilterCount = activeFilters.length;
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1 sm:gap-2">
       <Popover>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
             size="sm"
-            className="gap-2 bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-gray-100"
+            className="gap-1 sm:gap-2 bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-gray-100 text-xs sm:text-sm px-2 sm:px-3"
           >
             <Filter className="h-4 w-4" />
-            Filters
+            <span className="hidden sm:inline">Filters</span>
             {activeFilterCount > 0 && (
-              <Badge variant="secondary" className="ml-1 px-1.5 py-0.5">
+              <Badge
+                variant="secondary"
+                className="ml-0.5 sm:ml-1 px-1 sm:px-1.5 py-0.5 text-xs"
+              >
                 {activeFilterCount}
               </Badge>
             )}
@@ -79,9 +82,9 @@ export function FilterControls() {
         </PopoverContent>
       </Popover>
 
-      {/* Active filters badges */}
+      {/* Active filters badges - hidden on mobile */}
       {activeFilters.length > 0 && (
-        <div className="flex items-center gap-2">
+        <div className="hidden sm:flex items-center gap-2">
           {activeFilters.map((filterId) => {
             const filter = FILTER_OPTIONS.find((f) => f.id === filterId);
             if (!filter) return null;

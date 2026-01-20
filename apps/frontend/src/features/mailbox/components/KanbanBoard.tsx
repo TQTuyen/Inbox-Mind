@@ -20,6 +20,7 @@ import {
 } from '@dnd-kit/sortable';
 import { Email, KanbanStatus, useEmailStore } from '../store/emailStore';
 import { KanbanCard } from './KanbanCard';
+import { SnoozeModal } from '@fe/shared/components/SnoozeModal';
 import { Inbox, ListTodo, PlayCircle, CheckCircle2, Clock } from 'lucide-react';
 import { cn } from '../../../lib/utils';
 
@@ -129,6 +130,8 @@ export function KanbanBoard({
   const [generatingSummaryFor, setGeneratingSummaryFor] = useState<
     string | null
   >(null);
+  const [snoozeModalOpen, setSnoozeModalOpen] = useState(false);
+  const [emailToSnooze, setEmailToSnooze] = useState<Email | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -212,10 +215,20 @@ export function KanbanBoard({
     setActiveId(null);
   };
 
-  const handleSnooze = (emailId: string) => {
-    const snoozeUntil = new Date();
-    snoozeUntil.setHours(snoozeUntil.getHours() + 2);
-    onEmailSnooze(emailId, snoozeUntil);
+  const handleSnoozeClick = (emailId: string) => {
+    const email = emails.find((e) => e.id === emailId);
+    if (email) {
+      setEmailToSnooze(email);
+      setSnoozeModalOpen(true);
+    }
+  };
+
+  const handleSnoozeConfirm = (snoozeUntil: Date) => {
+    if (emailToSnooze) {
+      onEmailSnooze(emailToSnooze.id, snoozeUntil);
+      setSnoozeModalOpen(false);
+      setEmailToSnooze(null);
+    }
   };
 
   const handleGenerateSummary = async (emailId: string) => {
@@ -283,7 +296,7 @@ export function KanbanBoard({
                         key={email.id}
                         email={email}
                         onClick={() => onEmailClick(email)}
-                        onSnooze={handleSnooze}
+                        onSnooze={handleSnoozeClick}
                         onGenerateSummary={handleGenerateSummary}
                         isGeneratingSummary={generatingSummaryFor === email.id}
                       />
@@ -325,6 +338,17 @@ export function KanbanBoard({
           </div>
         ) : null}
       </DragOverlay>
+
+      {/* Snooze Modal */}
+      <SnoozeModal
+        isOpen={snoozeModalOpen}
+        onClose={() => {
+          setSnoozeModalOpen(false);
+          setEmailToSnooze(null);
+        }}
+        onSnooze={handleSnoozeConfirm}
+        emailSubject={emailToSnooze?.subject}
+      />
     </DndContext>
   );
 }

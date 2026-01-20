@@ -44,6 +44,7 @@ import {
 import {
   Email as ApiEmail,
   EmailListResponse,
+  gmailApi,
 } from '@fe/services/api/gmailApi';
 import { InfiniteData } from '@tanstack/react-query';
 import { useCallback, useEffect } from 'react';
@@ -181,8 +182,19 @@ export const useMailbox = () => {
   // Handle email selection with automatic mark as read
   const handleEmailSelect = useCallback(
     async (email: ApiEmail) => {
+      // Set email immediately for quick feedback
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setSelectedEmail(email as any);
+
+      // Fetch full email data (with attachments) in background
+      try {
+        const fullEmail = await gmailApi.getEmailById(email.id);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        setSelectedEmail(fullEmail as any);
+      } catch (error) {
+        console.error('Failed to fetch full email:', error);
+        // Keep the partial email data if fetch fails
+      }
 
       // Mark as read if unread
       if (!email.isRead) {

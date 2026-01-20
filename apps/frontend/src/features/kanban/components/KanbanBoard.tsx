@@ -48,9 +48,17 @@ const snapToCursor: Modifier = ({
 
 interface KanbanBoardProps {
   onEmailClick: (email: Email) => void;
+  onGenerateSummary?: (emailId: string) => void;
+  generatingSummaryId?: string | null;
+  onSnooze?: (emailId: string) => void;
 }
 
-export function KanbanBoard({ onEmailClick }: KanbanBoardProps) {
+export function KanbanBoard({
+  onEmailClick,
+  onGenerateSummary,
+  generatingSummaryId,
+  onSnooze,
+}: KanbanBoardProps) {
   // Use selectors to prevent unnecessary re-renders
   const columns = useKanbanStore((state) => state.columns);
   const moveEmail = useKanbanStore((state) => state.moveEmail);
@@ -110,24 +118,27 @@ export function KanbanBoard({ onEmailClick }: KanbanBoardProps) {
   return (
     <div className="flex flex-col h-full bg-white dark:bg-slate-900/30">
       {/* Controls Bar */}
-      <div className="p-4 border-b border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900/50 flex items-center gap-4 flex-wrap">
-        <Button
-          variant="outline"
-          onClick={() => navigate('/inbox/INBOX')}
-          className="bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-gray-100"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Inbox
-        </Button>
-        <SortControls />
-        <FilterControls />
-        <div className="ml-auto">
-          <KanbanSettings />
+      <div className="p-2 sm:p-4 border-b border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900/50">
+        <div className="flex items-center gap-1.5 sm:gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate('/inbox/INBOX')}
+            className="bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-gray-100 px-2 sm:px-3 shrink-0"
+          >
+            <ArrowLeft className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Back to Inbox</span>
+          </Button>
+          <SortControls />
+          <FilterControls />
+          <div className="ml-auto shrink-0">
+            <KanbanSettings />
+          </div>
         </div>
       </div>
 
-      {/* Kanban Columns */}
-      <div className="flex-1 overflow-x-auto overflow-y-hidden bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-100 dark:from-slate-900 dark:via-blue-950/10 dark:to-slate-900">
+      {/* Kanban Columns - Horizontal scroll on mobile */}
+      <div className="flex-1 overflow-x-auto overflow-y-hidden bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-100 dark:from-slate-900 dark:via-blue-950/10 dark:to-slate-900 touch-pan-x">
         <DndContext
           sensors={sensors}
           onDragStart={handleDragStart}
@@ -136,17 +147,20 @@ export function KanbanBoard({ onEmailClick }: KanbanBoardProps) {
           modifiers={[snapToCursor]}
           autoScroll={false}
         >
-          <div className="flex gap-4 p-4 h-full">
+          <div className="flex gap-3 sm:gap-4 p-3 sm:p-4 h-full min-w-max">
             {columns.map((column) => (
               <div
                 key={column.id}
-                className="flex-1 min-w-[260px] overflow-hidden"
+                className="flex-shrink-0 w-[260px] sm:w-[280px] max-w-[280px] overflow-hidden"
               >
                 <KanbanColumn
                   id={column.id}
                   title={column.title}
                   emails={column.emails}
                   onEmailClick={onEmailClick}
+                  onGenerateSummary={onGenerateSummary}
+                  generatingSummaryId={generatingSummaryId}
+                  onSnooze={onSnooze}
                 />
               </div>
             ))}

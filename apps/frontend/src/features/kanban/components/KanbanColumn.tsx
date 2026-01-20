@@ -5,15 +5,18 @@ import {
 } from '@dnd-kit/sortable';
 import { cn } from '@fe/lib/utils';
 import { Badge } from '@fe/shared/components/ui/badge';
-import { ScrollArea } from '@fe/shared/components/ui/scroll-area';
 import { Email } from '../../mailbox/store/emailStore';
 import { KanbanCard } from './KanbanCard';
+import { useCallback } from 'react';
 
 interface KanbanColumnProps {
   id: string;
   title: string;
   emails: Email[];
   onEmailClick: (email: Email) => void;
+  onGenerateSummary?: (emailId: string) => void;
+  generatingSummaryId?: string | null;
+  onSnooze?: (emailId: string) => void;
 }
 
 export function KanbanColumn({
@@ -21,10 +24,26 @@ export function KanbanColumn({
   title,
   emails,
   onEmailClick,
+  onGenerateSummary,
+  generatingSummaryId,
+  onSnooze,
 }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id,
   });
+  const handleGenerateSummary = useCallback(
+    (emailId: string) => {
+      onGenerateSummary?.(emailId);
+    },
+    [onGenerateSummary]
+  );
+
+  const handleSnooze = useCallback(
+    (emailId: string) => {
+      onSnooze?.(emailId);
+    },
+    [onSnooze]
+  );
 
   return (
     <div className="kanban-column flex flex-col h-full w-full max-w-full bg-gray-50 dark:bg-slate-900/50 rounded-lg border border-gray-200 dark:border-slate-700 overflow-hidden">
@@ -41,35 +60,36 @@ export function KanbanColumn({
       </div>
 
       {/* Droppable Area */}
-      <ScrollArea className="flex-1 rounded-b-lg w-full overflow-x-hidden [&_[data-radix-scroll-area-viewport]]:!overflow-x-hidden">
-        <div
-          ref={setNodeRef}
-          className={cn(
-            'p-3 min-h-[200px] transition-colors w-full max-w-full overflow-x-hidden',
-            isOver &&
-              'bg-blue-50 dark:bg-blue-950/20 ring-2 ring-blue-500/20 ring-inset'
-          )}
+      <div
+        ref={setNodeRef}
+        className={cn(
+          'flex-1 overflow-y-auto overflow-x-hidden p-3 min-h-[200px] transition-colors',
+          isOver &&
+            'bg-blue-50 dark:bg-blue-950/20 ring-2 ring-blue-500/20 ring-inset'
+        )}
+      >
+        <SortableContext
+          items={emails.map((e) => e.id)}
+          strategy={verticalListSortingStrategy}
         >
-          <SortableContext
-            items={emails.map((e) => e.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            {emails.length === 0 ? (
-              <div className="flex items-center justify-center h-32 text-sm text-gray-400 dark:text-slate-500">
-                No emails
-              </div>
-            ) : (
-              emails.map((email) => (
-                <KanbanCard
-                  key={email.id}
-                  email={email}
-                  onEmailClick={onEmailClick}
-                />
-              ))
-            )}
-          </SortableContext>
-        </div>
-      </ScrollArea>
+          {emails.length === 0 ? (
+            <div className="flex items-center justify-center h-32 text-sm text-gray-400 dark:text-slate-500">
+              No emails
+            </div>
+          ) : (
+            emails.map((email) => (
+              <KanbanCard
+                key={email.id}
+                email={email}
+                onEmailClick={onEmailClick}
+                onGenerateSummary={handleGenerateSummary}
+                isGeneratingSummary={generatingSummaryId === email.id}
+                onSnooze={handleSnooze}
+              />
+            ))
+          )}
+        </SortableContext>
+      </div>
     </div>
   );
 }

@@ -16,6 +16,7 @@ interface KanbanState {
   // Data
   columns: KanbanColumn[];
   columnConfig: KanbanColumnConfig[]; // Dynamic column configuration from API
+  originalEmails: Email[]; // Store original emails for re-filtering
 
   // UI State
   sortBy: SortOption;
@@ -48,6 +49,7 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
   // Initial state
   columns: [],
   columnConfig: [],
+  originalEmails: [],
   sortBy: 'date-desc',
   activeFilters: [],
   loading: false,
@@ -64,6 +66,9 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
     if (columnDefinitions.length === 0) {
       return;
     }
+
+    // Store original emails for re-filtering later
+    set({ originalEmails: emails });
 
     const columns = columnDefinitions.map((columnDef) => {
       // Map columnId to kanbanStatus (INBOX -> inbox, etc.)
@@ -110,18 +115,15 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
   setSortBy: (sortBy) => {
     set({ sortBy });
 
-    // Re-sort all columns
-    const { columns, getSortedAndFilteredEmails } = get();
-    const updatedColumns = columns.map((col) => ({
-      ...col,
-      emails: getSortedAndFilteredEmails(col.emails),
-    }));
-
-    set({ columns: updatedColumns });
+    // Re-initialize columns with original emails to apply new sort
+    const { originalEmails, initializeColumns } = get();
+    if (originalEmails.length > 0) {
+      initializeColumns(originalEmails);
+    }
   },
 
   toggleFilter: (filter) => {
-    const { activeFilters, columns, getSortedAndFilteredEmails } = get();
+    const { activeFilters, originalEmails, initializeColumns } = get();
 
     const newFilters = activeFilters.includes(filter)
       ? activeFilters.filter((f) => f !== filter)
@@ -129,27 +131,28 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
 
     set({ activeFilters: newFilters });
 
-    // Re-filter all columns with original emails
-    // Note: In real app, you'd want to keep original unfiltered data
-    const updatedColumns = columns.map((col) => ({
-      ...col,
-      emails: getSortedAndFilteredEmails(col.emails),
-    }));
-
-    set({ columns: updatedColumns });
+    // Re-initialize columns with original emails to apply new filters
+    if (originalEmails.length > 0) {
+      // Need to call initializeColumns after activeFilters is updated
+      // Using setTimeout to ensure state is updated first
+      setTimeout(() => {
+        const state = get();
+        state.initializeColumns(state.originalEmails);
+      }, 0);
+    }
   },
 
   clearFilters: () => {
+    const { originalEmails } = get();
     set({ activeFilters: [] });
 
-    // Re-apply without filters
-    const { columns, getSortedAndFilteredEmails } = get();
-    const updatedColumns = columns.map((col) => ({
-      ...col,
-      emails: getSortedAndFilteredEmails(col.emails),
-    }));
-
-    set({ columns: updatedColumns });
+    // Re-initialize columns with original emails without filters
+    if (originalEmails.length > 0) {
+      setTimeout(() => {
+        const state = get();
+        state.initializeColumns(state.originalEmails);
+      }, 0);
+    }
   },
 
   moveEmail: async (emailId, fromColumnId, toColumnId) => {
@@ -255,7 +258,7 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
   },
 
   updateEmailInColumn: (emailId, updates) => {
-    const { columns } = get();
+    const { columns, originalEmails } = get();
 
     const updatedColumns = columns.map((col) => ({
       ...col,
@@ -264,18 +267,28 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
       ),
     }));
 
-    set({ columns: updatedColumns });
+    // Also update originalEmails
+    const updatedOriginalEmails = originalEmails.map((email) =>
+      email.id === emailId ? { ...email, ...updates } : email
+    );
+
+    set({ columns: updatedColumns, originalEmails: updatedOriginalEmails });
   },
 
   deleteEmailFromColumn: (emailId) => {
-    const { columns } = get();
+    const { columns, originalEmails } = get();
 
     const updatedColumns = columns.map((col) => ({
       ...col,
       emails: col.emails.filter((email) => email.id !== emailId),
     }));
 
-    set({ columns: updatedColumns });
+    // Also remove from originalEmails
+    const updatedOriginalEmails = originalEmails.filter(
+      (email) => email.id !== emailId
+    );
+
+    set({ columns: updatedColumns, originalEmails: updatedOriginalEmails });
   },
 
   setLoading: (loading) => set({ loading }),
