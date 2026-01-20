@@ -32,11 +32,12 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     profile: GoogleProfile,
     done: VerifyCallback
   ): Promise<void> {
-    const { id, displayName, emails } = profile;
+    const { id, displayName, emails, photos } = profile;
     const user = {
       googleId: id,
       email: emails[0].value,
       name: displayName,
+      picture: photos?.[0]?.value || null,
       accessToken,
       refreshToken,
     };

@@ -23,6 +23,9 @@ export class User {
   @Column()
   name: string;
 
+  @Column({ nullable: true })
+  picture: string;
+
   @Column({ type: 'text' })
   googleRefreshToken: string;
 

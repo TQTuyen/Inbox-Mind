@@ -107,8 +107,22 @@ export function Sidebar({
     logout();
   };
 
-  const handleMailboxClick = (mailboxId: string) => {
-    navigate(`/inbox/${mailboxId}`);
+  // Kanban-related labels that should redirect to Kanban view
+  const kanbanLabelIds = ['Label_1', 'Label_2', 'Label_3']; // To Do, In Progress, Done
+  const kanbanLabelNames = ['to do', 'in progress', 'done'];
+
+  const handleMailboxClick = (mailboxId: string, mailboxName: string) => {
+    // Check if this is a Kanban-related label
+    const isKanbanLabel =
+      kanbanLabelIds.includes(mailboxId) ||
+      kanbanLabelNames.includes(mailboxName.toLowerCase());
+
+    if (isKanbanLabel) {
+      // Redirect to Kanban view for kanban-related labels
+      navigate('/kanban');
+    } else {
+      navigate(`/inbox/${mailboxId}`);
+    }
   };
 
   // Handler for New Email button
@@ -266,7 +280,7 @@ export function Sidebar({
                     key={item.id}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => handleMailboxClick(item.id)}
+                    onClick={() => handleMailboxClick(item.id, item.name)}
                     className={cn(
                       'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors cursor-pointer',
                       isActive
