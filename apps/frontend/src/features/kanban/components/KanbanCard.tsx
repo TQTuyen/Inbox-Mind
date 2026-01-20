@@ -5,6 +5,7 @@ import { Badge } from '@fe/shared/components/ui/badge';
 import { Card } from '@fe/shared/components/ui/card';
 import { format } from 'date-fns';
 import {
+  Clock,
   GripVertical,
   Loader2,
   Mail,
@@ -19,6 +20,7 @@ interface KanbanCardProps {
   onEmailClick: (email: Email) => void;
   onGenerateSummary?: (emailId: string) => void;
   isGeneratingSummary?: boolean;
+  onSnooze?: (emailId: string) => void;
 }
 
 export function KanbanCard({
@@ -26,6 +28,7 @@ export function KanbanCard({
   onEmailClick,
   onGenerateSummary,
   isGeneratingSummary,
+  onSnooze,
 }: KanbanCardProps) {
   const {
     attributes,
@@ -50,7 +53,7 @@ export function KanbanCard({
     >
       <Card
         className={cn(
-          'kanban-card p-3 mb-2 cursor-pointer hover:shadow-md transition-all bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700',
+          'group kanban-card p-3 mb-2 cursor-pointer hover:shadow-md transition-all bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700',
           isDragging && 'opacity-50',
           !email.isRead &&
             'bg-blue-50/50 dark:bg-blue-950/20 border-l-4 border-l-blue-500'
@@ -176,16 +179,35 @@ export function KanbanCard({
               </div>
             )}
 
-            {/* Footer: Badges */}
-            <div className="flex items-center gap-2 flex-wrap">
-              {email.isStarred && (
-                <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-              )}
-              {email.attachments && email.attachments.length > 0 && (
-                <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
-                  <Paperclip className="h-3 w-3 mr-1" />
-                  {email.attachments.length}
-                </Badge>
+            {/* Footer: Badges and Actions */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                {email.isStarred && (
+                  <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                )}
+                {email.attachments && email.attachments.length > 0 && (
+                  <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
+                    <Paperclip className="h-3 w-3 mr-1" />
+                    {email.attachments.length}
+                  </Badge>
+                )}
+              </div>
+
+              {/* Snooze Button - Always visible on mobile, hover on desktop */}
+              {onSnooze && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    onSnooze(email.id);
+                  }}
+                  className="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 text-xs px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-slate-700 relative z-10"
+                  title="Snooze email"
+                >
+                  <Clock className="h-3 w-3" />
+                  <span className="hidden sm:inline">Snooze</span>
+                </button>
               )}
             </div>
           </div>

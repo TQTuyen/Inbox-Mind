@@ -57,12 +57,13 @@ export function KanbanCard({
       style={style}
       {...(isDragOverlay ? {} : attributes)}
       className={cn(
-        'group relative rounded-lg border bg-white dark:bg-slate-800 shadow-sm transition-all hover:shadow-md overflow-hidden',
+        'group relative rounded-lg border bg-white dark:bg-slate-800 shadow-sm transition-all hover:shadow-md overflow-hidden cursor-pointer',
         isDragging && !isDragOverlay && 'opacity-50',
         isDragOverlay && 'shadow-2xl',
         !email.isRead &&
           'border-l-4 border-l-blue-500 bg-blue-50/30 dark:bg-blue-900/20'
       )}
+      onClick={onClick}
     >
       <div className="flex items-start gap-0">
         {/* Drag Handle - always visible */}
@@ -89,13 +90,9 @@ export function KanbanCard({
               </div>
               <h3
                 className={cn(
-                  'text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-2 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400',
+                  'text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-2 hover:text-blue-600 dark:hover:text-blue-400',
                   !email.isRead && 'font-semibold'
                 )}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onClick();
-                }}
               >
                 {email.subject || '(No Subject)'}
               </h3>

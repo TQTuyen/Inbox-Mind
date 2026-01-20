@@ -257,11 +257,11 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
       className="flex h-full flex-col overflow-hidden bg-gray-50/50 dark:bg-slate-900/30 backdrop-blur-xl"
     >
       {/* Toolbar */}
-      <div className="shrink-0 flex items-center justify-between gap-2 border-b border-gray-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/80 px-4 py-3">
-        <div className="flex items-center gap-1">
+      <div className="shrink-0 flex items-center justify-between gap-1 sm:gap-2 border-b border-gray-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/80 px-2 sm:px-4 py-2 sm:py-3">
+        <div className="flex items-center gap-0.5 sm:gap-1">
           {isMobile && onBack && (
-            <Button variant="ghost" size="icon" onClick={onBack}>
-              <ArrowLeft className="h-5 w-5 cursor-pointer" />
+            <Button variant="ghost" size="icon" onClick={onBack} className="h-8 w-8 sm:h-9 sm:w-9">
+              <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 cursor-pointer" />
             </Button>
           )}
           {/* Reply, Reply All, Forward buttons */}
@@ -270,10 +270,10 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
               variant="ghost"
               size="sm"
               onClick={handleReply}
-              className="text-gray-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-slate-800 cursor-pointer"
+              className="text-gray-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-slate-800 cursor-pointer px-2 sm:px-3"
             >
               <Reply className="h-4 w-4" />
-              Reply
+              <span className="hidden sm:inline ml-1">Reply</span>
             </Button>
           </motion.div>
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
@@ -281,10 +281,10 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
               variant="ghost"
               size="sm"
               onClick={handleReplyAll}
-              className="text-gray-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-slate-800 cursor-pointer"
+              className="text-gray-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-slate-800 cursor-pointer px-2 sm:px-3"
             >
               <ReplyAll className="h-4 w-4 cursor-pointer" />
-              Reply All
+              <span className="hidden sm:inline ml-1">Reply All</span>
             </Button>
           </motion.div>
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
@@ -292,10 +292,10 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
               variant="ghost"
               size="sm"
               onClick={handleForward}
-              className="text-gray-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-slate-800 cursor-pointer"
+              className="text-gray-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-slate-800 cursor-pointer px-2 sm:px-3"
             >
               <Forward className="h-4 w-4" />
-              Forward
+              <span className="hidden sm:inline ml-1">Forward</span>
             </Button>
           </motion.div>
         </div>
@@ -375,14 +375,14 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
       </div>
 
       {/* Email content */}
-      <ScrollArea className="flex-1 p-8">
+      <ScrollArea className="flex-1 p-4 sm:p-8">
         {/* Subject */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <h1 className="text-3xl font-bold leading-tight tracking-tight mb-6 text-gray-900 dark:text-white">
+          <h1 className="text-xl sm:text-3xl font-bold leading-tight tracking-tight mb-4 sm:mb-6 text-gray-900 dark:text-white">
             {selectedEmail.subject}
           </h1>
         </motion.div>
@@ -392,9 +392,9 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="flex items-start gap-4 mb-6"
+          className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-6"
         >
-          <Avatar className="h-12 w-12">
+          <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
             <AvatarImage
               src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedEmail.from.name}`}
             />
@@ -496,7 +496,7 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
-          className="prose prose-sm md:prose-base max-w-none mb-10 text-gray-800 dark:text-slate-200"
+          className="prose prose-sm sm:prose-base max-w-none mb-6 sm:mb-10 text-gray-800 dark:text-slate-200 overflow-x-auto break-words"
           dangerouslySetInnerHTML={{ __html: selectedEmail.body }}
         />
 
@@ -506,24 +506,24 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="pt-6 border-t border-border"
+            className="pt-4 sm:pt-6 border-t border-border"
           >
-            <h3 className="font-semibold mb-3 text-gray-900 dark:text-white">
+            <h3 className="font-semibold mb-2 sm:mb-3 text-sm sm:text-base text-gray-900 dark:text-white">
               {selectedEmail.attachments.length} Attachment
               {selectedEmail.attachments.length > 1 ? 's' : ''}
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-2 sm:gap-4">
               {selectedEmail.attachments.map((attachment) => (
                 <motion.div
                   key={attachment.id}
                   whileHover={{ scale: 1.01 }}
-                  className="flex items-center gap-3 p-3 border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                  className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                 >
-                  <div className="flex items-center justify-center h-10 w-10 bg-blue-100 dark:bg-blue-900/30 rounded-md shrink-0">
-                    <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  <div className="flex items-center justify-center h-8 w-8 sm:h-10 sm:w-10 bg-blue-100 dark:bg-blue-900/30 rounded-md shrink-0">
+                    <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <div className="flex-1 overflow-hidden">
-                    <p className="text-sm font-medium truncate text-gray-900 dark:text-white">
+                  <div className="flex-1 overflow-hidden min-w-0">
+                    <p className="text-xs sm:text-sm font-medium truncate text-gray-900 dark:text-white">
                       {attachment.name}
                     </p>
                     <p className="text-xs text-gray-600 dark:text-slate-400">
@@ -533,7 +533,7 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="shrink-0 text-gray-700 dark:text-slate-300"
+                    className="shrink-0 text-gray-700 dark:text-slate-300 h-8 w-8 sm:h-9 sm:w-9"
                     onClick={() => handleDownloadAttachment(attachment)}
                     disabled={
                       downloadingAttachment ===

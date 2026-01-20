@@ -249,7 +249,7 @@ export function useMarkAsRead(
       queryClient.setQueriesData<EmailListResponse>(
         { queryKey: gmailKeys.emails() },
         (old) => {
-          if (!old) return old;
+          if (!old || !old.emails) return old;
           return {
             ...old,
             emails: old.emails.map((email) =>

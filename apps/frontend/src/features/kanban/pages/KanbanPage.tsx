@@ -7,10 +7,12 @@ import {
   ResizablePanelGroup,
 } from '@fe/shared/components/ui/resizable';
 import { Sheet, SheetContent } from '@fe/shared/components/ui/sheet';
+import { SnoozeModal } from '@fe/shared/components/SnoozeModal';
 import { emailMetadataApi } from '@fe/services/api/emailMetadataApi';
+import { gmailApi } from '@fe/services/api/gmailApi';
+import { useMailboxes } from '@fe/hooks/useGmailQuery';
 import { useMutation } from '@tanstack/react-query';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { KanbanBoard } from '../components/KanbanBoard';
 import { useKanban } from '../hooks/useKanban';
 import { useKanbanStore } from '../store/kanbanStore';
@@ -21,15 +23,37 @@ export function KanbanPage() {
   const [generatingSummaryId, setGeneratingSummaryId] = useState<string | null>(
     null
   );
-  const navigate = useNavigate();
+  const [snoozeModalOpen, setSnoozeModalOpen] = useState(false);
+  const [emailToSnooze, setEmailToSnooze] = useState<Email | null>(null);
 
-  const { selectedEmail, setSelectedEmail } = useEmailStore();
+  const { selectedEmail, setSelectedEmail, setMailboxes } = useEmailStore();
   const updateEmailInColumn = useKanbanStore(
     (state) => state.updateEmailInColumn
   );
+  const deleteEmailFromColumn = useKanbanStore(
+    (state) => state.deleteEmailFromColumn
+  );
+  const columns = useKanbanStore((state) => state.columns);
 
   // Initialize kanban hook
   useKanban();
+
+  // Fetch mailboxes for the sidebar (separate from kanban emails)
+  const { data: mailboxesData = [] } = useMailboxes({
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Sync mailboxes to store for Sidebar to use
+  useEffect(() => {
+    if (mailboxesData.length > 0) {
+      const transformedMailboxes = mailboxesData.map((mailbox) => ({
+        id: mailbox.id,
+        name: mailbox.name,
+        unreadCount: mailbox.unreadCount || 0,
+      }));
+      setMailboxes(transformedMailboxes);
+    }
+  }, [mailboxesData, setMailboxes]);
 
   // AI Summary mutation
   const generateSummaryMutation = useMutation({
@@ -55,12 +79,62 @@ export function KanbanPage() {
     generateSummaryMutation.mutate(emailId);
   };
 
-  const handleEmailClick = (email: Email) => {
+  // Snooze mutation
+  const snoozeMutation = useMutation({
+    mutationFn: ({
+      emailId,
+      snoozeUntil,
+    }: {
+      emailId: string;
+      snoozeUntil: Date;
+    }) => emailMetadataApi.snoozeEmail(emailId, snoozeUntil),
+    onSuccess: (_, { emailId }) => {
+      // Remove from kanban board (email disappears after snooze)
+      deleteEmailFromColumn(emailId);
+      setSnoozeModalOpen(false);
+      setEmailToSnooze(null);
+    },
+    onError: (error) => {
+      console.error('Failed to snooze email:', error);
+      alert('Failed to snooze email. Please try again.');
+    },
+  });
+
+  const handleSnoozeClick = (emailId: string) => {
+    // Find email in columns
+    const email = columns
+      .flatMap((col) => col.emails)
+      .find((e) => e.id === emailId);
+    if (email) {
+      setEmailToSnooze(email);
+      setSnoozeModalOpen(true);
+    }
+  };
+
+  const handleSnooze = (snoozeUntil: Date) => {
+    if (emailToSnooze) {
+      snoozeMutation.mutate({ emailId: emailToSnooze.id, snoozeUntil });
+    }
+  };
+
+  const handleEmailClick = async (email: Email) => {
+    // Set email immediately for quick feedback
     setSelectedEmail(email);
     setIsMobileDetailOpen(true);
+
+    // Fetch full email data (with attachments) in background
+    try {
+      const fullEmail = await gmailApi.getEmailById(email.id);
+      // Update with full email data including attachments
+      setSelectedEmail(fullEmail);
+    } catch (error) {
+      console.error('Failed to fetch full email:', error);
+      // Keep the partial email data if fetch fails
+    }
   };
 
   return (
+    <>
     <div className="h-screen flex bg-gradient-to-br from-gray-50 via-blue-50 to-gray-100 dark:from-slate-950 dark:via-blue-950/20 dark:to-slate-950">
       {/* Desktop Layout */}
       <div className="hidden md:flex flex-1 overflow-hidden relative">
@@ -117,6 +191,7 @@ export function KanbanPage() {
                 onEmailClick={handleEmailClick}
                 onGenerateSummary={handleGenerateSummary}
                 generatingSummaryId={generatingSummaryId}
+                onSnooze={handleSnoozeClick}
               />
             </ResizablePanel>
 
@@ -140,6 +215,7 @@ export function KanbanPage() {
           onEmailClick={handleEmailClick}
           onGenerateSummary={handleGenerateSummary}
           generatingSummaryId={generatingSummaryId}
+          onSnooze={handleSnoozeClick}
         />
 
         {/* Mobile Email Detail Sheet */}
@@ -160,6 +236,19 @@ export function KanbanPage() {
           </SheetContent>
         </Sheet>
       </div>
+
     </div>
+
+    {/* Snooze Modal - Outside main container for proper portal rendering */}
+    <SnoozeModal
+      isOpen={snoozeModalOpen}
+      onClose={() => {
+        setSnoozeModalOpen(false);
+        setEmailToSnooze(null);
+      }}
+      onSnooze={handleSnooze}
+      emailSubject={emailToSnooze?.subject}
+    />
+    </>
   );
 }

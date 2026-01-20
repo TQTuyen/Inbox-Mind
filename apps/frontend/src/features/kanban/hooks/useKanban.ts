@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import { useKanbanEmails } from '@fe/hooks/useGmailQuery';
 import { useKanbanConfig } from '@fe/hooks/useKanbanConfig';
 import { useKanbanStore } from '../store/kanbanStore';
@@ -16,6 +16,11 @@ export function useKanban() {
   const setColumnConfig = useKanbanStore((state) => state.setColumnConfig);
   const moveEmail = useKanbanStore((state) => state.moveEmail);
 
+  // Track if we've initialized to prevent infinite loops
+  const hasInitialized = useRef(false);
+  const prevEmailsLength = useRef(-1);
+  const prevConfigLength = useRef(-1);
+
   // Fetch dynamic column configuration
   const { data: columnConfig = [], isLoading: isConfigLoading } =
     useKanbanConfig();
@@ -28,19 +33,31 @@ export function useKanban() {
     refetch,
   } = useKanbanEmails();
 
-  // Store column config in zustand
+  // Memoize non-snoozed emails to prevent unnecessary recalculations
+  const nonSnoozedEmails = useMemo(() => {
+    return emails.filter((email) => email.kanbanStatus !== 'snoozed');
+  }, [emails]);
+
+  // Store column config in zustand - only when config actually changes
   useEffect(() => {
-    if (columnConfig.length > 0) {
+    if (columnConfig.length > 0 && columnConfig.length !== prevConfigLength.current) {
+      prevConfigLength.current = columnConfig.length;
       setColumnConfig(columnConfig);
     }
   }, [columnConfig, setColumnConfig]);
 
   // Initialize kanban columns when both config and emails are loaded
+  // Only re-initialize when data actually changes
   useEffect(() => {
-    if (columnConfig.length > 0 && emails.length >= 0) {
-      initializeColumns(emails, columnConfig);
+    const emailsChanged = nonSnoozedEmails.length !== prevEmailsLength.current;
+    const configReady = columnConfig.length > 0;
+
+    if (configReady && (emailsChanged || !hasInitialized.current)) {
+      prevEmailsLength.current = nonSnoozedEmails.length;
+      hasInitialized.current = true;
+      initializeColumns(nonSnoozedEmails, columnConfig);
     }
-  }, [emails, columnConfig, initializeColumns]);
+  }, [nonSnoozedEmails, columnConfig, initializeColumns]);
 
   // Sync loading state (true if either emails or config are loading)
   useEffect(() => {

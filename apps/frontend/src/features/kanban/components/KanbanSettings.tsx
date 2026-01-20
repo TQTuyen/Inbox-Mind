@@ -320,13 +320,17 @@ export function KanbanSettings() {
     <>
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
-          <Button variant="outline" size="sm">
-            <Settings className="h-4 w-4 mr-2" />
-            Kanban Settings
+          <Button
+            variant="outline"
+            size="sm"
+            className="bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-gray-100 px-2 sm:px-3"
+          >
+            <Settings className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Settings</span>
           </Button>
         </SheetTrigger>
 
-        <SheetContent className="w-[400px] sm:w-[540px]">
+        <SheetContent className="w-[calc(100%-2rem)] sm:w-[400px] md:w-[540px]">
           <SheetHeader>
             <SheetTitle>Kanban Board Settings</SheetTitle>
             <SheetDescription>
