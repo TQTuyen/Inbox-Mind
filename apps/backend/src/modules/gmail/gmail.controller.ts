@@ -139,10 +139,7 @@ export class GmailController {
     try {
       return await this.fuzzySearchService.fuzzySearch(user.userId, query);
     } catch (error) {
-      this.logger.error(
-        `Fuzzy search failed: ${error.message}`,
-        error.stack
-      );
+      this.logger.error(`Fuzzy search failed: ${error.message}`, error.stack);
       throw error; // Re-throw if it's already an HttpException
     }
   }
