@@ -1,21 +1,20 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn,
-  ManyToOne,
-  JoinColumn,
+  Entity,
   Index,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../../user/user.entity';
 
-export type KanbanStatus =
-  | 'inbox'
-  | 'todo'
-  | 'in_progress'
-  | 'done'
-  | 'snoozed';
+/**
+ * KanbanStatus is a flexible string type to allow custom user-defined statuses.
+ * Users can create any status they want (not limited to predefined values).
+ */
+export type KanbanStatus = string;
 
 @Entity('email_metadata')
 @Index(['userId', 'emailId'], { unique: true })
