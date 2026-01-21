@@ -17,6 +17,7 @@ interface KanbanColumnProps {
   onGenerateSummary?: (emailId: string) => void;
   generatingSummaryId?: string | null;
   onSnooze?: (emailId: string) => void;
+  onToggleStar?: (emailId: string, isStarred: boolean) => void;
 }
 
 export function KanbanColumn({
@@ -27,6 +28,7 @@ export function KanbanColumn({
   onGenerateSummary,
   generatingSummaryId,
   onSnooze,
+  onToggleStar,
 }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id,
@@ -43,6 +45,13 @@ export function KanbanColumn({
       onSnooze?.(emailId);
     },
     [onSnooze]
+  );
+
+  const handleToggleStar = useCallback(
+    (emailId: string, isStarred: boolean) => {
+      onToggleStar?.(emailId, isStarred);
+    },
+    [onToggleStar]
   );
 
   return (
@@ -85,6 +94,7 @@ export function KanbanColumn({
                 onGenerateSummary={handleGenerateSummary}
                 isGeneratingSummary={generatingSummaryId === email.id}
                 onSnooze={handleSnooze}
+                onToggleStar={handleToggleStar}
               />
             ))
           )}

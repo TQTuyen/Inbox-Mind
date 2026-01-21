@@ -79,6 +79,31 @@ export function KanbanPage() {
     generateSummaryMutation.mutate(emailId);
   };
 
+  // Toggle star mutation
+  const toggleStarMutation = useMutation({
+    mutationFn: ({
+      emailId,
+      isStarred,
+    }: {
+      emailId: string;
+      isStarred: boolean;
+    }) => gmailApi.toggleStar(emailId, isStarred),
+    onMutate: ({ emailId, isStarred }) => {
+      // Optimistic update
+      updateEmailInColumn(emailId, { isStarred });
+    },
+    onError: (error, { emailId, isStarred }) => {
+      console.error('Failed to toggle star:', error);
+      // Rollback on error
+      updateEmailInColumn(emailId, { isStarred: !isStarred });
+      alert('Failed to toggle star. Please try again.');
+    },
+  });
+
+  const handleToggleStar = (emailId: string, isStarred: boolean) => {
+    toggleStarMutation.mutate({ emailId, isStarred });
+  };
+
   // Snooze mutation
   const snoozeMutation = useMutation({
     mutationFn: ({
@@ -197,6 +222,7 @@ export function KanbanPage() {
                   onGenerateSummary={handleGenerateSummary}
                   generatingSummaryId={generatingSummaryId}
                   onSnooze={handleSnoozeClick}
+                  onToggleStar={handleToggleStar}
                 />
               </ResizablePanel>
 
@@ -221,6 +247,7 @@ export function KanbanPage() {
             onGenerateSummary={handleGenerateSummary}
             generatingSummaryId={generatingSummaryId}
             onSnooze={handleSnoozeClick}
+            onToggleStar={handleToggleStar}
           />
 
           {/* Mobile Email Detail Sheet */}

@@ -162,17 +162,26 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
     const fromColumn = columns.find((col) => col.id === fromColumnId);
     const toColumn = columns.find((col) => col.id === toColumnId);
 
-    if (!fromColumn || !toColumn) return;
+    if (!fromColumn || !toColumn) {
+      console.error('Source or destination column not found');
+      return;
+    }
 
     // Find the email to move
     const email = fromColumn.emails.find((e) => e.id === emailId);
-    if (!email) return;
+    if (!email) {
+      console.error('Email not found in source column');
+      return;
+    }
 
     // Find the column config to get the proper kanban status mapping
     const toColumnConfig = columnConfig.find((c) => c.columnId === toColumnId);
     if (!toColumnConfig) {
-      console.error('Column configuration not found for:', toColumnId);
-      return;
+      console.warn(
+        'Column configuration not found for:',
+        toColumnId,
+        '- this may be a newly added column. Attempting to proceed with default mapping.'
+      );
     }
 
     // Map columnId to kanbanStatus
@@ -229,7 +238,9 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
 
       // Then update Gmail labels using the actual Gmail label IDs from config
       const labelsToRemove = [fromColumn.labelId];
-      const labelsToAdd = [toColumnConfig.gmailLabelId];
+      const labelsToAdd = toColumnConfig
+        ? [toColumnConfig.gmailLabelId]
+        : [toColumn.labelId];
 
       // Remove old label(s)
       if (labelsToRemove.length > 0 && labelsToRemove[0]) {
