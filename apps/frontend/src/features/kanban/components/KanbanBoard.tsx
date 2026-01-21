@@ -51,6 +51,7 @@ interface KanbanBoardProps {
   onGenerateSummary?: (emailId: string) => void;
   generatingSummaryId?: string | null;
   onSnooze?: (emailId: string) => void;
+  onToggleStar?: (emailId: string, isStarred: boolean) => void;
 }
 
 export function KanbanBoard({
@@ -58,6 +59,7 @@ export function KanbanBoard({
   onGenerateSummary,
   generatingSummaryId,
   onSnooze,
+  onToggleStar,
 }: KanbanBoardProps) {
   // Use selectors to prevent unnecessary re-renders
   const columns = useKanbanStore((state) => state.columns);
@@ -161,6 +163,7 @@ export function KanbanBoard({
                   onGenerateSummary={onGenerateSummary}
                   generatingSummaryId={generatingSummaryId}
                   onSnooze={onSnooze}
+                  onToggleStar={onToggleStar}
                 />
               </div>
             ))}

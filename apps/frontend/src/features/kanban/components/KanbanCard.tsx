@@ -6,6 +6,7 @@ import { Card } from '@fe/shared/components/ui/card';
 import { format } from 'date-fns';
 import {
   Clock,
+  ExternalLink,
   GripVertical,
   Loader2,
   Mail,
@@ -21,6 +22,7 @@ interface KanbanCardProps {
   onGenerateSummary?: (emailId: string) => void;
   isGeneratingSummary?: boolean;
   onSnooze?: (emailId: string) => void;
+  onToggleStar?: (emailId: string, isStarred: boolean) => void;
 }
 
 export function KanbanCard({
@@ -29,6 +31,7 @@ export function KanbanCard({
   onGenerateSummary,
   isGeneratingSummary,
   onSnooze,
+  onToggleStar,
 }: KanbanCardProps) {
   const {
     attributes,
@@ -129,7 +132,7 @@ export function KanbanCard({
                   <p
                     style={{
                       display: '-webkit-box',
-                      WebkitLineClamp: 2,
+                      WebkitLineClamp: 4,
                       WebkitBoxOrient: 'vertical',
                       overflow: 'hidden',
                       wordBreak: 'break-word',
@@ -182,8 +185,27 @@ export function KanbanCard({
             {/* Footer: Badges and Actions */}
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 flex-wrap">
-                {email.isStarred && (
-                  <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                {/* Star button */}
+                {onToggleStar && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      onToggleStar(email.id, !email.isStarred);
+                    }}
+                    className="p-0.5 hover:bg-gray-100 dark:hover:bg-slate-700 rounded transition-colors relative z-10"
+                    title={email.isStarred ? 'Unstar email' : 'Star email'}
+                  >
+                    <Star
+                      className={cn(
+                        'h-3 w-3 transition-colors',
+                        email.isStarred
+                          ? 'fill-yellow-400 text-yellow-400'
+                          : 'text-gray-400 hover:text-yellow-400'
+                      )}
+                    />
+                  </button>
                 )}
                 {email.attachments && email.attachments.length > 0 && (
                   <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
@@ -191,6 +213,17 @@ export function KanbanCard({
                     {email.attachments.length}
                   </Badge>
                 )}
+                {/* Gmail link */}
+                <a
+                  href={`https://mail.google.com/mail/u/0/#inbox/${email.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="p-0.5 hover:bg-gray-100 dark:hover:bg-slate-700 rounded transition-colors relative z-10"
+                  title="Open in Gmail"
+                >
+                  <ExternalLink className="h-3 w-3 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400" />
+                </a>
               </div>
 
               {/* Snooze Button - Always visible on mobile, hover on desktop */}
