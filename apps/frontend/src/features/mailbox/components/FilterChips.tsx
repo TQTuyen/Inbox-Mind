@@ -10,6 +10,7 @@ const filters = [
   { id: 'all', label: 'All' },
   { id: 'unread', label: 'Unread' },
   { id: 'important', label: 'Important' },
+  { id: 'attachments', label: 'Has Attachments' },
   { id: 'vip', label: 'From VIP' },
 ];
 
