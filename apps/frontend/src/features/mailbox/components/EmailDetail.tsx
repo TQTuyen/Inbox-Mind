@@ -1,6 +1,7 @@
 import { useEmailStore } from '@fe/features/mailbox/store/emailStore';
 import { cn } from '@fe/lib/utils';
 import { gmailApi } from '@fe/services/api/gmailApi';
+import { emailMetadataApi } from '@fe/services/api/emailMetadataApi';
 import { emailService } from '@fe/services/emailService';
 import { EmailAttachment } from '@fe/types/email.types';
 import {
@@ -29,10 +30,12 @@ import {
   ExternalLink,
   FileText,
   Forward,
+  Loader2,
   MailOpen,
   MoreVertical,
   Reply,
   ReplyAll,
+  Sparkles,
   Star,
   Trash,
 } from 'lucide-react';
@@ -60,6 +63,7 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
   const [downloadingAttachment, setDownloadingAttachment] = useState<
     string | null
   >(null);
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
 
   // Mock task info - in real app this would come from the email data
   const taskInfo: TaskInfo = {
@@ -249,6 +253,21 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
     }
   };
 
+  const handleGenerateSummary = async () => {
+    if (!selectedEmail || isGeneratingSummary) return;
+
+    setIsGeneratingSummary(true);
+    try {
+      const response = await emailMetadataApi.generateSummary(selectedEmail.id);
+      updateEmail(selectedEmail.id, { summary: response.data.summary });
+    } catch (error) {
+      console.error('Failed to generate summary:', error);
+      alert('Failed to generate AI summary. Please try again.');
+    } finally {
+      setIsGeneratingSummary(false);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -306,6 +325,20 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
         </div>
 
         <div className="flex items-center gap-1">
+          {/* Open in Gmail Button */}
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleOpenInGmail}
+              className="text-gray-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-slate-800 cursor-pointer px-2 sm:px-3"
+              title="Open in Gmail"
+            >
+              <ExternalLink className="h-4 w-4" />
+              <span className="hidden sm:inline ml-1">Open in Gmail</span>
+            </Button>
+          </motion.div>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -357,13 +390,6 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
               >
                 <Archive className="mr-2 h-4 w-4" />
                 Archive
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={handleOpenInGmail}
-                className="hover:bg-gray-100 dark:hover:bg-slate-800 cursor-pointer"
-              >
-                <ExternalLink className="mr-2 h-4 w-4" />
-                Open in Gmail
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-gray-200 dark:bg-slate-700" />
               <DropdownMenuItem
@@ -443,6 +469,50 @@ export const EmailDetail = ({ isMobile = false, onBack }: EmailDetailProps) => {
               </p>
             </div>
           </div>
+        </motion.div>
+
+        {/* AI Summary Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mb-6"
+        >
+          {selectedEmail.summary ? (
+            <div className="p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-lg">
+              <div className="flex items-start gap-2">
+                <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-purple-600 dark:text-purple-400 mb-1">
+                    AI Summary
+                  </p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    {selectedEmail.summary}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleGenerateSummary}
+              disabled={isGeneratingSummary}
+              className="text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-700 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+            >
+              {isGeneratingSummary ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Generating AI Summary...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Summarize with AI
+                </>
+              )}
+            </Button>
+          )}
         </motion.div>
 
         {/* AI/Task Integration Section */}

@@ -287,8 +287,7 @@ export class GmailService {
         const emailData = await gmail.users.messages.get({
           userId: GMAIL_CONFIG.USER_ID,
           id: message.id,
-          format: GmailFormat.METADATA,
-          metadataHeaders: GMAIL_CONFIG.METADATA_HEADERS as unknown as string[],
+          format: GmailFormat.FULL, // Changed from METADATA to FULL to include attachments
         });
         return emailData.data;
       })

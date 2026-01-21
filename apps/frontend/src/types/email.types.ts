@@ -16,12 +16,14 @@ export interface EmailAttachment {
   partId?: string;
 }
 
-export type KanbanStatus =
-  | 'inbox'
-  | 'todo'
-  | 'in_progress'
-  | 'done'
-  | 'snoozed';
+/**
+ * KanbanStatus is a flexible string type to allow custom user-defined statuses.
+ * Users can create any status they want (not limited to predefined values).
+ *
+ * Default statuses: 'inbox', 'todo', 'in_progress', 'done', 'snoozed'
+ * But users can add their own custom statuses as needed.
+ */
+export type KanbanStatus = string;
 
 /**
  * Core Email interface used throughout the application

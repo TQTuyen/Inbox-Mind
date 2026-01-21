@@ -376,14 +376,21 @@ export function MailboxPage() {
 
                     {/* Kanban View */}
                     {viewMode === 'kanban' && (
-                      <div className="flex-1 min-h-0 overflow-hidden">
-                        <OldKanbanBoard
-                          onEmailClick={handleEmailSelect}
-                          onEmailStatusChange={handleEmailStatusChange}
-                          onEmailSnooze={handleEmailSnooze}
-                          onGenerateSummary={handleGenerateSummary}
+                      <>
+                        <FilterChips
+                          activeFilter={activeFilter}
+                          onFilterChange={setActiveFilter}
                         />
-                      </div>
+                        <div className="flex-1 min-h-0 overflow-hidden">
+                          <OldKanbanBoard
+                            onEmailClick={handleEmailSelect}
+                            onEmailStatusChange={handleEmailStatusChange}
+                            onEmailSnooze={handleEmailSnooze}
+                            onGenerateSummary={handleGenerateSummary}
+                            activeFilter={activeFilter}
+                          />
+                        </div>
+                      </>
                     )}
                   </>
                 )}

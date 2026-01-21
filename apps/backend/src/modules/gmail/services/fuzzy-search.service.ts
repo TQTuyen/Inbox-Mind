@@ -1,4 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import Fuse from 'fuse.js';
 import { gmail_v1 } from 'googleapis';
 import {
@@ -65,16 +69,28 @@ export class FuzzySearchService {
       // Fetch emails using existing Gmail service
       const response = await this.gmailService.listEmails(userId, {
         labelId: mailboxId,
-        pageSize: 100, // Fetch more for better search results
+        pageSize: 500, // Increased from 100 for better search results
       });
 
-      const emails = response.emails || [];
+      if (!response.emails || response.emails.length === 0) {
+        this.logger.warn(
+          `No emails found in mailbox ${mailboxId} for user ${userId}`
+        );
+        return [];
+      }
 
       // Transform Gmail messages to searchable format
-      return emails.map((email) => this.transformEmailToSearchData(email));
+      return response.emails.map((email) =>
+        this.transformEmailToSearchData(email)
+      );
     } catch (error) {
-      this.logger.error('Failed to fetch emails for search', error);
-      return [];
+      this.logger.error(
+        `Failed to fetch emails for search: ${error.message}`,
+        error.stack
+      );
+      throw new InternalServerErrorException(
+        'Failed to fetch emails for fuzzy search. Please try again later.'
+      );
     }
   }
 
@@ -93,11 +109,26 @@ export class FuzzySearchService {
       return header?.value || '';
     };
 
-    // Parse From header
+    // Parse From header - handle both "Name <email>" and "email" formats
     const fromHeader = getHeader('From');
     const fromMatch = fromHeader.match(/^(.*?)\s*<(.+?)>$/);
-    const fromName = fromMatch ? fromMatch[1].trim() : fromHeader;
-    const fromEmail = fromMatch ? fromMatch[2].trim() : fromHeader;
+
+    let fromName: string;
+    let fromEmail: string;
+
+    if (fromMatch) {
+      // Format: "Name <email@example.com>"
+      fromName = fromMatch[1].trim().replace(/^["']|["']$/g, ''); // Remove quotes
+      fromEmail = fromMatch[2].trim();
+    } else if (fromHeader.includes('@')) {
+      // Format: "email@example.com"
+      fromEmail = fromHeader.trim();
+      fromName = fromEmail.split('@')[0]; // Use part before @ as name
+    } else {
+      // Fallback
+      fromName = fromHeader;
+      fromEmail = fromHeader;
+    }
 
     // Check if read
     const isRead = !message.labelIds?.includes('UNREAD');
@@ -120,14 +151,36 @@ export class FuzzySearchService {
   }
 
   /**
-   * Check if email has attachments
+   * Check if email has attachments (recursively check all parts)
    */
   private hasAttachments(message: gmail_v1.Schema$Message): boolean {
-    const parts = message.payload?.parts || [];
-    return parts.some(
-      (part) =>
-        part.filename && part.filename.length > 0 && part.body?.attachmentId
-    );
+    const checkParts = (
+      parts: gmail_v1.Schema$MessagePart[] | undefined
+    ): boolean => {
+      if (!parts || parts.length === 0) return false;
+
+      for (const part of parts) {
+        // Check if this part is an attachment
+        if (
+          part.filename &&
+          part.filename.length > 0 &&
+          part.body?.attachmentId
+        ) {
+          return true;
+        }
+
+        // Recursively check nested parts
+        if (part.parts && part.parts.length > 0) {
+          if (checkParts(part.parts)) {
+            return true;
+          }
+        }
+      }
+
+      return false;
+    };
+
+    return checkParts(message.payload?.parts);
   }
 
   /**
@@ -158,9 +211,9 @@ export class FuzzySearchService {
           weight: 0.1, // Snippet/body is least important
         },
       ],
-      threshold: 0.4, // 0.0 = perfect match, 1.0 = match anything
-      // Lower threshold = stricter matching
-      distance: 100, // Maximum distance for typo tolerance
+      threshold: 0.6, // Increased from 0.4 for better typo tolerance
+      // 0.0 = perfect match, 1.0 = match anything
+      distance: 150, // Increased from 100 for more flexibility
       minMatchCharLength: 2, // Minimum match length for partial matching
       includeScore: true, // Include match score
       includeMatches: true, // Include which fields matched

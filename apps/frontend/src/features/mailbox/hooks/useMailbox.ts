@@ -186,11 +186,22 @@ export const useMailbox = () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setSelectedEmail(email as any);
 
+      // Preserve existing metadata (summary, kanbanStatus, snoozeUntil) before fetching
+      const existingMetadata = {
+        summary: (email as any).summary,
+        kanbanStatus: (email as any).kanbanStatus,
+        snoozeUntil: (email as any).snoozeUntil,
+      };
+
       // Fetch full email data (with attachments) in background
       try {
         const fullEmail = await gmailApi.getEmailById(email.id);
+        // Merge full email with preserved metadata to avoid losing generated summary
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        setSelectedEmail(fullEmail as any);
+        setSelectedEmail({
+          ...fullEmail,
+          ...existingMetadata,
+        } as any);
       } catch (error) {
         console.error('Failed to fetch full email:', error);
         // Keep the partial email data if fetch fails

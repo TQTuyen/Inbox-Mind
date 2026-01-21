@@ -117,6 +117,7 @@ interface KanbanBoardProps {
   onEmailStatusChange: (emailId: string, newStatus: KanbanStatus) => void;
   onEmailSnooze: (emailId: string, snoozeUntil: Date) => void;
   onGenerateSummary: (emailId: string) => void;
+  activeFilter?: string;
 }
 
 export function KanbanBoard({
@@ -124,6 +125,7 @@ export function KanbanBoard({
   onEmailStatusChange,
   onEmailSnooze,
   onGenerateSummary,
+  activeFilter = 'all',
 }: KanbanBoardProps) {
   const { emails } = useEmailStore();
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -150,13 +152,31 @@ export function KanbanBoard({
       snoozed: [],
     };
 
-    emails.forEach((email) => {
+    // Apply filter before grouping
+    const filteredEmails = emails.filter((email) => {
+      switch (activeFilter) {
+        case 'unread':
+          return !email.isRead;
+        case 'important':
+          return email.isStarred;
+        case 'attachments':
+          return email.attachments && email.attachments.length > 0;
+        case 'vip':
+          // TODO: Implement VIP logic based on contacts
+          return false;
+        case 'all':
+        default:
+          return true;
+      }
+    });
+
+    filteredEmails.forEach((email) => {
       const status = email.kanbanStatus || 'inbox';
       groups[status].push(email);
     });
 
     return groups;
-  }, [emails]);
+  }, [emails, activeFilter]);
 
   const activeEmail = activeId
     ? emails.find((email) => email.id === activeId)

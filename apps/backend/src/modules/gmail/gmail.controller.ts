@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Logger,
   Param,
   Post,
   Put,
@@ -71,6 +72,8 @@ import { LabelModificationStrategyFactory } from './strategies/label-modificatio
 @Controller()
 @UseGuards(JwtAuthGuard)
 export class GmailController {
+  private readonly logger = new Logger(GmailController.name);
+
   constructor(
     private readonly gmailService: GmailService,
     private readonly labelStrategyFactory: LabelModificationStrategyFactory,
@@ -127,12 +130,18 @@ export class GmailController {
     description: 'Returns fuzzy search results ranked by relevance',
     type: FuzzySearchResponseDto,
   })
+  @ApiResponse({ status: 500, description: 'Failed to perform search' })
   @UseGuards(JwtAuthGuard)
   async fuzzySearch(
     @CurrentUser() user: CurrentUserData,
     @Query() query: FuzzySearchQueryDto
   ): Promise<FuzzySearchResponseDto> {
-    return this.fuzzySearchService.fuzzySearch(user.userId, query);
+    try {
+      return await this.fuzzySearchService.fuzzySearch(user.userId, query);
+    } catch (error) {
+      this.logger.error(`Fuzzy search failed: ${error.message}`, error.stack);
+      throw error; // Re-throw if it's already an HttpException
+    }
   }
 
   @Get('search/suggestions')
