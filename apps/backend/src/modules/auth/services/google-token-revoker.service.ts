@@ -25,7 +25,15 @@ export class GoogleTokenRevokerService implements IGoogleTokenRevoker {
     try {
       const user = await this.userService.findById(userId);
       if (!user) {
-        throw new UnauthorizedException('User not found');
+        // User not found - this is okay during logout, just log and return
+        console.warn(`User ${userId} not found during token revocation`);
+        return;
+      }
+
+      // Check if tokens exist before trying to decrypt and revoke
+      if (!user.googleRefreshToken || !user.googleRefreshTokenIV) {
+        console.warn(`No Google tokens found for user ${userId}`);
+        return;
       }
 
       const refreshToken = this.encryptionService.decrypt(
@@ -47,9 +55,13 @@ export class GoogleTokenRevokerService implements IGoogleTokenRevoker {
         },
         timeout: 5000, // 5 second timeout
       });
+
+      console.log(`Successfully revoked Google tokens for user ${userId}`);
     } catch (error) {
+      // Log the error but don't throw - logout should succeed even if token revocation fails
+      // The tokens might already be revoked, expired, or there might be a network issue
       console.error('Error revoking Google tokens:', error);
-      throw new InternalServerErrorException('Failed to revoke Google tokens');
+      console.warn('Continuing with logout despite token revocation failure');
     }
   }
 
